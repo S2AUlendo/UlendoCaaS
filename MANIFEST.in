@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_autocal/templates *
+recursive-include octoprint_autocal/translations *
+recursive-include octoprint_autocal/static *

@@ -1,0 +1,35 @@
+<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
+<div id='acclrmtr_live_data_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+<button id='acclrmtr_connect_btn' data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect Accelerometer') }}</button>
+
+<div class="calibrate_axis_btn_group">
+    <button id='calibrate_x_axis_btn' data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
+    <button id='calibrate_y_axis_btn' data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
+</div>
+
+<div class="select_calibration_btn_group">
+<button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn">{{ _('ZV-IS') }}</button>
+<button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="is_select_btn">{{ _('ZVD-IS') }}</button>
+<button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="is_select_btn">{{ _('MZV-IS') }}</button>
+<button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="is_select_btn">{{ _('EI-IS') }}</button>
+<button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="is_select_btn">{{ _('2HEI-IS') }}</button>
+<button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="is_select_btn">{{ _('3HEI-IS') }}</button>
+</div>
+
+<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
+<div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+<div id="vtol_group">
+  <span class="slidercaption">Vibration tolerance:</span>
+  <div class="slidercontainer"><input type="range" min="0" max="100" value="5" class="slider" id="vtolslider">
+  </div>
+</div>
+
+<div class="manage_calibration_btn_group">
+<button id='load_calibration_btn' data-bind="click: onClickLoadCalibrationBtn">{{ _('Load Calibration') }}</button>
+<button id='save_calibration_btn' data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
+</div>
+
+<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
+<div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>

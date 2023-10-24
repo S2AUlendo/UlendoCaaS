@@ -1,0 +1,5 @@
+*.synctex.gz
+*.log
+*.aux
+user_manual.pdf
+raspberry_pi_installation.pdf
