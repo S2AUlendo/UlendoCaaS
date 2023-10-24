@@ -1,5 +1,7 @@
 # AutoCalibration
 
+Modified this branch to Public.
+
 Creating a new repository from "OctoPrint-AutoCal" branch [https://github.com/S2AUlendo/OctoPrint-Autocal.git] to resolve the github authentication error.
 
 
