@@ -19,7 +19,7 @@ Creating a new repository from "OctoPrint-AutoCal" branch [https://github.com/S2
 	pip install --upgrade pip wheel
 	pip install octoprint
 	
-	git clone https://github.com/S2AUlendo/OctoPrint-Autocal
+	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
 	cd OctoPrint-Autocal
 	octoprint dev plugin:install
 

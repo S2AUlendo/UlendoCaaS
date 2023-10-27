@@ -12,7 +12,8 @@ import requests
 import json
 import base64
 import numpy as np
-
+from datetime import datetime    
+    
 
 def read_acclrmtr_data(axis):
 
@@ -26,11 +27,21 @@ def read_acclrmtr_data(axis):
 
 def autocal_service_solve(axis, f1, metadata):
     
+    now = datetime.now()
     postdata =  {    axis.upper() + 'AXISRESPONSE': read_acclrmtr_data(axis),
                     'AXIS': axis,
                     'OPERATION': 'SOLVE',
                     'f1': f1,
-                    'METADATA': metadata if metadata is not {} else 'N/A'
+                    'METADATA': metadata if metadata is not {} else 'N/A',
+                    'ACCESS':{
+                        'CLIENT_ID': 'ULENDODEVTEAM',           # TODO: Create configuration items for the plugin for the user to store these values
+                        'ACCESS_ID': 'ITSOVER9000',             # This is how we will track client utilization
+                        'PRINTER_ID': '123456789'
+                    },
+                    'REQUEST': {
+                        'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
+                        'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
+                    },
                 }
     
     with open('solve_post.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
@@ -50,11 +61,21 @@ def autocal_service_solve(axis, f1, metadata):
 
 def autocal_service_guidata(axis, f1, metadata):
     
+    now = datetime.now()
     postdata =  {    axis.upper() + 'AXISRESPONSE': read_acclrmtr_data(axis),
                     'AXIS': axis,
                     'OPERATION': 'VERIFY',
                     'f1': f1,
-                    'METADATA': metadata if metadata is not {} else 'N/A'
+                    'METADATA': metadata if metadata is not {} else 'N/A',
+                    'ACCESS':{
+                        'CLIENT_ID': 'ULENDODEVTEAM',           # TODO: Create configuration items for the plugin for the user to store these values
+                        'ACCESS_ID': 'ITSOVER9000',             # This is how we will track client utilization
+                        'PRINTER_ID': '123456789'
+                    },
+                    'REQUEST': {
+                        'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
+                        'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
+                    },
                 }
     
     with open('verify_post.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
