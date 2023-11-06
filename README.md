@@ -1,9 +1,6 @@
 # AutoCalibration
 
-Modified this branch to Public.
-
-Creating a new repository from "OctoPrint-AutoCal" branch [https://github.com/S2AUlendo/OctoPrint-Autocal.git] to resolve the github authentication error.
-
+Ulendo's Calibration as a Service
 
 # Instructions to Autocalibrate in Octoprint
 
@@ -49,7 +46,7 @@ Creating a new repository from "OctoPrint-AutoCal" branch [https://github.com/S2
 	pip install octoprint
 	
 	
-	git clone https://github.com/S2AUlendo/OctoPrint-Autocal
+	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
 	cd OctoPrint-Autocal
 	../venv/bin/octoprint dev plugin:install
 	
