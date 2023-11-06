@@ -1,18 +1,30 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Ulendo Calibration as a Service</h5>
+    <p class="card-text">Welcome to Ulendo's Calibration as a Service Plugin</p>
+	<p class="card-text">This plugin was designed to help users to automatically tune the vibration compensation algorithms 
+	contributed to the Marlin Project. This plugin can help to optimize the performance of your printer and help you to achieve higher lower print 
+	times by improving printer reliability at higher speeds and accelerations</p>
+	<p>Users must have a valid combination of access credentials provided by the Ulendo team to use this plugin.</p>
+	<p>Enter the credentials in the space provided below to get started.</p>
+  </div>
+</div>
 <form class="form-horizontal">
-    <div class="control-group">
-        <label class="control-label">{{ _('URL') }}</label>
-        <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.url">
-        </div>
+    <div class="control-group">     
         <label class="control-label">{{ _('ORG') }}</label>
         <div class="controls">
-			<input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.ORG">
+			<input type="text" class="form-control input-block-level" data-bind="value: settings.plugins.autocal.ORG">
         </div>
+	</div>
+	<div class="control-group">     
         <label class="control-label">{{ _('ACCESSID') }}</label>
         <div class="controls">            
 			<input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.ACCESSID">
         </div>
-        <label class="control-label">{{ _('MACHINEID') }}</label>
+	</div>
+	<div class="control-group">     
+        
+    <label class="control-label">{{ _('MACHINEID') }}</label>
         <div class="controls">            
 			<input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.MACHINEID">
         </div>
