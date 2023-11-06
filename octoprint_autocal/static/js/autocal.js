@@ -247,9 +247,20 @@ $(function() {
         // dependencies have already been initialized. It is especially guaranteed that this method
         // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
         // the SettingsViewModel been properly populated.
+        // self.onBeforeBinding = function() {
+            
+        // };
+		
+		 // This will get called before the HelloWorldViewModel gets bound to the DOM, but after its
+        // dependencies have already been initialized. It is especially guaranteed that this method
+        // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
+        // the SettingsViewModel been properly populated.
         self.onBeforeBinding = function() {
             OctoPrint.simpleApiCommand("autocal", "get_layout_status");
-        };
+            // self.newUrl(self.settings.settings.plugins.autocal.url());
+            // self.newACCESS(self.settings.settings.plugins.autocal.ACCESSID());
+			// self.newORG(self.settings.settings.plugins.autocal.ORG());
+        }
     };
    
 

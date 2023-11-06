@@ -693,7 +693,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 }
                 self.fsm.axis_reported_steps_per_mm = result[self.fsm.axis]
                 self.fsm.axis_reported_steps_per_mm_recvd = True
-                self.metadata['STEPSPERUNIT'] = result
+                self.metadata['STEPSPERUNIT'] = str(result)
                 self._logger.info('Metadata updated:')
                 self._logger.info(self.metadata)
         return line
@@ -937,7 +937,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
         if not self.sts_axis_verification_active:
             try:
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, self)
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
                 self.active_solution = None
@@ -979,10 +979,27 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.fsm.state = AxisRespnsFSMStates.HOME
 
 
+    def get_settings_defaults(self):
+        return dict(ORG="ULENDO", 
+                    ACCESSID="OVER9000", 
+                    MACHINEID="PRINTER001", 
+                    url="https://en.wikipedia.org/wiki/Hello_world")
+
+    def get_template_vars(self):
+        return dict(ORG=self._settings.get(["ORG"]), 
+                    ACCESSID=self._settings.get(["ACCESSID"]), 
+                    MACHINEID=self._settings.get(["MACHINEID"]), 
+                    url=self._settings.get(["url"]))
+
+    def get_template_configs(self):
+        return [            
+            dict(type="settings", custom_bindings=False)
+        ]
+
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Ulendo Autocal"
+__plugin_name__ = "Ulendo CaaS"
 
 
 # Set the Python version your plugin is compatible with below. Recommended is Python 3 only for all new plugins.
