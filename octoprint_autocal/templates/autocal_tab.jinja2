@@ -21,13 +21,26 @@
     <button id='calibrate_y_axis_btn' data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
 </div>
 
-<div class="select_calibration_btn_group">
-<button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn">{{ _('ZV-IS') }}</button>
-<button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="is_select_btn">{{ _('ZVD-IS') }}</button>
-<button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="is_select_btn">{{ _('MZV-IS') }}</button>
-<button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="is_select_btn">{{ _('EI-IS') }}</button>
-<button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="is_select_btn">{{ _('2HEI-IS') }}</button>
-<button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="is_select_btn">{{ _('3HEI-IS') }}</button>
+<script>
+  function onClickSelectZvDropDownBtn() {
+    if (( document.getElementById("acclrmtr_connect_btn").innerText == 'Accelerometer Connected') &&
+       ( document.getElementById("calibrate_x_axis_btn").innerText == 'X Calibration Applied' ||
+         document.getElementById("calibrate_y_axis_btn").innerText == 'Y Calibration Applied' )){
+      document.getElementById("select_calibration_div").classList.toggle("show");
+    }
+    }
+</script>
+
+<div id= 'zv_shapers_div_block'>
+  <button id='zv_shapers_dropDown_btn' onclick ="onClickSelectZvDropDownBtn()">ZV Shapers</button>
+  <div id =select_calibration_div class="select_calibration_btn_group">
+   <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn">{{ _('ZV-IS') }}</button>
+   <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="is_select_btn">{{ _('ZVD-IS') }}</button>
+   <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="is_select_btn">{{ _('MZV-IS') }}</button>
+   <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="is_select_btn">{{ _('EI-IS') }}</button>
+   <button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="is_select_btn">{{ _('2HEI-IS') }}</button>
+   <button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="is_select_btn">{{ _('3HEI-IS') }}</button>
+  </div>
 </div>
 
 <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
@@ -55,4 +68,11 @@
 	additive manufacturing visit us @ <a href="https://www.ulendo.io/">Ulendo.io</a></p>    
 		
   </div>
+</div>
+
+<div id='Summary'>
+  <h3> Summary </h3>
+  <pre id='accelerometerStatus'></pre>
+  <pre id='calibrationStatus'> </pre>
+  <pre id='loadCalibrationStatus'> </pre>
 </div>

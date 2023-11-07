@@ -1,62 +1,318 @@
 /* TODO: Have your plugin's CSS files generated to here. */
 
 .acclrmtr_connect_btn_NOTCONNECTED_style {
-    background: rgb(212, 212, 212);
+    /* background: rgb(212, 212, 212); */
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+
+.acclrmtr_connect_btn_NOTCONNECTED_style:hover, .calibrate_axis_btn_NOTCALIBRATED_style:hover, .calibrate_axis_btn_CALIBRATING_style:hover, .zv_shapers_dropDown_btn_style:hover
+{
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
 }
 
 .acclrmtr_connect_btn_CONNECTING_style {
-    background: rgb(255, 255, 0);
+    /* background: rgb(255, 255, 0); yellow */
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 6px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color: rgb(255, 255, 0);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 .acclrmtr_connect_btn_CONNECTED_style {
-    background: rgb(0, 255, 0);
+    /*background: rgb(0, 255, 0); green */
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color:  rgb(0, 255, 0); /*#f5f5f5;*/
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 
 .calibrate_axis_btn_NOTCALIBRATED_style {
-    background: rgb(212, 212, 212);
+    /* background: rgb(212, 212, 212); */
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 .calibrate_axis_btn_CALIBRATING_style {
-    background: rgb(255, 255, 0);
+    /* background: rgb(255, 255, 0); yellow */
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color: rgb(255, 255, 0);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+
 }
 
 .calibrate_axis_btn_CALIBRATIONREADY_style {
-    background: rgb(0, 255, 0);
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color: rgb(0, 255, 0); /*green*/
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+
 }
 
 .calibrate_axis_btn_CALIBRATIONAPPLIED_style {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
     background: rgb(0, 255, 255);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+
+
 }
 
 
+.zv_shapers_dropDown_btn_style{
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.select_calibration_btn_group{
+    display: none;
+    width: 50%;
+}
+
+.show {
+  display: block;
+}
+
 .select_calibration_btn_NOTSELECTED_style {
-    background: rgb(212, 212, 212);
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+    width: 30%;
 }
 
 .select_calibration_btn_SELECTED_style {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 30%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
     background: rgb(79, 79, 79);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 
 .load_calibration_btn_NOTLOADED_style {
-    background: rgb(212, 212, 212);
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 .load_calibration_btn_LOADING_style {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
     background: rgb(255, 255, 0);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+
 }
 
 .load_calibration_btn_LOADED_style {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
     background: rgb(0, 255, 255);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 .save_calibration_btn_NOTSAVED_style {
-    background: rgb(212, 212, 212);
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    background: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+;
 }
 
 .save_calibration_btn_SAVED_style {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
     background: rgb(0, 255, 255);
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 #vtol_group {

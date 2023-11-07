@@ -111,6 +111,10 @@ $(function() {
                 if (data.load_calibration_btn_state == 'LOADING') { load_calibration_btn.innerText = 'Loading Calibration'; }
                 if (data.load_calibration_btn_state == 'LOADED') { load_calibration_btn.innerText = 'Calibration Loaded'; }
 
+
+                zv_shapers_dropDown_btn.classList.add("zv_shapers_dropDown_btn_style");;
+                document.getElementById("select_calibration_div").classList.add("select_calibration_btn_group");
+
                 select_zv_cal_btn.classList.add("select_calibration_btn_".concat(data.select_zv_btn_state, "_style"));
                 select_zvd_cal_btn.classList.add("select_calibration_btn_".concat(data.select_zvd_btn_state, "_style"));
                 select_mzv_cal_btn.classList.add("select_calibration_btn_".concat(data.select_mzv_btn_state, "_style"));
@@ -201,6 +205,7 @@ $(function() {
         };
 
         self.onClickAcclrmtrConnectBtn = function() {
+            document.getElementById('accelerometerStatus').innerHTML = "Connecting Accelerometer";
             OctoPrint.simpleApiCommand("autocal", "acclrmtr_connect_btn_click");
         };
 
@@ -210,6 +215,7 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'x';
+            document.getElementById('calibrationStatus').innerHTML = "Calibrating X";
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -219,6 +225,7 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'y';
+            document.getElementById('calibrationStatus').innerHTML += "Calibrating Y";
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -228,6 +235,7 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'load';
+            document.getElementById('loadCalibrationStatus').innerHTML += "Loading Calibration"
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
