@@ -357,3 +357,8 @@
     background: #000000;
     cursor: pointer;
 }
+
+pre {
+border : 0;
+background-color: transparent;
+}
