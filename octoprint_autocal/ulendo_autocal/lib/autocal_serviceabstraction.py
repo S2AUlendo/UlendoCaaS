@@ -39,7 +39,7 @@ def read_acclrmtr_data(axis):
 
 
 
-def autocal_service_solve(axis, f1, metadata, self):
+def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID):
 
     now = datetime.now()
 
@@ -51,10 +51,10 @@ def autocal_service_solve(axis, f1, metadata, self):
                     'f1': f1,
                     'METADATA': metadata if metadata is not {} else 'N/A',
                     'ACCESS':{
-                        'CLIENT_ID': self._settings.get(["ORG"]),           
-                        'ACCESS_ID': self._settings.get(["ACCESSID"]),      
-                        'MACHINE_ID': self._settings.get(["MACHINEID"])
-                    },
+                        'CLIENT_ID': client_ID,
+                        'ACCESS_ID': access_ID,
+                        'MACHINE_ID': machine_ID
+                     },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
                         'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
@@ -81,7 +81,7 @@ def autocal_service_solve(axis, f1, metadata, self):
     else: return None
 
 
-def autocal_service_guidata(axis, f1, metadata):
+def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID):
     
     now = datetime.now()
     postdata =  {    'XAXISRESPONSE': read_acclrmtr_data('x'),
@@ -92,9 +92,9 @@ def autocal_service_guidata(axis, f1, metadata):
                     'f1': f1,
                     'METADATA': metadata if metadata is not {} else 'N/A',
                     'ACCESS':{
-                        'CLIENT_ID': self._settings.get(["ORG"]),           
-                        'ACCESS_ID': self._settings.get(["ACCESSID"]),      
-                        'MACHINE_ID': self._settings.get(["MACHINEID"])
+                        'CLIENT_ID': client_ID,
+                        'ACCESS_ID': access_ID,
+                        'MACHINE_ID': machine_ID
                     },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous

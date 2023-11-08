@@ -647,6 +647,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
         self._logger.info(f'Got line from printer: {line}')
+        if not self.initialized: return line
         if 'M494' in line:
             if 'FTMCFG' in line:
                 split_line = regex_ftmcfg_splitter.split(line.strip())[
@@ -937,7 +938,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
         if not self.sts_axis_verification_active:
             try:
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, self)
+                client_ID = self._settings.get(["ORG"])
+                access_ID = self._settings.get(["ACCESSID"])
+                machine_ID = self._settings.get(["MACHINEID"])
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID)
+
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
                 self.active_solution = None
@@ -949,7 +954,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.update_tab_layout()
         else:
             try:
-                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata)
+                client_ID = self._settings.get(["ORG"])
+                access_ID = self._settings.get(["ACCESSID"])
+                machine_ID = self._settings.get(["MACHINEID"])
+                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID)
+
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
                 self.active_verification_result = None
@@ -961,7 +970,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             finally:
                 self.sts_axis_verification_active = False
                 self.update_tab_layout()
-
         return
 
     
