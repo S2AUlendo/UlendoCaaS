@@ -289,8 +289,8 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'load';
-            document.getElementById('status').innerHTML += "<br>" + "Loading Calibration"
-            self.clearAllButtonStates()
+            document.getElementById('status').innerHTML += "<br>" + "Loading Calibration";
+            //self.clearAllButtonStates(); //Commenting it temporarily as it is not validated.
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
