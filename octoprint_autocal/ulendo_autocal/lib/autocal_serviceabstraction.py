@@ -39,7 +39,7 @@ def read_acclrmtr_data(axis):
 
 
 
-def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID):
+def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name):
 
     now = datetime.now()
 
@@ -53,7 +53,9 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID):
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
                         'ACCESS_ID': access_ID,
-                        'MACHINE_ID': machine_ID
+                        'MACHINE_ID': machine_ID,
+                        'MODELID': model_ID,
+                        'MANUFACTURER_NAME': manufacturer_name
                      },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
@@ -81,7 +83,7 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID):
     else: return None
 
 
-def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID):
+def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name):
     
     now = datetime.now()
     postdata =  {    'XAXISRESPONSE': read_acclrmtr_data('x'),
@@ -94,7 +96,9 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
                         'ACCESS_ID': access_ID,
-                        'MACHINE_ID': machine_ID
+                        'MACHINE_ID': machine_ID,
+                        'MODELID': model_ID,
+                        'MANUFACTURER_NAME': manufacturer_name
                     },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous

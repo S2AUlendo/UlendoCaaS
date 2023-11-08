@@ -941,7 +941,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 client_ID = self._settings.get(["ORG"])
                 access_ID = self._settings.get(["ACCESSID"])
                 machine_ID = self._settings.get(["MACHINEID"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID)
+                model_ID = self._settings.get(["MODELID"])
+                manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -957,7 +959,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 client_ID = self._settings.get(["ORG"])
                 access_ID = self._settings.get(["ACCESSID"])
                 machine_ID = self._settings.get(["MACHINEID"])
-                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID)
+                model_ID = self._settings.get(["MODELID"])
+                manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
+                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -991,13 +995,18 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         return dict(ORG="ULENDO", 
                     ACCESSID="OVER9000", 
                     MACHINEID="PRINTER001", 
-                    url="https://en.wikipedia.org/wiki/Hello_world")
+                    url="https://en.wikipedia.org/wiki/Hello_world",
+                    MODELID="MODEL1",
+                    MANUFACTURER_NAME="MANUFACTURER1")
 
     def get_template_vars(self):
         return dict(ORG=self._settings.get(["ORG"]), 
                     ACCESSID=self._settings.get(["ACCESSID"]), 
                     MACHINEID=self._settings.get(["MACHINEID"]), 
-                    url=self._settings.get(["url"]))
+                    url=self._settings.get(["url"]),
+                    MODELID=self._settings.get(["MODELID"]),
+                    MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"])
+)
 
     def get_template_configs(self):
         return [            

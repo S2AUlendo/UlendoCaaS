@@ -43,6 +43,10 @@ $(function() {
             if (save_calibration_btn.classList.contains("save_calibration_btn_NOTSAVED_style")){ save_calibration_btn.classList.remove("save_calibration_btn_NOTSAVED_style"); }
             if (save_calibration_btn.classList.contains("save_calibration_btn_SAVED_style")){ save_calibration_btn.classList.remove("save_calibration_btn_SAVED_style"); }
             save_calibration_btn.classList.add("save_calibration_btn_NOTSAVED_style"); // default state is not saved state
+
+            // Reset the drop down button
+            if (document.getElementById("select_calibration_div").classList.contains("show")){document.getElementById("select_calibration_div").classList.remove("show");}
+            document.getElementById("select_calibration_div").classList.add("zv_shapers_dropDown_btn_style");
        }
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
