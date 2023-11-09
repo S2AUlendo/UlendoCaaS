@@ -32,9 +32,9 @@
 </script>
 
 <div id= 'zv_shapers_div_block'>
-  <button id='zv_shapers_dropDown_btn' onclick ="onClickSelectZvDropDownBtn()">ZV Shapers</button>
+  <button id='zv_shapers_dropDown_btn' onclick ="onClickSelectZvDropDownBtn()">Input Shapers</button>
   <div id =select_calibration_div class="select_calibration_btn_group">
-   <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn">{{ _('ZV-IS') }}</button>
+   <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn" style="display:none;">{{ _('ZV-IS') }}</button>
    <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="is_select_btn">{{ _('ZVD-IS') }}</button>
    <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="is_select_btn">{{ _('MZV-IS') }}</button>
    <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="is_select_btn">{{ _('EI-IS') }}</button>

@@ -335,9 +335,13 @@ $(function() {
             if (confirm("Are you sure you want to start over?") == true) {
                 document.getElementById('status').innerHTML = 'Reset Done successfully, Start again!!';
                 OctoPrint.simpleApiCommand("autocal", "start_over_btn_click");
+                // Delete all the graphs created
                 Plotly.purge('acclrmtr_live_data_graph');
                 Plotly.purge('calibration_results_graph');
                 Plotly.purge('verification_results_graph');
+                // Scroll to top of the document
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
             }
             else {
                 document.getElementById('status').innerHTML += '<br>' + 'Start Over Cancelled';
