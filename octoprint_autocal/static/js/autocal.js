@@ -116,7 +116,7 @@ $(function() {
                    acclrmtr_connect_btn.innerText = 'Accelerometer Connected';
                    // if pre tag already contains the connection status, ignore.
                    if(!document.getElementById('status').textContent.includes('Accelerometer Connected')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Accelerometer Connected';
+                       document.getElementById('status').innerHTML += '<br>' + 'Accelerometer Connected successfully';
                    }
                 }
 
@@ -126,7 +126,9 @@ $(function() {
                     calibrate_x_axis_btn.innerText = 'X Calibration Ready';
                    // if pre tag already contains the calibration status, ignore.
                    if(!document.getElementById('status').textContent.includes('X Calibration Ready')){
-                       document.getElementById('status').innerHTML += '<br>' + 'X Calibration Ready';
+                       document.getElementById('status').innerHTML += '<br>' + 'X Calibration Ready!';
+                       document.getElementById('status').innerHTML += '<br>' + 'Please click Input Shapers to view the list of available shaping techniques.'
+                                                                    + '<br>' + 'Select any one of the input shapers.'
                    }
 
                 }
@@ -134,7 +136,7 @@ $(function() {
                    calibrate_x_axis_btn.innerText = 'X Calibration Applied';
                    // if pre tag already contains the calibration status, ignore.
                    if(!document.getElementById('status').textContent.includes('X Calibration Applied')){
-                       document.getElementById('status').innerHTML += '<br>' + 'X Calibration Applied';
+                       document.getElementById('status').innerHTML += '<br>' + 'X Calibration Applied successfully';
                    }
 
                 }
@@ -145,14 +147,16 @@ $(function() {
                    calibrate_y_axis_btn.innerText = 'Y Calibration Ready';
                    // if pre tag already contains the calibration status, ignore.
                    if(!document.getElementById('status').textContent.includes('Y Calibration Ready')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Y Calibration Ready';
+                       document.getElementById('status').innerHTML += '<br>' + 'Y Calibration Ready!';
+                       document.getElementById('status').innerHTML += '<br>' + 'Please click Input Shapers to view the list of available shaping techniques.'
+                                                                    + '<br>' + 'Select any one of the input shapers.'
                    }
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     calibrate_y_axis_btn.innerText = 'Y Calibration Applied';
                    // if pre tag already contains the calibration status, ignore.
                    if(!document.getElementById('status').textContent.includes('Y Calibration Applied')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Y Calibration Applied';
+                       document.getElementById('status').innerHTML += '<br>' + 'Y Calibration Applied successfully';
                    }
                 }
 
@@ -165,6 +169,7 @@ $(function() {
                    // if pre tag already contains the load status, ignore.
                    if(!document.getElementById('status').textContent.includes('Calibration Loaded')){
                        document.getElementById('status').innerHTML += '<br>' + 'Calibration Loaded';
+                       document.getElementById('status').innerHTML += '<br>' + 'Verification results are plotted successfully.';
                    }
 
                 }
@@ -264,7 +269,7 @@ $(function() {
         };
 
         self.onClickAcclrmtrConnectBtn = function() {
-            document.getElementById('status').innerHTML = "Connecting Accelerometer";
+            document.getElementById('status').innerHTML = "Connecting Accelerometer...";
             OctoPrint.simpleApiCommand("autocal", "acclrmtr_connect_btn_click");
         };
 
@@ -274,7 +279,7 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'x';
-            document.getElementById('status').innerHTML += "<br>" + "Calibrating X";
+            document.getElementById('status').innerHTML += "<br>" + "Calibrating X...";
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -284,7 +289,7 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'y';
-            document.getElementById('status').innerHTML += "<br>" + "Calibrating Y";
+            document.getElementById('status').innerHTML += "<br>" + "Calibrating Y...";
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -294,7 +299,8 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'load';
-            document.getElementById('status').innerHTML += "<br>" + "Loading Calibration";
+            document.getElementById('status').innerHTML += "<br>" + "Loading Calibration...";
+            document.getElementById('status').innerHTML += '<br>' + 'We are going to do the verification steps';
             //self.clearAllButtonStates(); //Commenting it temporarily as it is not validated.
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
@@ -327,7 +333,7 @@ $(function() {
         document.getElementById("vtolslider").oninput = function() { OctoPrint.simpleApiCommand("autocal", "vtol_slider_update", {val: vtolslider.value}); };
 
         self.onClickSaveCalibrationBtn = function() {
-            document.getElementById('status').innerHTML += '<br>' + 'Saving Calibration';
+            document.getElementById('status').innerHTML += '<br>' + 'Saving Calibration...';
             OctoPrint.simpleApiCommand("autocal", "save_calibration_btn_click");
         }
 
@@ -344,7 +350,7 @@ $(function() {
                 document.documentElement.scrollTop = 0;
             }
             else {
-                document.getElementById('status').innerHTML += '<br>' + 'Start Over Cancelled';
+                document.getElementById('status').innerHTML += '<br>' + 'Start Over Cancelled!!';
             }
         }
 

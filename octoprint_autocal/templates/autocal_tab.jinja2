@@ -28,7 +28,7 @@
          document.getElementById("calibrate_y_axis_btn").innerText == 'Y Calibration Ready' )){
       document.getElementById("select_calibration_div").classList.toggle("show");
     }
-    }
+  }
 </script>
 
 <div id= 'zv_shapers_div_block'>
@@ -57,10 +57,10 @@
 <button id='save_calibration_btn' data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
 </div>
 
-<button id='start_over_btn' data-bind="click: onClickStartOverBtn">Start Over</button>
-
 <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
 <div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+<button id='start_over_btn' data-bind="click: onClickStartOverBtn">Start Over</button>
 
 <div class="card">
   <div class="card-body">
