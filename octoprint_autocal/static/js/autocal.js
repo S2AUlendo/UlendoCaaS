@@ -183,6 +183,7 @@ $(function() {
                 load_calibration_btn.classList.add("load_calibration_btn_".concat(data.load_calibration_btn_state, "_style"));
                 
                 save_calibration_btn.classList.add("save_calibration_btn_".concat(data.save_calibration_btn_state, "_style"));
+                start_over_btn.classList.add("start_over_btn_style");
 
                 calibrate_x_axis_btn.disabled = data.calibrate_x_axis_btn_disabled;
                 calibrate_y_axis_btn.disabled = data.calibrate_y_axis_btn_disabled;
@@ -329,6 +330,20 @@ $(function() {
             document.getElementById('status').innerHTML += '<br>' + 'Saving Calibration';
             OctoPrint.simpleApiCommand("autocal", "save_calibration_btn_click");
         }
+
+        self.onClickStartOverBtn = function() {
+            if (confirm("Are you sure you want to start over?") == true) {
+                document.getElementById('status').innerHTML = 'Reset Done successfully, Start again!!';
+                OctoPrint.simpleApiCommand("autocal", "start_over_btn_click");
+                Plotly.purge('acclrmtr_live_data_graph');
+                Plotly.purge('calibration_results_graph');
+                Plotly.purge('verification_results_graph');
+            }
+            else {
+                document.getElementById('status').innerHTML += '<br>' + 'Start Over Cancelled';
+            }
+        }
+
 
         // This will get called before the HelloWorldViewModel gets bound to the DOM, but after its
         // dependencies have already been initialized. It is especially guaranteed that this method

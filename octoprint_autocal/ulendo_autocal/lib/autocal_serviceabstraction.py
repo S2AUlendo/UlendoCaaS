@@ -53,9 +53,7 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
                         'ACCESS_ID': access_ID,
-                        'MACHINE_ID': machine_ID,
-                        'MODELID': model_ID,
-                        'MANUFACTURER_NAME': manufacturer_name
+                        'MACHINE_ID': machine_ID
                      },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
@@ -64,7 +62,9 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                     },
                     "PRINTER": {
                         "PRINTER_MAKE":"LulzBot TAZ Pro", 
-                        "PRINTER_MODEL": "M175v2"
+                        "PRINTER_MODEL": "M175v2",
+                        'MODELID': model_ID,
+                        'MANUFACTURER_NAME': manufacturer_name
                     },                    
                 }
     
@@ -96,9 +96,7 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
                         'ACCESS_ID': access_ID,
-                        'MACHINE_ID': machine_ID,
-                        'MODELID': model_ID,
-                        'MANUFACTURER_NAME': manufacturer_name
+                        'MACHINE_ID': machine_ID
                     },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
@@ -107,7 +105,9 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     },
                     "PRINTER": {
                         "PRINTER_MAKE":"LulzBot TAZ Pro", 
-                        "PRINTER_MODEL": "M175v2"
+                        "PRINTER_MODEL": "M175v2",
+                        'MODELID': model_ID,
+                        'MANUFACTURER_NAME': manufacturer_name
                     }, 
                 }
     

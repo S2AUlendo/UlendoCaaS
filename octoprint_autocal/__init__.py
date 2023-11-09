@@ -295,7 +295,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.tab_layout.calibrate_x_axis_btn.state = CalibrateAxisButtonStates.CALIBRATING
         else:
             self.tab_layout.calibrate_x_axis_btn.state = CalibrateAxisButtonStates.NOTCALIBRATED
-        
+
         if self.y_calibration_sent_to_printer:
             self.tab_layout.calibrate_y_axis_btn.state = CalibrateAxisButtonStates.CALIBRATIONAPPLIED
         elif not self.sts_axis_calibration_active and self.active_solution_axis == 'y':
@@ -618,6 +618,29 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.send_client_calibration_result(self.get_selected_calibration_type())
             self.update_tab_layout()
             
+    def on_start_over_btn_click(self):
+        #Reset all the states in the server
+        self.sts_self_test_active = False
+        self.sts_axis_calibration_active = False
+        self.sts_axis_verification_active = False
+        self.sts_acclrmtr_connected = False
+        self.tab_layout.calibrate_x_axis_btn.disabled = True
+        self.tab_layout.calibrate_y_axis_btn.disabled = True
+        self.tab_layout.load_calibration_btn.disabled = True
+        self.tab_layout.save_calibration_btn.disabled = True
+        self.tab_layout.acclrmtr_connect_btn.state = AcclrmtrConnectButtonStates.NOTCONNECTED
+        self.tab_layout.calibrate_x_axis_btn.state = CalibrateAxisButtonStates.NOTCALIBRATED
+        self.tab_layout.calibrate_y_axis_btn.state = CalibrateAxisButtonStates.NOTCALIBRATED
+        self.tab_layout.load_calibration_btn.state = LoadCalibrationButtonStates.NOTLOADED
+        self.tab_layout.save_calibration_btn.state = SaveCalibrationButtonStates.NOTSAVED
+        self.sts_axis_calibration_axis = None
+        self.sts_calibration_saved = False
+        self.active_solution = None
+        self.active_solution_axis = None
+        self.active_verification_result = None
+        self.x_calibration_sent_to_printer = False
+        self.y_calibration_sent_to_printer = False
+        self.send_client_layout_status()
 
     ##~~ SimpleApiPlugin mixin
     def get_api_commands(self):
@@ -629,7 +652,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             load_calibration_btn_click=[],
             save_calibration_btn_click=[],
             vtol_slider_update=['val'],
-            get_connection_status=[]
+            get_connection_status=[],
+            start_over_btn_click=[]
         )
 
     
@@ -642,7 +666,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'save_calibration_btn_click': self.on_save_calibration_btn_click()
         elif command == 'vtol_slider_update': self.on_vtol_slider_update(data['val'])
         elif command == 'get_connection_status': self.report_connection_status()
-        
+        elif command == 'start_over_btn_click': self.on_start_over_btn_click()
 
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
