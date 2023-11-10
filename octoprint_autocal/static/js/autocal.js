@@ -101,6 +101,9 @@ $(function() {
                 }
             }
 
+            if (data.type == "logger_info") {
+                document.getElementById('status').innerHTML += '<br>' + data.message;
+            }
 
             if (data.type == "layout_status_1") {
                 self.clearAllButtonStates();

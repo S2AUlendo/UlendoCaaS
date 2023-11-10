@@ -605,6 +605,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_calibration_saved = True
 
         self.update_tab_layout()
+        self.send_logger_info('Saved Calibration successfully')
 
 
     def on_vtol_slider_update(self, val):
@@ -641,6 +642,13 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.x_calibration_sent_to_printer = False
         self.y_calibration_sent_to_printer = False
         self.send_client_layout_status()
+
+    def send_logger_info(self, text):
+        data = dict(
+            type = 'logger_info',
+            message = text
+        )
+        self._plugin_manager.send_plugin_message(self._identifier, data)
 
     ##~~ SimpleApiPlugin mixin
     def get_api_commands(self):
