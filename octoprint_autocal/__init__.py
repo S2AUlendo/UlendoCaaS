@@ -464,7 +464,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_acclrmtr_active = True
         self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
         self.send_client_acclrmtr_data_TMR.start()
-
+        text = 'Accelerometer Connected successfully' + '<br>' + 'Select X or Y axis to start the calibration'
+        self.send_logger_info(text)
         self.acclrmtr_self_test_monitor_for_end()
 
 
@@ -483,6 +484,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             status = status
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
+        self.send_logger_info('Printer connection verified!!')
 
 
     def on_calibrate_axis_btn_click(self, axis):
@@ -510,6 +512,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.send_client_clear_calibration_result()
             self.send_client_clear_verification_result()
 
+            self.send_logger_info('Calibration started on axis:' + axis)
             self._logger.info(f'calibrate_axis started on axis: {axis}')
             self.fsm_update_TMR = ResettableTimer(FSM_UPDATE_RATE_SEC, self.fsm_update_and_manage_tmr)
             self.fsm_update_TMR.start()
@@ -584,6 +587,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             printer_configuration_command += ' ' + vtol_code + f'{self.calibration_vtol:0.2f}'
 
         self._logger.info(f'Configuring printer with: {printer_configuration_command}')
+        self.send_logger_info('Configuring printer with:' + printer_configuration_command)
         self.send_printer_command(printer_configuration_command)
 
         self.sts_calibration_saved = False
@@ -604,8 +608,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
         self.sts_calibration_saved = True
 
-        self.update_tab_layout()
         self.send_logger_info('Saved Calibration successfully')
+        self.update_tab_layout()
 
 
     def on_vtol_slider_update(self, val):
@@ -701,6 +705,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 if self.fsm.state == AxisRespnsFSMStates.SWEEP:
                     self.fsm.sweep_done_recvd = True
                     self._logger.info(f'Got sweep done message')
+                    self.send_logger_info('Sweep done successfully!!')
+
 
         elif self.fsm.state == AxisRespnsFSMStates.CENTER and (self.fsm.axis.upper() + ':') in line:
             self.fsm.axis_last_reported_pos = parse_position_line(line)[self.fsm.axis]
@@ -986,6 +992,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             finally:
                 self.sts_axis_calibration_active = False
                 self.update_tab_layout()
+            # end of the calibration
+            self.send_logger_info('Please click Input Shapers to view the list of available shaping techniques.' + '<br>' + 'Select any one of the input shapers.')
+
         else:
             try:
                 client_ID = self._settings.get(["ORG"])
@@ -1000,8 +1009,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.active_verification_result = None
             else:
                 self.active_verification_result = g_gui
-                if self.active_solution_axis == 'x': self.x_calibration_sent_to_printer = True
-                elif self.active_solution_axis == 'y': self.y_calibration_sent_to_printer = True
+                if self.active_solution_axis == 'x':
+                 self.x_calibration_sent_to_printer = True
+                 self.send_logger_info('X Calibration Applied successfully')
+                elif self.active_solution_axis == 'y':
+                 self.y_calibration_sent_to_printer = True
+                 self.send_logger_info('Y Calibration Applied successfully')
                 self.send_client_verification_result()
             finally:
                 self.sts_axis_verification_active = False

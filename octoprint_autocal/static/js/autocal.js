@@ -60,6 +60,9 @@ $(function() {
                     yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false }
                 };
                 Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout);
+                // Display the calibrate button after accelerometer connection.
+                document.getElementById('calibrate_x_axis_btn').style.display = "block";
+                document.getElementById('calibrate_y_axis_btn').style.display = "block";
                 return;
             }
 
@@ -73,6 +76,8 @@ $(function() {
                     yaxis: { title: 'Magnitude', showline: false }
                     };
                 Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout);
+                // Display the load calibration button only after input shpaers are selected.
+                document.getElementById('load_calibration_btn').style.display = "block";
             }
 
             if (data.type == "verification_result") {
@@ -85,6 +90,9 @@ $(function() {
                     yaxis: { title: 'Magnitude', showline: false }
                     };
                 Plotly.newPlot('verification_results_graph', [series1, series2, series3, series4], layout);
+                // Display the save calibration button only after verification steps are processed.
+                document.getElementById('save_calibration_btn').style.display = "block";
+                document.getElementById('status').innerHTML += '<br>' + 'Calibration Loaded!!' + '<br>' + 'Verification results are plotted successfully.'
             }
 
 
@@ -117,50 +125,24 @@ $(function() {
                 else if (data.acclrmtr_connect_btn_state == 'CONNECTING') { acclrmtr_connect_btn.innerText = 'Connecting'; }
                 else if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
                    acclrmtr_connect_btn.innerText = 'Accelerometer Connected';
-                   // if pre tag already contains the connection status, ignore.
-                   if(!document.getElementById('status').textContent.includes('Accelerometer Connected')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Accelerometer Connected successfully';
-                   }
                 }
 
                 if (data.calibrate_x_axis_btn_state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') { calibrate_x_axis_btn.innerText = 'Calibrating X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     calibrate_x_axis_btn.innerText = 'X Calibration Ready';
-                   // if pre tag already contains the calibration status, ignore.
-                   if(!document.getElementById('status').textContent.includes('X Calibration Ready')){
-                       document.getElementById('status').innerHTML += '<br>' + 'X Calibration Ready!';
-                       document.getElementById('status').innerHTML += '<br>' + 'Please click Input Shapers to view the list of available shaping techniques.'
-                                                                    + '<br>' + 'Select any one of the input shapers.'
-                   }
-
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {
                    calibrate_x_axis_btn.innerText = 'X Calibration Applied';
-                   // if pre tag already contains the calibration status, ignore.
-                   if(!document.getElementById('status').textContent.includes('X Calibration Applied')){
-                       document.getElementById('status').innerHTML += '<br>' + 'X Calibration Applied successfully';
-                   }
-
                 }
 
                 if (data.calibrate_y_axis_btn_state == 'NOTCALIBRATED') { calibrate_y_axis_btn.innerText = 'Calibrate Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATING') { calibrate_y_axis_btn.innerText = 'Calibrating Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONREADY') {
                    calibrate_y_axis_btn.innerText = 'Y Calibration Ready';
-                   // if pre tag already contains the calibration status, ignore.
-                   if(!document.getElementById('status').textContent.includes('Y Calibration Ready')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Y Calibration Ready!';
-                       document.getElementById('status').innerHTML += '<br>' + 'Please click Input Shapers to view the list of available shaping techniques.'
-                                                                    + '<br>' + 'Select any one of the input shapers.'
-                   }
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     calibrate_y_axis_btn.innerText = 'Y Calibration Applied';
-                   // if pre tag already contains the calibration status, ignore.
-                   if(!document.getElementById('status').textContent.includes('Y Calibration Applied')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Y Calibration Applied successfully';
-                   }
                 }
 
                 if (data.load_calibration_btn_state == 'NOTLOADED') { load_calibration_btn.innerText = 'Load Calibration'; }
@@ -169,12 +151,6 @@ $(function() {
                 }
                 if (data.load_calibration_btn_state == 'LOADED') {
                   load_calibration_btn.innerText = 'Calibration Loaded';
-                   // if pre tag already contains the load status, ignore.
-                   if(!document.getElementById('status').textContent.includes('Calibration Loaded')){
-                       document.getElementById('status').innerHTML += '<br>' + 'Calibration Loaded';
-                       document.getElementById('status').innerHTML += '<br>' + 'Verification results are plotted successfully.';
-                   }
-
                 }
 
 
@@ -245,7 +221,11 @@ $(function() {
                                     addClass: "btn-primary",
                                     click: function () {
                                         if (self.last_axis_click == 'load') { OctoPrint.simpleApiCommand("autocal", "load_calibration_btn_click"); }
-                                        else { OctoPrint.simpleApiCommand("autocal", "calibrate_axis_btn_click", {axis: self.last_axis_click}); }
+                                        else {
+                                           OctoPrint.simpleApiCommand("autocal", "calibrate_axis_btn_click", {axis: self.last_axis_click});
+                                           // Display the input shpaers button only after calibration is ready.
+                                           document.getElementById('zv_shapers_dropDown_btn').style.display = "block";
+                                        }
                                         motion_prompt.remove();
                                         motion_prompt = undefined;
                                     }
@@ -304,7 +284,6 @@ $(function() {
             self.last_axis_click = 'load';
             document.getElementById('status').innerHTML += "<br>" + "Loading Calibration...";
             document.getElementById('status').innerHTML += '<br>' + 'We are going to do the verification steps';
-            //self.clearAllButtonStates(); //Commenting it temporarily as it is not validated.
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -344,6 +323,15 @@ $(function() {
             if (confirm("Are you sure you want to start over?") == true) {
                 document.getElementById('status').innerHTML = 'Reset Done successfully, Start again!!';
                 OctoPrint.simpleApiCommand("autocal", "start_over_btn_click");
+
+                self.clearAllButtonStates(); // reset the styles in the web/front end side.
+                // Hide all the buttons
+                document.getElementById('calibrate_x_axis_btn').style.display = "none";
+                document.getElementById('calibrate_y_axis_btn').style.display = "none";
+                document.getElementById('zv_shapers_dropDown_btn').style.display = "none";
+                document.getElementById('load_calibration_btn').style.display = "none";
+                document.getElementById('save_calibration_btn').style.display = "none";
+
                 // Delete all the graphs created
                 Plotly.purge('acclrmtr_live_data_graph');
                 Plotly.purge('calibration_results_graph');
