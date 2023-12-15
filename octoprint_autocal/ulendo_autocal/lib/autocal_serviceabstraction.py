@@ -24,6 +24,7 @@ def get_source_ip():
         ip_address = str(socket.gethostbyname(hostname))
     except:
         ip_address = "0.0.0.0"
+        
     
     return ip_address
     
@@ -39,7 +40,7 @@ def read_acclrmtr_data(axis):
 
 
 
-def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name):
+def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
 
     now = datetime.now()
 
@@ -61,16 +62,15 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                         'RequestSource': get_source_ip()
                     },
                     "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": TMP_PARAM_SWEEP_f0,
-                        "TMP_PARAM_SWEEP_f1": TMP_PARAM_SWEEP_f1,
-                        "TMP_PARAM_SWEEP_A": TMP_PARAM_SWEEP_A,
-                        "FSM_SWEEP_START_DLY": FSM_SWEEP_START_DLY
+                        "TMP_PARAM_SWEEP_f0": str(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
+                        "TMP_PARAM_SWEEP_f1": str(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
+                        "TMP_PARAM_SWEEP_A": str(self._settings.get(["TMP_PARAM_SWEEP_A"])) 
                     }, 
                     "PRINTER": {
-                        "PRINTER_MAKE":"LulzBot TAZ Pro", 
-                        "PRINTER_MODEL": "M175v2",
-                        'MODELID': model_ID,
-                        'MANUFACTURER_NAME': manufacturer_name
+                        "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
+                        "PRINTER_MODEL": model_ID,
+                        'MODELID': "V0.01",
+                        'MANUFACTURER_NAME': ""
                     },                    
                 }
     
@@ -78,6 +78,8 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
     
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
     response_body = json.loads(postreq.text)
+    with open('json_response.txt', 'w') as fout: json.dump(response_body, fout, sort_keys=True, indent=4, ensure_ascii=False)
+
 
     if 'exception' in response_body: raise_exception_from_response(response_body['exception'])
     elif 'solution' in response_body:
@@ -89,7 +91,7 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
     else: return None
 
 
-def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name):
+def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
     
     now = datetime.now()
     postdata =  {    'XAXISRESPONSE': read_acclrmtr_data('x'),
@@ -110,16 +112,15 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                         'RequestSource': get_source_ip()
                     },
                     "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": TMP_PARAM_SWEEP_f0,
-                        "TMP_PARAM_SWEEP_f1": TMP_PARAM_SWEEP_f1,
-                        "TMP_PARAM_SWEEP_A": TMP_PARAM_SWEEP_A,
-                        "FSM_SWEEP_START_DLY": FSM_SWEEP_START_DLY
+                        "TMP_PARAM_SWEEP_f0": str(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
+                        "TMP_PARAM_SWEEP_f1": str(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
+                        "TMP_PARAM_SWEEP_A": str(self._settings.get(["TMP_PARAM_SWEEP_A"]))   
                     },
                     "PRINTER": {
-                        "PRINTER_MAKE":"LulzBot TAZ Pro", 
-                        "PRINTER_MODEL": "M175v2",
-                        'MODELID': model_ID,
-                        'MANUFACTURER_NAME': manufacturer_name
+                        "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
+                        "PRINTER_MODEL": model_ID,
+                        'MODELID': "V001",
+                        'MANUFACTURER_NAME':""
                     }, 
                 }
     

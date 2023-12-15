@@ -21,7 +21,7 @@ MAX_RETRIES_FOR_MISSED_SAMPLES = 2
 GET_AXIS_INFO_TIMEOUT = 10.
 CENTER_AXIS_TIMEOUT = 12.
 
-SERVICE_URL = 'https://r310qxvz9k.execute-api.us-east-2.amazonaws.com/default/caassolve-uvc'
+SERVICE_URL = 'https://hhl7skagae.execute-api.us-east-2.amazonaws.com/live/solve'
 SERVICE_TIMEOUT_THD = 30
 
 

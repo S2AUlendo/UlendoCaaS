@@ -981,7 +981,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 machine_ID = self._settings.get(["MACHINEID"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -1002,7 +1002,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 machine_ID = self._settings.get(["MACHINEID"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name)
+                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -1044,8 +1044,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MODELID="MODEL1",
                     TMP_PARAM_SWEEP_f0=CFG_TMP_PARAM_SWEEP_f0,
                     TMP_PARAM_SWEEP_f1=CFG_TMP_PARAM_SWEEP_f1,
-                    TMP_PARAM_SWEEP_A=CFG_TMP_PARAM_SWEEP_A,
-                    MANUFACTURER_NAME=CFG_TMP_PARAM_SWEEP_A)
+                    TMP_PARAM_SWEEP_A=CFG_TMP_PARAM_SWEEP_A,                    
+                    MANUFACTURER_NAME="ULENDO")
 
     def get_template_vars(self):
         return dict(ORG=self._settings.get(["ORG"]), 
