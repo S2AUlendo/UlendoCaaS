@@ -1040,9 +1040,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         return dict(ORG="ULENDO", 
                     ACCESSID="OVER9000", 
                     MACHINEID="PRINTER001", 
-                    url="https://en.wikipedia.org/wiki/Hello_world",
+                    url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="MODEL1",
-                    MANUFACTURER_NAME="MANUFACTURER1")
+                    TMP_PARAM_SWEEP_f0=CFG_TMP_PARAM_SWEEP_f0,
+                    TMP_PARAM_SWEEP_f1=CFG_TMP_PARAM_SWEEP_f1,
+                    TMP_PARAM_SWEEP_A=CFG_TMP_PARAM_SWEEP_A,
+                    MANUFACTURER_NAME=CFG_MANUFACTURER_NAME)
 
     def get_template_vars(self):
         return dict(ORG=self._settings.get(["ORG"]), 
@@ -1050,7 +1053,10 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MACHINEID=self._settings.get(["MACHINEID"]), 
                     url=self._settings.get(["url"]),
                     MODELID=self._settings.get(["MODELID"]),
-                    MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"])
+                    MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"]),
+                    TMP_PARAM_SWEEP_f0=self._settings.get(["TMP_PARAM_SWEEP_f0"]),
+                    TMP_PARAM_SWEEP_f1=self._settings.get(["TMP_PARAM_SWEEP_f1"]),
+                    TMP_PARAM_SWEEP_A=self._settings.get(["TMP_PARAM_SWEEP_A"])
 )
 
     def get_template_configs(self):

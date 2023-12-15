@@ -60,6 +60,12 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                         'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
                         'RequestSource': get_source_ip()
                     },
+                    "PARAMETERS": {
+                        "TMP_PARAM_SWEEP_f0": TMP_PARAM_SWEEP_f0,
+                        "TMP_PARAM_SWEEP_f1": TMP_PARAM_SWEEP_f1,
+                        "TMP_PARAM_SWEEP_A": TMP_PARAM_SWEEP_A,
+                        "FSM_SWEEP_START_DLY": FSM_SWEEP_START_DLY
+                    }, 
                     "PRINTER": {
                         "PRINTER_MAKE":"LulzBot TAZ Pro", 
                         "PRINTER_MODEL": "M175v2",
@@ -102,6 +108,12 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
                         'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
                         'RequestSource': get_source_ip()
+                    },
+                    "PARAMETERS": {
+                        "TMP_PARAM_SWEEP_f0": TMP_PARAM_SWEEP_f0,
+                        "TMP_PARAM_SWEEP_f1": TMP_PARAM_SWEEP_f1,
+                        "TMP_PARAM_SWEEP_A": TMP_PARAM_SWEEP_A,
+                        "FSM_SWEEP_START_DLY": FSM_SWEEP_START_DLY
                     },
                     "PRINTER": {
                         "PRINTER_MAKE":"LulzBot TAZ Pro", 

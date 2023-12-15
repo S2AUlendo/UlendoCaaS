@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-body">
-    <h5 class="card-title">Ulendo Calibration as a Service</h5>
+    <h3 class="card-title">Ulendo Calibration as a Service</h3>
     <p class="card-text">Welcome to Ulendo's Calibration as a Service Plugin</p>
 	<p class="card-text">This plugin was designed to help users to automatically tune the vibration compensation algorithms 
 	contributed to the Marlin Project. This plugin can help to optimize the performance of your printer and help you to achieve higher lower print 
@@ -39,6 +39,27 @@
     <label class="control-label">{{ _('MANUFACTURER_NAME') }}</label>
     <div class="controls">
       <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.MANUFACTURER_NAME">
+    </div>
+  </div>
+  <p class="card-text">Changes these settings may result in unexpected behaviour from your machine. 
+  These are advanced settings, only make modifications to these if you are understand the 
+  potential implications.</p>
+  <div class="control-group">
+    <label class="control-label">{{ _('TMP_PARAM_SWEEP_f0') }}</label>
+    <div class="controls">
+      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_f0">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">{{ _('TMP_PARAM_SWEEP_f1') }}</label>
+    <div class="controls">
+      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_f1">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">{{ _('TMP_PARAM_SWEEP_A') }}</label>
+    <div class="controls">
+      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_A">
     </div>
   </div>
 </form>
