@@ -1045,7 +1045,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     TMP_PARAM_SWEEP_f0=CFG_TMP_PARAM_SWEEP_f0,
                     TMP_PARAM_SWEEP_f1=CFG_TMP_PARAM_SWEEP_f1,
                     TMP_PARAM_SWEEP_A=CFG_TMP_PARAM_SWEEP_A,
-                    MANUFACTURER_NAME=CFG_MANUFACTURER_NAME)
+                    MANUFACTURER_NAME=CFG_TMP_PARAM_SWEEP_A)
 
     def get_template_vars(self):
         return dict(ORG=self._settings.get(["ORG"]), 
