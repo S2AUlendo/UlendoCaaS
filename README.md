@@ -1,25 +1,8 @@
-# AutoCalibration
+# Calibration as a Service
 
 Ulendo's Calibration as a Service
 
 # Instructions to Autocalibrate in Octoprint
-
-
-## Setup (Windows)
-
-	cd c:\
-	mkdir OctoPrint
-	cd OctoPrint
-	py -m venv venv
-	venv\Scripts\activate.bat
-	
-	pip install --upgrade pip wheel
-	pip install octoprint
-	
-	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
-	cd OctoPrint-Autocal
-	octoprint dev plugin:install
-
 
 ## Setup (RPi)
 
@@ -51,14 +34,27 @@ Ulendo's Calibration as a Service
 	../venv/bin/octoprint dev plugin:install
 	
 	
-	
-	
 	Additional installation to use scipy package locally:
 		sudo apt-get install gcc g++ gfortran python3-dev libopenblas-dev liblapack-dev
 	Additional installation to use control package locally:
 	 	sudo apt-get install libopenjp2-7-dev
 		pip install control
 
+
+## Setup (Windows)
+
+	cd c:\
+	mkdir OctoPrint
+	cd OctoPrint
+	py -m venv venv
+	venv\Scripts\activate.bat
+	
+	pip install --upgrade pip wheel
+	pip install octoprint
+	
+	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
+	cd OctoPrint-Autocal
+	octoprint dev plugin:install
 
 
 ## Usage (RPi):
@@ -78,5 +74,4 @@ Ulendo's Calibration as a Service
 		octoprint serve
 
 
-## TODO:
-	Cleanup this readme and follow the plugin's template.
+
