@@ -1,2 +1,4 @@
 
 *.pyc
+octoprint_autocal\__pycache__
+octoprint_autocal\ulendo_autocal\data\*
