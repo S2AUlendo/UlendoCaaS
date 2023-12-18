@@ -3,7 +3,7 @@ layout: plugin
 
 id: autocal
 title: Ulendo Calibration as a Service
-description: Automatically tune compensation parameters for Ulendo's Vibration Compensation Modules
+description: Double the performance of your legacy printer with Ulendo CaaS. CaaS automatically tunes vibration compensation parameters for firmware using FT-MOTION module, allowing printers to reduce print times by 50% while maintaining high levels of accuracy.
 authors: info@ulendo.io
 license: ""
 
@@ -12,10 +12,10 @@ date: 2023-12-15
 
 homepage: https://github.com/S2AUlendo/UlendoCaaS
 source: https://github.com/S2AUlendo/UlendoCaaS
-archive: archive link to install your plugin via pip, e.g. from github: https://github.com/username/repository/archive/master.zip
+archive: archive link to install your plugin via pip, e.g. from github: https://github.com/S2AUlendo/UlendoCaaS/archive/master.zip
 
 # Set this if your plugin heavily interacts with any kind of cloud services.
-privacypolicy: https://live.d11dolnrbc1eee.amplifyapp.com//privacy
+privacypolicy: https://live.d11dolnrbc1eee.amplifyapp.com/privacy
 
 # Set this to true if your plugin uses the dependency_links setup parameter to include
 # library versions not yet published on pypi. SHOULD ONLY BE USED IF THERE IS NO OTHER OPTION!
@@ -132,19 +132,19 @@ Additionally, this software requires an acceleromter to be connected. As of the 
 
 ## FAQ
 1. Does this software require changes to the machine components?
-    - No, aside from attaching an acceleromter, there are no other machine requirements
+    ⋅⋅*No, aside from attaching an acceleromter, there are no other machine requirements
 
 2. Does this only work on COREXY machines?
- - No, This software has been tested on traditional cartesion, COREXY, ultimaker-style cartesian printers, and bed sligner printers, all printer types were able to see some relatively improvement in their performace when evaulated against the uncompensated prints. 
+    ⋅⋅* No, This software has been tested on traditional cartesion, COREXY, ultimaker-style cartesian printers, and bed sligner printers, all printer types were able to see some relatively improvement in their performace when evaulated against the uncompensated prints. 
 
 3. Will my failure rates increase, if I increase the speed?
-    - When compared to the uncompensated, default behaviour most printers were able to achieve 2X without any decrease in reliability. However, there are other factors besides vibration that may affect printer performance.
+    ⋅⋅* When compared to the uncompensated, default behaviour most printers were able to achieve 2X without any decrease in reliability. However, there are other factors besides vibration that may affect printer performance.
 
 4. Can I run this on my desktop computer without a Raspberry Pi
     - No, a Raspberry Pi is a required to connect and collect data from the accleromter
 
 5. Can I use this on my printer that does not run Marlin
-    - No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3
+    ⋅⋅* No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3
 
 5. Can I use this on my printer that does not run Marlin
-    - No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3
+    ⋅⋅* No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3

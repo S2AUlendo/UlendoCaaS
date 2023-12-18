@@ -906,7 +906,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         
         if self.fsm.in_state_time > FSM_SWEEP_START_DLY and not self.fsm.sweep_initiated:
             if not SIMULATION:
-                f1 = floor(sqrt(TMP_PARAM_SWEEP_A*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+                # f1 = floor(sqrt(TMP_PARAM_SWEEP_A*self.fsm.axis_reported_steps_per_mm)/(2.*pi)) #ST
+                f1 = self._settings.get(["TMP_PARAM_SWEEP_f1"])
 
                 mode_code = 0
                 if self.fsm.axis == 'x': mode_code = 1
@@ -969,10 +970,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         
         self.fsm.missed_sample_retry_count = 0
 
-        if not SIMULATION:
-            f1 = floor(sqrt(TMP_PARAM_SWEEP_A*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
-        else:
-            f1 = TMP_PARAM_SWEEP_f1
+        # if not SIMULATION:
+        #     f1 = floor(sqrt(TMP_PARAM_SWEEP_A*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+        # else:
+        #     f1 = TMP_PARAM_SWEEP_f1
+
+        f1 = int(self._settings.get(["TMP_PARAM_SWEEP_f1"]))
 
         if not self.sts_axis_verification_active:
             try:
@@ -1042,9 +1045,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MACHINEID="PRINTER001", 
                     url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="MODEL1",
-                    TMP_PARAM_SWEEP_f0=CFG_TMP_PARAM_SWEEP_f0,
-                    TMP_PARAM_SWEEP_f1=CFG_TMP_PARAM_SWEEP_f1,
-                    TMP_PARAM_SWEEP_A=CFG_TMP_PARAM_SWEEP_A,                    
+                    TMP_PARAM_SWEEP_f0=TMP_PARAM_SWEEP_f0,
+                    TMP_PARAM_SWEEP_f1=TMP_PARAM_SWEEP_f1,
+                    TMP_PARAM_SWEEP_A=TMP_PARAM_SWEEP_A,                    
                     MANUFACTURER_NAME="ULENDO")
 
     def get_template_vars(self):

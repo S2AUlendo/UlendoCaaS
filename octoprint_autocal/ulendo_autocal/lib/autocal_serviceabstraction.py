@@ -62,14 +62,14 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                         'RequestSource': get_source_ip()
                     },
                     "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": str(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
-                        "TMP_PARAM_SWEEP_f1": str(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
-                        "TMP_PARAM_SWEEP_A": str(self._settings.get(["TMP_PARAM_SWEEP_A"])) 
+                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
+                        "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
+                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])) 
                     }, 
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
-                        "PRINTER_MODEL": model_ID,
-                        'MODELID': "V0.01",
+                        "PRINTER_MODEL":self._settings.get(["MODELID"]),
+                        'VERSION': "V0.01",
                         'MANUFACTURER_NAME': ""
                     },                    
                 }
@@ -112,9 +112,9 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                         'RequestSource': get_source_ip()
                     },
                     "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": str(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
-                        "TMP_PARAM_SWEEP_f1": str(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
-                        "TMP_PARAM_SWEEP_A": str(self._settings.get(["TMP_PARAM_SWEEP_A"]))   
+                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
+                        "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
+                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"]))   
                     },
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
