@@ -54,7 +54,8 @@ Ulendo's Calibration as a Service
 	
 	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
 	cd OctoPrint-Autocal
-	octoprint dev plugin:install
+	../venv/bin/octoprint dev plugin:install
+	../venv/bin/octoprint serve
 
 
 ## Usage (RPi):
