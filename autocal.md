@@ -12,7 +12,7 @@ date: 2023-12-15
 
 homepage: https://github.com/S2AUlendo/UlendoCaaS
 source: https://github.com/S2AUlendo/UlendoCaaS
-archive: archive link to install your plugin via pip, e.g. from github: https://github.com/S2AUlendo/UlendoCaaS/archive/master.zip
+archive: https://github.com/S2AUlendo/UlendoCaaS/archive/master.zip
 
 # Set this if your plugin heavily interacts with any kind of cloud services.
 privacypolicy: https://live.d11dolnrbc1eee.amplifyapp.com/privacy
