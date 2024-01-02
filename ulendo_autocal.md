@@ -8,7 +8,7 @@ authors: info@ulendo.io
 license: ""
 
 # today's date in format YYYY-MM-DD, e.g.
-date: 2023-12-15
+date: 2024-01-02
 
 homepage: https://github.com/S2AUlendo/UlendoCaaS
 source: https://github.com/S2AUlendo/UlendoCaaS
@@ -28,20 +28,20 @@ tags:
 - speed
 
 screenshots:
-- url: /assets/img/realtime_accelerometer_updates.png
+- url: /assets/img/ulendo_autocal/realtime_accelerometer_updates.png
   alt: view of the pre-computed response of the selected input shaper
   caption: projected response
-- url: /assets/img/detailed_vibration_compensation_analysis.png
+- url: /assets/img/ulendo_autocal/detailed_vibration_compensation_analysis.png
   alt: view of the pre-computed response of the selected input shaper
   caption: projected response
-- url: /assets/img/compensation_verification.png
+- url: /assets/img/ulendo_autocal/compensation_verification.png
   alt: view of the measured vibration response after the compensation is applied
   caption: actual vibration response after compensation
-- url: /assets/img/plugin_configuration.png
+- url: /assets/img/ulendo_autocal/plugin_configuration.png
   alt: overview of configuration available through the settings window
   caption: advanced configuration options
 
-featuredimage: url of a featured image for your plugin, /assets/img/...
+featuredimage: /assets/img/...
 
 # You only need the following if your plugin requires specific OctoPrint versions or
 # specific operating systems to function - you can safely remove the whole
@@ -81,7 +81,6 @@ compatibility:
 
   os:
   - linux
-  - windows
 
   # Compatible Python version
   #
@@ -117,6 +116,10 @@ Reference-style:
 
 [logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "The CaaS Difference"
 
+
+Ulendo's CaaS is a great option for contract manufacturers looking to improve the performance of their existing assets. When paired with a compatible printer this plugin can reduce print times by more than 50% percent, improving facility throughput. 
+
+
 ## About Input Shaping
 Input Shaping is a technology that is used to help supressed unwanted vibration that is present in many manufacturing machines. However, one of the common downsides is that it often introduces unwanted rounding due to the delay in the system.
 
@@ -131,20 +134,23 @@ This plugin works in conjunction with the FT_MOTION system that is available in 
 Additionally, this software requires an acceleromter to be connected. As of the 0.1.2 update only the ADXL345 is supported. However, there is additional planned support for the ADXL365 and the LIS3DH acceleromter. 
 
 ## FAQ
-1. Does this software require changes to the machine components?
+1. Does this work with all printers
+    ⋅⋅* No, This plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3. [Fixed Time Motion](https://marlinfw.org/docs/gcode/M493.html "Fixed Time Motion")
+
+2. Does this software require changes to the machine components?
     ⋅⋅*No, aside from attaching an acceleromter, there are no other machine requirements
 
-2. Does this only work on COREXY machines?
+3. Does this only work on COREXY machines?
     ⋅⋅* No, This software has been tested on traditional cartesion, COREXY, ultimaker-style cartesian printers, and bed sligner printers, all printer types were able to see some relatively improvement in their performace when evaulated against the uncompensated prints. 
 
-3. Will my failure rates increase, if I increase the speed?
+4. Will my failure rates increase, if I increase the speed?
     ⋅⋅* When compared to the uncompensated, default behaviour most printers were able to achieve 2X without any decrease in reliability. However, there are other factors besides vibration that may affect printer performance.
 
-4. Can I run this on my desktop computer without a Raspberry Pi
+5. Can I run this on my desktop computer without a Raspberry Pi
     - No, a Raspberry Pi is a required to connect and collect data from the accleromter
 
-5. Can I use this on my printer that does not run Marlin
+6. Can I use this on my printer that does not run Marlin
     ⋅⋅* No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3
 
-5. Can I use this on my printer that does not run Marlin
-    ⋅⋅* No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3
+7. Can I use this on my printer that does not run Marlin
+    ⋅⋅* No, there is planned support for other platforms in the future. However, currently only Marlin versions >2.1.3 is supported 
