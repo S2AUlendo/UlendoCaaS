@@ -104,7 +104,7 @@ This tool is meant to allow users to quickly and efficiently evaluate and select
 
 With the support of the FT_MOTION feature, this plugin can allow printers to print at over 2X the typical speed and acceleration without any additional hardware modifications to their machines. 
 
-In testing on the Ender V2, speeds of over 150 mm/s and accelerations of 5,000 mm/s^2^ were tested with minimal rounding. This plugin has been tested to run on several other machines that were retrofitted with the Marlin software, machines with build sizes varying from 150 mm^3^ to 1000 mm^3^. In all scenarios the when used in conjunction with the software all the printers were able to achieve over 2X speed increase.
+In testing on the Ender V2, speeds of over 150 mm/s and accelerations of 5,000 mm/s<sup>2</sup> were tested with minimal rounding. This plugin has been tested to run on several other machines that were retrofitted with the Marlin software, machines with build sizes varying from 150 mm<sup>3</sup> to 1000 mm<sup>3</sup>. In all scenarios the when used in conjunction with the software all the printers were able to achieve over 2X speed increase.
 
 Reference-style: 
 ![The CaaS Difference Ender 3 V2][logo]
