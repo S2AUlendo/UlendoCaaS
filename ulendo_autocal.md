@@ -150,7 +150,4 @@ Additionally, this software requires an acceleromter to be connected. As of the 
     - No, a Raspberry Pi is a required to connect and collect data from the accleromter
 
 6. Can I use this on my printer that does not run Marlin
-    ⋅⋅* No, this plugin was specifically made to work with a Marlin feature called FT_MOTION developed by ULENDO. It is only compatible with versions of Marlin >2.1.3
-
-7. Can I use this on my printer that does not run Marlin
     ⋅⋅* No, there is planned support for other platforms in the future. However, currently only Marlin versions >2.1.3 is supported 
