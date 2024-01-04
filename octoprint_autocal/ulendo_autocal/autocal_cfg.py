@@ -24,9 +24,3 @@ CENTER_AXIS_TIMEOUT = 12.
 SERVICE_URL = 'https://hhl7skagae.execute-api.us-east-2.amazonaws.com/live/solve'
 SERVICE_TIMEOUT_THD = 30
 
-
-# Prevent a circular refernce
-# CFG_TMP_PARAM_SWEEP_f0 = 7.
-# CFG_TMP_PARAM_SWEEP_f1 = 90.
-# CFG_TMP_PARAM_SWEEP_dfdt = 4.
-# CFG_TMP_PARAM_SWEEP_A = 4000.

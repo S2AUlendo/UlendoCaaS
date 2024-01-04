@@ -12,7 +12,7 @@ date: 2024-01-02
 
 homepage: https://github.com/S2AUlendo/UlendoCaaS
 source: https://github.com/S2AUlendo/UlendoCaaS
-archive: https://github.com/S2AUlendo/UlendoCaaS/archive/master.zip
+archive: https://github.com/S2AUlendo/UlendoCaaS/archive/refs/tags/v0.1.3.zip
 
 # Set this if your plugin heavily interacts with any kind of cloud services.
 privacypolicy: https://live.d11dolnrbc1eee.amplifyapp.com/privacy
@@ -41,7 +41,7 @@ screenshots:
   alt: overview of configuration available through the settings window
   caption: advanced configuration options
 
-featuredimage: /assets/img/...
+featuredimage: /assets/img/ulendo_autocal/CaaS_Ad4.png
 
 # You only need the following if your plugin requires specific OctoPrint versions or
 # specific operating systems to function - you can safely remove the whole

@@ -1047,7 +1047,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MODELID="MODEL1",
                     TMP_PARAM_SWEEP_f0=TMP_PARAM_SWEEP_f0,
                     TMP_PARAM_SWEEP_f1=TMP_PARAM_SWEEP_f1,
-                    TMP_PARAM_SWEEP_A=TMP_PARAM_SWEEP_A,                    
+                    TMP_PARAM_SWEEP_A=TMP_PARAM_SWEEP_A,
+                    TMP_PARAM_SWEEP_dfdt=TMP_PARAM_SWEEP_dfdt,  
                     MANUFACTURER_NAME="ULENDO")
 
     def get_template_vars(self):
@@ -1059,7 +1060,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"]),
                     TMP_PARAM_SWEEP_f0=self._settings.get(["TMP_PARAM_SWEEP_f0"]),
                     TMP_PARAM_SWEEP_f1=self._settings.get(["TMP_PARAM_SWEEP_f1"]),
-                    TMP_PARAM_SWEEP_A=self._settings.get(["TMP_PARAM_SWEEP_A"])
+                    TMP_PARAM_SWEEP_A=self._settings.get(["TMP_PARAM_SWEEP_A"]),
+                    TMP_PARAM_SWEEP_dfdt=self._settings.get(["TMP_PARAM_SWEEP_dfdt"])
 )
 
     def get_template_configs(self):

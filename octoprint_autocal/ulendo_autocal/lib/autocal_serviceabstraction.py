@@ -64,7 +64,8 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                     "PARAMETERS": {
                         "TMP_PARAM_SWEEP_f0": int(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
                         "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
-                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])) 
+                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])),
+                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["TMP_PARAM_SWEEP_dfdt"])),
                     }, 
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
@@ -114,7 +115,8 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     "PARAMETERS": {
                         "TMP_PARAM_SWEEP_f0": int(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
                         "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
-                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"]))   
+                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])),   
+                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["TMP_PARAM_SWEEP_dfdt"])),
                     },
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
