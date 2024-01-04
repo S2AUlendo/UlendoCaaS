@@ -108,13 +108,13 @@ In testing on the Ender V2, speeds of over 150 mm/s and accelerations of 5,000 m
 Reference-style: 
 ![The CaaS Difference Ender 3 V2][logo]
 
-[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "The CaaS Difference"
+[logo]: https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_Ender3NeoV2.png "The CaaS difference"
 
 
 Reference-style: 
 ![The CaaS Difference Lulzbot TazPro][logo]
 
-[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "The CaaS Difference"
+[logo]:https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_TazPro.png "The CaaS difference"
 
 
 Ulendo's CaaS is a great option for contract manufacturers looking to improve the performance of their existing assets. When paired with a compatible printer this plugin can reduce print times by more than 50% percent, improving facility throughput. 
