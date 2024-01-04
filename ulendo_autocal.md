@@ -105,16 +105,16 @@ With the support of the FT_MOTION feature, this plugin can allow printers to pri
 
 In testing on the Ender V2, speeds of over 150 mm/s and accelerations of 5,000 mm/s<sup>2</sup> were tested with minimal rounding. This plugin has been tested to run on several other machines that were retrofitted with the Marlin software, machines with build sizes varying from 150 mm<sup>3</sup> to 1000 mm<sup>3</sup>. In all scenarios the when used in conjunction with the software all the printers were able to achieve over 2X speed increase.
 
-Reference-style: 
-![The CaaS Difference Ender 3 V2][logo]
+The CaaS difference - high speed vibration compensation: 
+![The CaaS Difference Ender 3 V2][neov2]
 
-[logo]: https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_Ender3NeoV2.png "The CaaS difference"
+[neov2]: https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_Ender3NeoV2.png "The CaaS difference"
 
 
-Reference-style: 
-![The CaaS Difference Lulzbot TazPro][logo]
+The CaaS difference - high speed vibration compensation:: 
+![The CaaS Difference Lulzbot TazPro][tazpro]
 
-[logo]:https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_TazPro.png "The CaaS difference"
+[tazpro]:https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_TazPro.png "The CaaS difference"
 
 
 Ulendo's CaaS is a great option for contract manufacturers looking to improve the performance of their existing assets. When paired with a compatible printer this plugin can reduce print times by more than 50% percent, improving facility throughput. 
