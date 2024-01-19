@@ -66,6 +66,7 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                         "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
                         "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])),
                         "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["TMP_PARAM_SWEEP_dfdt"])),
+                        "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
                     }, 
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
@@ -117,11 +118,12 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                         "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
                         "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])),   
                         "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["TMP_PARAM_SWEEP_dfdt"])),
+                        "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
                     },
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
-                        "PRINTER_MODEL": model_ID,
-                        'MODELID': "V001",
+                        "PRINTER_MODEL":self._settings.get(["MODELID"]),
+                        'MODELID': "V0.01",
                         'MANUFACTURER_NAME':""
                     }, 
                 }
