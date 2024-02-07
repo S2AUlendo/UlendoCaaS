@@ -842,7 +842,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             if (os.path.isfile(os.path.join(os.path.dirname(__file__), '..', 'data', file))):
                 os.remove(os.path.join(os.path.dirname(__file__), '..', 'data', file))
 
-        self.send_printer_command('G28 ' + self.fsm.axis.upper())
+        if (SIMULATE_HOMING == 0):
+            self.send_printer_command('G28 ' + self.fsm.axis.upper())
 
     
     def fsm_on_HOME_during(self):
@@ -870,13 +871,14 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     
     def fsm_on_CENTER_entry(self):
-        self.send_printer_command('G1 ' + self.fsm.axis.upper() + str(round(self.fsm.axis_reported_len/2)) + ' F' + str(MOVE_TO_CENTER_SPEED_MM_PER_MIN))
+        if (SIMULATE_HOMING == 0):
+            self.send_printer_command('G1 ' + self.fsm.axis.upper() + str(round(self.fsm.axis_reported_len/2)) + ' F' + str(MOVE_TO_CENTER_SPEED_MM_PER_MIN))
 
     
     def fsm_on_CENTER_during(self):
         self.send_printer_command('M114')
         self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
-        if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or SIMULATION:
+        if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or SIMULATION or SIMULATE_HOMING:
             
             if self.fsm.axis_centering_wait_time >= self.fsm.axis_reported_len/2/(MOVE_TO_CENTER_SPEED_MM_PER_MIN/60):
                 self.fsm.state = AxisRespnsFSMStates.SWEEP

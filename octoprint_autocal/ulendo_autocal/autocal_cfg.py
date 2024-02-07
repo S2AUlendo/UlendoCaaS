@@ -24,3 +24,4 @@ CENTER_AXIS_TIMEOUT = 12.
 SERVICE_URL = 'https://hhl7skagae.execute-api.us-east-2.amazonaws.com/live/solve'
 SERVICE_TIMEOUT_THD = 30
 
+SIMULATE_HOMING = 0
