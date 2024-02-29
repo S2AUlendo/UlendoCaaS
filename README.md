@@ -30,7 +30,7 @@ Ulendo's Calibration as a Service
     pip install octoprint
 	
 	
-	git clone https://github.com/S2AUlendo/UlendoCaaS.git
+	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
 	cd OctoPrint-Autocal
 	../venv/bin/octoprint dev plugin:install
 	
@@ -55,8 +55,7 @@ Ulendo's Calibration as a Service
 	
 	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
 	cd OctoPrint-Autocal
-	../venv/bin/octoprint dev plugin:install
-	../venv/bin/octoprint serve
+	..\venv\Scripts\octoprint dev plugin:install
 
 
 ## Usage (RPi):
@@ -66,7 +65,7 @@ Ulendo's Calibration as a Service
 		venv/bin/octoprint serve
 		
 	Note: You may use PuTTY Secury Copy (pscp) to transfer data between machines, e.g.:
-		pscp pi@octopi.local:/home/pi/rasppi-tools/accout.csv c:\Users\ulendoalex\Documents
+		pscp pi@octopi.local:/home/pi/a_folder/a_file.csv c:\Users\user001\Documents
 
 
 ## Usage (Windows):
@@ -74,6 +73,3 @@ Ulendo's Calibration as a Service
 	Run octoprint as usual:
 		venv\Scripts\activate.bat
 		octoprint serve
-
-
-
