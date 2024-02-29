@@ -17,8 +17,6 @@ Ulendo's Calibration as a Service
 		-or-
 	sudo shutdown -r now
 	
-	pip install --upgrade pip wheel
-	pip install pigpio
 	
 	cd ~
 	mkdir OctoPrint
@@ -26,10 +24,13 @@ Ulendo's Calibration as a Service
 	python3 -m venv venv
 	source venv/bin/activate
 	
-	pip install octoprint
+	pip install --upgrade pip wheel
+	pip install pigpio
+	
+    pip install octoprint
 	
 	
-	git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
+	git clone https://github.com/S2AUlendo/UlendoCaaS.git
 	cd OctoPrint-Autocal
 	../venv/bin/octoprint dev plugin:install
 	
