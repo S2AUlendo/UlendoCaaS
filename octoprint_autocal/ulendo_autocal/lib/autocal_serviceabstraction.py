@@ -62,10 +62,10 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                         'RequestSource': get_source_ip()
                     },
                     "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
-                        "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
-                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])),
-                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["TMP_PARAM_SWEEP_dfdt"])),
+                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["starting_frequency"])),
+                        "TMP_PARAM_SWEEP_f1": int(f1),
+                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["acceleration_amplitude"])),   
+                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["frequency_sweep_rate"])),
                         "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
                     }, 
                     "PRINTER": {
@@ -96,7 +96,7 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
 def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
     
     now = datetime.now()
-    postdata =  {    'XAXISRESPONSE': read_acclrmtr_data('x'),
+    postdata =  {   'XAXISRESPONSE': read_acclrmtr_data('x'),
                     'YAXISRESPONSE': read_acclrmtr_data('y'),
                     'ZAXISRESPONSE': read_acclrmtr_data('z'),
                     'AXIS': axis,
@@ -114,10 +114,10 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                         'RequestSource': get_source_ip()
                     },
                     "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["TMP_PARAM_SWEEP_f0"])),
-                        "TMP_PARAM_SWEEP_f1": int(self._settings.get(["TMP_PARAM_SWEEP_f1"])),
-                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["TMP_PARAM_SWEEP_A"])),   
-                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["TMP_PARAM_SWEEP_dfdt"])),
+                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["starting_frequency"])),
+                        "TMP_PARAM_SWEEP_f1": int(f1),
+                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["acceleration_amplitude"])),   
+                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["frequency_sweep_rate"])),
                         "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
                     },
                     "PRINTER": {

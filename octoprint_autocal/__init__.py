@@ -932,11 +932,13 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 mode_code = 0
                 if self.fsm.axis == 'x': mode_code = 1
                 elif self.fsm.axis == 'y': mode_code = 2
+                # Note: the integer casts below are to match the postdata casts in
+                # service abstraction. Service should support floats, but needs verification.
                 cmd =    'M494' + ' A' + str(mode_code) \
-                                + ' B' + str(self._settings.get(["starting_frequency"])) \
+                                + ' B' + str(int(self._settings.get(["starting_frequency"]))) \
                                 + ' C' + str(f1) \
-                                + ' D' + str(self._settings.get(["frequency_sweep_rate"])) \
-                                + ' E' + str(self._settings.get(["acceleration_amplitude"])) \
+                                + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
+                                + ' E' + str(int(self._settings.get(["acceleration_amplitude"]))) \
                                 + ' F' + str(self._settings.get(["step_time"])) \
                                 + ' H' + str(self._settings.get(["step_acceleration"])) \
                                 + ' I' + str(self._settings.get(["delay1_time"])) \
