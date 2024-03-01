@@ -694,15 +694,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 result = {}
                 for _, key, value in chunks(split_line, 3):
                         result[key] = value.strip()
+                        if key == self.fsm.axis.upper() + '_MAX_LENGTH':
+                            self.fsm.axis_reported_len_recvd = True
+                            self.fsm.axis_reported_len = float(result[key])
                 self.metadata['FTMCFG'] = result
                 self._logger.info('Metadata updated:')
                 self._logger.info(self.metadata)
-            elif 'len=' in line:
-                if self.fsm.state == AxisRespnsFSMStates.GET_AXIS_INFO:
-                    self.fsm.axis_reported_len_recvd = True
-                    split_line = re.split(r"M494 len=", line.strip())
-                    self.fsm.axis_reported_len = float(split_line[1])
-                    self._logger.info(f'Got reported length = {self.fsm.axis_reported_len}')
             elif 'profile done' in line:
                 if self.fsm.state == AxisRespnsFSMStates.SWEEP:
                     self.fsm.sweep_done_recvd = True
@@ -853,7 +850,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     
     def fsm_on_GET_AXIS_INFO_entry(self):
-        self.send_printer_command('M494 L ' + self.fsm.axis.upper())
+        self.send_printer_command('M494')
         self.send_printer_command('M92')
 
     
