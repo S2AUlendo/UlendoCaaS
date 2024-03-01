@@ -563,10 +563,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         mode_code = ''
         if type == 'zv': mode_code = '1'
         elif type == 'zvd': mode_code = '2'
-        elif type == 'mzv': mode_code = '6'
-        elif type == 'ei': mode_code = '3'
-        elif type == 'ei2h': mode_code = '4'
-        elif type == 'ei3h': mode_code = '5'
+        elif type == 'zvdd': mode_code = '3'
+        elif type == 'zvddd': mode_code = '4'
+        elif type == 'mzv': mode_code = '8'
+        elif type == 'ei': mode_code = '5'
+        elif type == 'ei2h': mode_code = '6'
+        elif type == 'ei3h': mode_code = '7'
 
         frequency_code = ''
         zeta_code = ''
@@ -744,7 +746,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         # for details.
         return {
             "autocal": {
-                "displayName": "Autocal Plugin",
+                "displayName": "Ulendo Calibration Plugin",
                 "displayVersion": self._plugin_version,
 
                 # version check: github repository
@@ -842,7 +844,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             if (os.path.isfile(os.path.join(os.path.dirname(__file__), '..', 'data', file))):
                 os.remove(os.path.join(os.path.dirname(__file__), '..', 'data', file))
 
-        if (SIMULATE_HOMING == 0):
+        if (self._settings.get(["home_axis_before_calibration"])):
             self.send_printer_command('G28 ' + self.fsm.axis.upper())
 
     
@@ -871,14 +873,14 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     
     def fsm_on_CENTER_entry(self):
-        if (SIMULATE_HOMING == 0):
+        if (self._settings.get(["home_axis_before_calibration"])):
             self.send_printer_command('G1 ' + self.fsm.axis.upper() + str(round(self.fsm.axis_reported_len/2)) + ' F' + str(MOVE_TO_CENTER_SPEED_MM_PER_MIN))
 
     
     def fsm_on_CENTER_during(self):
         self.send_printer_command('M114')
         self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
-        if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or SIMULATION or SIMULATE_HOMING:
+        if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or not self._settings.get(["home_axis_before_calibration"]) or SIMULATION:
             
             if self.fsm.axis_centering_wait_time >= self.fsm.axis_reported_len/2/(MOVE_TO_CENTER_SPEED_MM_PER_MIN/60):
                 self.fsm.state = AxisRespnsFSMStates.SWEEP
@@ -908,15 +910,42 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         
         if self.fsm.in_state_time > FSM_SWEEP_START_DLY and not self.fsm.sweep_initiated:
             if not SIMULATION:
-                # f1 = floor(sqrt(TMP_PARAM_SWEEP_A*self.fsm.axis_reported_steps_per_mm)/(2.*pi)) #ST
-                f1 = self._settings.get(["TMP_PARAM_SWEEP_f1"])
+
+                f1 = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+                
+                # M494
+                #
+                #  *    A<mode> Start / abort a frequency sweep profile.
+                #  *
+                #  *       0: None active.
+                #  *       1: Continuous sweep on X axis.
+                #  *       2: Continuous sweep on Y axis.
+                #  *       3: Abort the current sweep.
+                #  * 
+                #  *    B<float> Start frequency.
+                #  *    C<float> End frequency.
+                #  *    D<float> Frequency rate.
+                #  *    E<float> Acceleration amplitude.
+                #  *    F<float> Step time.
+                #  *    H<float> Step acceleration amplitude.
+                #  *    I<float> Delay time to opening step.
+                #  *    J<float> Delay time from opening step to sweep.
+                #  *    K<float> Delay time from sweep to closing step.
 
                 mode_code = 0
                 if self.fsm.axis == 'x': mode_code = 1
                 elif self.fsm.axis == 'y': mode_code = 2
-                cmd =    'M494 F' + str(mode_code) + ' S' + str(TMP_PARAM_SWEEP_f0) + ' D' + str(TMP_PARAM_SWEEP_dfdt) + \
-                                    ' E' + str(f1) + ' A' + str(TMP_PARAM_SWEEP_A)
-                
+                cmd =    'M494' + ' A' + str(mode_code) \
+                                + ' B' + str(self._settings.get(["starting_frequency"])) \
+                                + ' C' + str(f1) \
+                                + ' D' + str(self._settings.get(["frequency_sweep_rate"])) \
+                                + ' E' + str(self._settings.get(["acceleration_amplitude"])) \
+                                + ' F' + str(self._settings.get(["step_time"])) \
+                                + ' H' + str(self._settings.get(["step_acceleration"])) \
+                                + ' I' + str(self._settings.get(["delay1_time"])) \
+                                + ' J' + str(self._settings.get(["delay2_time"])) \
+                                + ' K' + str(self._settings.get(["delay3_time"])) \
+
                 self.send_printer_command(cmd)
 
             self.fsm.sweep_initiated = True
@@ -972,12 +1001,10 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         
         self.fsm.missed_sample_retry_count = 0
 
-        # if not SIMULATION:
-        #     f1 = floor(sqrt(TMP_PARAM_SWEEP_A*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
-        # else:
-        #     f1 = TMP_PARAM_SWEEP_f1
-
-        f1 = int(self._settings.get(["TMP_PARAM_SWEEP_f1"]))
+        if not SIMULATION:
+            f1 = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+        else:
+            f1 = SIMULATION_f1
 
         if not self.sts_axis_verification_active:
             try:
@@ -1047,12 +1074,17 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MACHINEID="PRINTER001", 
                     url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="MODEL1",
-                    TMP_PARAM_SWEEP_f0=TMP_PARAM_SWEEP_f0,
-                    TMP_PARAM_SWEEP_f1=TMP_PARAM_SWEEP_f1,
-                    TMP_PARAM_SWEEP_A=TMP_PARAM_SWEEP_A,
-                    TMP_PARAM_SWEEP_dfdt=TMP_PARAM_SWEEP_dfdt,  
                     CONDITIONS="DEFAULT",
-                    MANUFACTURER_NAME="ULENDO")
+                    MANUFACTURER_NAME="ULENDO",
+                    home_axis_before_calibration=True,
+                    acceleration_amplitude=4000,
+                    starting_frequency=5,
+                    frequency_sweep_rate=4,
+                    step_time=0.05,
+                    step_acceleration=4000,
+                    delay1_time=0.5,
+                    delay2_time=1.,
+                    delay3_time=1. )
 
     def get_template_vars(self):
         return dict(ORG=self._settings.get(["ORG"]), 
@@ -1062,10 +1094,15 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     MODELID=self._settings.get(["MODELID"]),
                     MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"]),
                     CONDITIONS=self._settings.get(["CONDITIONS"]),
-                    TMP_PARAM_SWEEP_f0=self._settings.get(["TMP_PARAM_SWEEP_f0"]),
-                    TMP_PARAM_SWEEP_f1=self._settings.get(["TMP_PARAM_SWEEP_f1"]),
-                    TMP_PARAM_SWEEP_A=self._settings.get(["TMP_PARAM_SWEEP_A"]),
-                    TMP_PARAM_SWEEP_dfdt=self._settings.get(["TMP_PARAM_SWEEP_dfdt"])
+                    home_axis_before_calibration=self._settings.get(["home_axis_before_calibration"]),
+                    acceleration_amplitude=self._settings.get(["acceleration_amplitude"]),
+                    starting_frequency=self._settings.get(["starting_frequency"]),
+                    frequency_sweep_rate=self._settings.get(["frequency_sweep_rate"]),
+                    step_time=self._settings.get(["step_time"]),
+                    step_acceleration=self._settings.get(["step_acceleration"]),
+                    delay1_time=self._settings.get(["delay1_time"]),
+                    delay2_time=self._settings.get(["delay2_time"]),
+                    delay3_time=self._settings.get(["delay3_time"])
 )
 
     def get_template_configs(self):
@@ -1076,7 +1113,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Ulendo CaaS"
+__plugin_name__ = "Ulendo Calibration Service"
 
 
 # Set the Python version your plugin is compatible with below. Recommended is Python 3 only for all new plugins.

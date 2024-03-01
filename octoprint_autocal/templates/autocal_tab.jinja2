@@ -2,12 +2,22 @@
 
 <div class="card">
   <div class="card-body">
-    <h5 class="card-title">Ulendo Calibration as a Service</h5>
-    <p class="card-text">Welcome to Ulendo's Calibration as a Service Plugin</p>
-	<p class="card-text">This plugin was designed to help users to automatically tune the vibration compensation algorithms 
-	contributed to the Marlin Project.</p>
-	<p class="card-text">This plugin can help to optimize the performance of your printer and help you to achieve higher lower print 
-	times by improving printer reliability at higher speeds and accelerations</p>
+    <h5 class="card-title">Ulendo Calibration Plugin</h5>
+  </div>
+</div>
+
+<div class="about_collapsible">
+  <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
+  <div class="hide">
+    <p class="abouttext">This plugin allows you to automatically tune the vibration compensation algorithms 
+    in Marlin's FTM (Fixed-Time-Motion) module.</p>
+    <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
+    times by improving printer reliability at higher speeds and accelerations.</p>
+    <div class="alert alert-block">
+      <strong>{{ _('Note: ') }}</strong>{{ _('Requires compatible firmware (Marlin 2.2+). 
+        Get the latest Marlin firmware for your printer <a href="https://github.com/MarlinFirmware/Marlin">here</a>. Find out more 
+        about Ulendo\'s advance solutions for additive manufacturing at <a href="https://www.ulendo.io/">ulendo.io</a>') }}
+    </div>
   </div>
 </div>
 
@@ -62,17 +72,10 @@
 
 <button id='start_over_btn' data-bind="click: onClickStartOverBtn">Start Over</button>
 
-<div class="card">
-  <div class="card-body">
-    <h5 class="card-title">More Informaiton</h5>
-    <p class="card-text">This is only compatible with versions of marlin >2.3.1. <a href="#">Click here</a>
-	get the latest marlin firmware update for your printer. Find out more about our advance solutions for 
-	additive manufacturing visit us @ <a href="https://www.ulendo.io/">Ulendo.io</a></p>    
-		
-  </div>
-</div>
-
-<div id='Summary'  data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="scrollspy-example bg-body-tertiary p-3 rounded-2" tabindex="0">
-  <h5> Execution Log </h5>
-  <pre id='status'> </pre>
+<div class="log_collapsible">
+  <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.log_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Log') }}</a></div>
+  <div class="hide">
+    <div id='Summary'  data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="scrollspy-example bg-body-tertiary p-3 rounded-2" tabindex="0">
+    <h5> Execution Log </h5>
+    <pre id='status'> </pre>
 </div>

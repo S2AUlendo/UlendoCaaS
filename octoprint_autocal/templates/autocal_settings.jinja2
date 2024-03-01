@@ -1,12 +1,11 @@
 <div class="card">
   <div class="card-body">
-    <h3 class="card-title">Ulendo Calibration as a Service</h3>
-    <p class="card-text">Welcome to Ulendo's Calibration as a Service Plugin</p>
-	<p class="card-text">This plugin was designed to help users to automatically tune the vibration compensation algorithms 
-	contributed to the Marlin Project. This plugin can help to optimize the performance of your printer and help you to achieve higher lower print 
-	times by improving printer reliability at higher speeds and accelerations</p>
-	<p>Users must have a valid combination of access credentials provided by the Ulendo team to use this plugin.</p>
-	<p>Enter the credentials in the space provided below to get started.</p>
+    <h3 class="card-title">Ulendo Calibration Plugin Settings</h3>
+      <p class="card-text">This plugin helps users to automatically tune the vibration compensation algorithms 
+      contributed to the Marlin Project. This plugin can help to optimize the performance of your printer and help you to achieve higher lower print 
+      times by improving printer reliability at higher speeds and accelerations.</p>
+      <p>Users must have a valid combination of access credentials provided by the Ulendo team to use this plugin.</p>
+      <p>Enter the credentials in the space provided below to get started.</p>
   </div>
 </div>
 <form class="form-horizontal">
@@ -42,37 +41,118 @@
       <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.MANUFACTURER_NAME">
     </div>
   </div>
-  <p class="card-text">Changes these settings may result in unexpected behaviour from your machine. 
-  These are advanced settings, only make modifications to these if you are understand the 
-  potential implications.</p>
-  <div class="control-group">
-    <label class="control-label">{{ _('TMP_PARAM_SWEEP_f0') }}</label>
-    <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_f0">
+
+
+
+  <div class="profile_options">
+        <div><small><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.profile_options', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Calibration profile options (advanced)') }}</a></small></div>
+        <div class="hide">
+
+          <div class="control-group">
+            <div class="controls">
+              <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.plugins.autocal.home_axis_before_calibration"> {{ _('Home Axis Before Calibrating') }}
+                <div class="help-block">  <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Disabling this may damage your machine. Use this if you want to center the axis yourself before starting the calibration.') }}</div>
+              </label>
+            </div>
+          </div>
+
+          
+          <div class="control-group">
+            <label class="control-label">{{ _('Acceleration Amplitude') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.acceleration_amplitude">
+                <span class="add-on">mm/sec/sec</span>
+              </div>
+              <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. This sets the acceleration amplitude at which the calibration is performed. It is suggested to roughly match this with your intended printing acceleration.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Starting Frequency') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.starting_frequency">
+                <span class="add-on">Hz</span>
+              </div>
+              <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too low may damage your machine. If changing, decrement gradually from the default value.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Frequency Sweep Rate') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.frequency_sweep_rate">
+                <span class="add-on">Hz/sec</span>
+              </div>
+              <div class="help-block">{{ _('Rate at which the machine will increase excitation frequency from the starting frequency. Increase this to collect more data and potentially refine your results.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Step Time') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.step_time">
+                <span class="add-on">sec</span>
+              </div>
+              <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. Controls duration of the profile\'s opening and closing movements.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Step Acceleration') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.step_acceleration">
+                <span class="add-on">mm/sec/sec</span>
+              </div>
+              <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _('Setting this too high may damage your machine. If changing, increase gradually from the default value. Controls acceleration of the profile\'s opening and closing movements.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Delay 1 Time') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.delay1_time">
+                <span class="add-on">sec</span>
+              </div>
+              <div class="help-block">{{ _('Controls the time delay between moving to axis center and starting the calibration profile.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Delay 2 Time') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.delay2_time">
+                <span class="add-on">sec</span>
+              </div>
+              <div class="help-block">{{ _('Controls the time delay the opening movement and the frequency sweep.') }}</div>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('Delay 3 Time') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.delay3_time">
+                <span class="add-on">sec</span>
+              </div>
+              <div class="help-block">{{ _('Controls the time delay between the sweep and the closing movement.') }}</div>
+            </div>
+          </div>
+
+        </div>
     </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label">{{ _('TMP_PARAM_SWEEP_f1') }}</label>
-    <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_f1">
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label">{{ _('TMP_PARAM_SWEEP_A') }}</label>
-    <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_A">
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label">{{ _('TMP_PARAM_SWEEP_dfdt') }}</label>
-    <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.TMP_PARAM_SWEEP_dfdt">
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label">{{ _('CONDITIONS') }}</label>
-    <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.CONDITIONS">
-    </div>
-  </div>
+
+
+
+
+
+
+
 </form>

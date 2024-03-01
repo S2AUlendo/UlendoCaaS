@@ -1,5 +1,6 @@
 
-SIMULATION = False
+SIMULATION = True
+SIMULATION_f1 = 80
 
 FSM_UPDATE_RATE_SEC = 0.25
 ACCLRMTR_LIVE_VIEW_RATE_SEC = 0.1
@@ -10,11 +11,6 @@ MOVE_TO_CENTER_SPEED_MM_PER_MIN = 6000
 
 FSM_SWEEP_START_DLY = 0.5
 
-TMP_PARAM_SWEEP_f0 = 7.
-TMP_PARAM_SWEEP_f1 = 90.
-TMP_PARAM_SWEEP_dfdt = 4.
-TMP_PARAM_SWEEP_A = 4000.
-
 T_DFLT = 1./1600.    # Default sample time to use (accelerometer sample time).
 
 MAX_RETRIES_FOR_MISSED_SAMPLES = 2
@@ -23,5 +19,3 @@ CENTER_AXIS_TIMEOUT = 12.
 
 SERVICE_URL = 'https://hhl7skagae.execute-api.us-east-2.amazonaws.com/live/solve'
 SERVICE_TIMEOUT_THD = 30
-
-SIMULATE_HOMING = 0
