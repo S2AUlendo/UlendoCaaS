@@ -7,6 +7,11 @@ ACCLRMTR_LIVE_VIEW_RATE_SEC = 0.1
 ACCLRMTR_LIVE_VIEW_NUM_SAMPLES = 200
 ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR = 8
 
+VERBOSE = 1 # 0 -- Muted.
+            # 1 -- Send errors to octoprint logger.
+            # 2 -- Send all info messages to octoprint logger.
+            # 3 -- Send printer messages to octoprint logger.
+
 MOVE_TO_CENTER_SPEED_MM_PER_MIN = 6000
 
 FSM_SWEEP_START_DLY = 0.5

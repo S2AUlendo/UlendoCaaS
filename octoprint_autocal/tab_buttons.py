@@ -45,3 +45,8 @@ class SaveCalibrationButton(ClickableButton):
     def __init__(self):
         super().__init__()
         self.state = SaveCalibrationButtonStates.NOTSAVED
+
+
+class ClearSessionButton(ClickableButton):
+    def __init__(self):
+        super().__init__()

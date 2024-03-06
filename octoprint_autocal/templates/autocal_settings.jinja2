@@ -1,9 +1,9 @@
 <div class="card">
   <div class="card-body">
-    <h3 class="card-title">Ulendo Calibration Plugin Settings</h3>
-      <p class="card-text">This plugin helps users to automatically tune the vibration compensation algorithms 
-      contributed to the Marlin Project. This plugin can help to optimize the performance of your printer and help you to achieve higher lower print 
-      times by improving printer reliability at higher speeds and accelerations.</p>
+    <h3 class="card-title">Ulendo CaaS Calibration Plugin Settings</h3>
+      <p class="card-text">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
+      in Marlin's FTM (Fixed-Time-Motion) module. Vibration compensation can improve the performance of your printer
+      and help you achieve lower print times by improving printer reliability at higher speeds and accelerations.</p>
       <p>Users must have a valid combination of access credentials provided by the Ulendo team to use this plugin.</p>
       <p>Enter the credentials in the space provided below to get started.</p>
   </div>
@@ -45,7 +45,7 @@
 
 
   <div class="profile_options">
-        <div><small><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.profile_options', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Calibration profile options (advanced)') }}</a></small></div>
+        <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.profile_options', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Calibration profile options (advanced)') }}</a></div>
         <div class="hide">
 
           <div class="control-group">
@@ -65,7 +65,7 @@
                 <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.acceleration_amplitude">
                 <span class="add-on">mm/sec/sec</span>
               </div>
-              <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. This sets the acceleration amplitude at which the calibration is performed. It is suggested to roughly match this with your intended printing acceleration.') }}</div>
+              <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. This sets the acceleration amplitude at which the calibration is performed. It is suggested to roughly match this with your intended printing acceleration, but it should be lowered if you notice your printer skipping steps during the calibration routine.') }}</div>
             </div>
           </div>
 
@@ -92,6 +92,26 @@
           </div>
 
           <div class="control-group">
+            <div class="controls">
+              <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.plugins.autocal.override_end_frequency"> {{ _('Override End Frequency') }}
+                <div class="help-block">{{ _('Enables overriding the end frequency with the value below. Not recommended as the plugin computes the correct value for you. If you want to speed things up, use the frequency sweep rate setting instead.') }}</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label">{{ _('End Frequency Override') }}</label>
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.end_frequency_override">
+                <span class="add-on">Hz</span>
+              </div>
+              <div class="help-block">{{ _('End frequency used if the override is enabled.') }}</div>
+            </div>
+          </div>
+
+          {# <div class="control-group">
             <label class="control-label">{{ _('Step Time') }}</label>
             <div class="controls">
               <div class="input-append">
@@ -144,15 +164,8 @@
               </div>
               <div class="help-block">{{ _('Controls the time delay between the sweep and the closing movement.') }}</div>
             </div>
-          </div>
+          </div> #}
 
         </div>
     </div>
-
-
-
-
-
-
-
 </form>

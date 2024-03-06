@@ -14,4 +14,5 @@ class TabLayout(): # Tab layout to use as singleton
         self.select_ei3h_cal_btn = CalibrationSelectionButton()
         self.load_calibration_btn = LoadCalibrationButton()
         self.save_calibration_btn = SaveCalibrationButton()
+        self.clear_session_btn = ClearSessionButton()
         self.vtol_slider_visible = False

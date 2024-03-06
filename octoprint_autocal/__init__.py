@@ -9,6 +9,7 @@ import os
 import re
 
 from math import pi, sqrt, floor
+from datetime import datetime
 
 from octoprint.util import ResettableTimer
 from octoprint.util.comm import regex_float_pattern, parse_position_line, regex_firmware_splitter
@@ -130,7 +131,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     def send_printer_command(self, cmd):
         if SIMULATION:
-            self._logger.info('SIMULATION sending command to printer: ' + cmd)
+            if VERBOSE > 1: self._logger.info('SIMULATION sending command to printer: ' + cmd)
             return
         from octoprint.server import printer
         printer.commands(cmd)
@@ -216,6 +217,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             save_calibration_btn_disabled = self.tab_layout.save_calibration_btn.disabled,
             load_calibration_btn_state = self.tab_layout.load_calibration_btn.state.name,
             save_calibration_btn_state = self.tab_layout.save_calibration_btn.state.name,
+            clear_session_btn_disabled = self.tab_layout.clear_session_btn.disabled,
             vtol_slider_visible = self.tab_layout.vtol_slider_visible
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
@@ -252,6 +254,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.tab_layout.vtol_slider_visible = False
         else:
             self.tab_layout.acclrmtr_connect_btn.disabled = False
+            self.tab_layout.clear_session_btn.disabled = False
 
             if self.sts_acclrmtr_connected:
                 self.tab_layout.calibrate_x_axis_btn.disabled = False
@@ -261,6 +264,10 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 for calibration_key in calibration_keys:
                     calibration_btn = getattr(self.tab_layout, 'select_' + calibration_key + '_cal_btn')
                     calibration_btn.disabled = False
+            else:
+                for calibration_key in calibration_keys:
+                    calibration_btn = getattr(self.tab_layout, 'select_' + calibration_key + '_cal_btn')
+                    calibration_btn.state = CalibrationSelectionButtonStates.NOTSELECTED
 
             if self.get_selected_calibration_type() in ['ei', 'ei2h', 'ei3h']:
                 self.tab_layout.vtol_slider_visible = True
@@ -305,11 +312,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         else:
             self.tab_layout.calibrate_y_axis_btn.state = CalibrateAxisButtonStates.NOTCALIBRATED
 
-        if (self.active_solution_axis == 'x' and self.x_calibration_sent_to_printer) or \
-           (self.active_solution_axis == 'y' and self.y_calibration_sent_to_printer):
-            self.tab_layout.load_calibration_btn.state = LoadCalibrationButtonStates.LOADED
-        elif self.sts_axis_verification_active:
+        if self.sts_axis_verification_active:
             self.tab_layout.load_calibration_btn.state = LoadCalibrationButtonStates.LOADING
+        elif (self.active_solution_axis == 'x' and self.x_calibration_sent_to_printer) or \
+             (self.active_solution_axis == 'y' and self.y_calibration_sent_to_printer):
+            self.tab_layout.load_calibration_btn.state = LoadCalibrationButtonStates.LOADED
         else:
             self.tab_layout.load_calibration_btn.state = LoadCalibrationButtonStates.NOTLOADED
 
@@ -333,7 +340,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
 
     def fsm_update(self):
-        self._logger.info(f'FSM update: {self.fsm.state}')
+        if VERBOSE > 1: self._logger.info(f'FSM update: {self.fsm.state}')
 
         if self.fsm.state != self.fsm.state_prev:
             self.fsm.in_state_time = 0.
@@ -400,7 +407,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.fsm_update_TMR.start()
         else:
             self.sts_acclrmtr_active = False
-            self._logger.info(f'external process (self-test) done with code: {self.acclrmtr_self_test_process.returncode}')
+            if VERBOSE > 1: self._logger.info(f'external process (self-test) done with code: {self.acclrmtr_self_test_process.returncode}')
             self._plugin_manager.send_plugin_message(self._identifier, dict(type="status", msg="self-test-done", code=self.acclrmtr_self_test_process.returncode))
             self.sts_self_test_active = False
             if (self.acclrmtr_self_test_process.returncode == 0):
@@ -426,12 +433,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         # Get selected calibration type
         type = self.get_selected_calibration_type()
         if type is None:
-            self._logger.error("Can't send result without a calibration selected!")
+            if VERBOSE: self._logger.error("Can't send result without a calibration selected!")
             return
         ismag = get_ismag(self.active_solution.w_bp, type, self.active_solution.wc, self.active_solution.zt, vtol=self.calibration_vtol)
         data = dict(
             type = 'verification_result',
-            w_bp = self.active_solution.w_bp.tolist(),
+            w_bp = (self.active_solution.w_bp / 2. / pi).tolist(),
             oldG = self.active_solution.G.tolist(),
             compensator_mag = ismag.tolist(),
             new_mag = (self.active_solution.G * ismag).tolist(),
@@ -464,8 +471,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_acclrmtr_active = True
         self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
         self.send_client_acclrmtr_data_TMR.start()
-        text = 'Accelerometer Connected successfully' + '<br>' + 'Select X or Y axis to start the calibration'
-        self.send_logger_info(text)
         self.acclrmtr_self_test_monitor_for_end()
 
 
@@ -484,7 +489,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             status = status
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
-        self.send_logger_info('Printer connection verified!!')
 
 
     def on_calibrate_axis_btn_click(self, axis):
@@ -512,8 +516,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.send_client_clear_calibration_result()
             self.send_client_clear_verification_result()
 
-            self.send_logger_info('Calibration started on axis:' + axis)
-            self._logger.info(f'calibrate_axis started on axis: {axis}')
+            if VERBOSE > 1: self._logger.info(f'calibrate_axis started on axis: {axis}')
             self.fsm_update_TMR = ResettableTimer(FSM_UPDATE_RATE_SEC, self.fsm_update_and_manage_tmr)
             self.fsm_update_TMR.start()
             self.fsm_start(axis)
@@ -542,7 +545,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         ismag = get_ismag(self.active_solution.w_bp, type, self.active_solution.wc, self.active_solution.zt, vtol=self.calibration_vtol)
         data = dict(
             type = 'calibration_result',
-            w_bp = self.active_solution.w_bp.tolist(),
+            istype = type, # TODO: Confusing.
+            w_bp = (self.active_solution.w_bp / 2. / pi).tolist(),
             G = self.active_solution.G.tolist(),
             compensator_mag = ismag.tolist(),
             new_mag = (self.active_solution.G * ismag).tolist()
@@ -555,10 +559,10 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
         type = self.get_selected_calibration_type()
         if type is None or self.fsm.state is not AxisRespnsFSMStates.IDLE: # TODO: Check printer is connected
-            self._logger.error(f'Calibration load command conditions not correct.')
+            if VERBOSE: self._logger.error(f'Calibration load command conditions not correct.')
             return
         
-        self._logger.info(f'Sending calibration ' + type)
+        if VERBOSE > 1: self._logger.info(f'Sending calibration ' + type)
 
         mode_code = ''
         if type == 'zv': mode_code = '1'
@@ -585,17 +589,21 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         printer_configuration_command = 'M493 ' + self.active_solution_axis.upper() + mode_code + ' ' \
                                         + frequency_code + f'{self.active_solution.wc/2./pi:0.2f}' + ' ' \
                                         + zeta_code + f'{self.active_solution.zt:0.4f}'
-        if type in ['ei', 'ei2h', 'ei3h']:
+        ei_type = type in ['ei', 'ei2h', 'ei3h']
+        if ei_type:
             printer_configuration_command += ' ' + vtol_code + f'{self.calibration_vtol:0.2f}'
 
-        self._logger.info(f'Configuring printer with: {printer_configuration_command}')
-        self.send_logger_info('Configuring printer with:' + printer_configuration_command)
+        if VERBOSE > 1: self._logger.info(f'Configuring printer with: {printer_configuration_command}')
+        self.send_client_logger_info('Sent printer: ' + printer_configuration_command \
+                                        + ' (Set the ' + self.active_solution_axis.upper() + ' axis to use ' + type.upper() \
+                                        + f' shaping @ {self.active_solution.wc/2./pi:0.2f}Hz & ζ = {self.active_solution.zt:0.4f}' \
+                                        + (f' & vtol = {self.calibration_vtol:0.2f}).' if ei_type else ').') )
         self.send_printer_command(printer_configuration_command)
 
         self.sts_calibration_saved = False
 
         self.sts_axis_verification_active = True
-        self._logger.info(f'verify started on axis: {self.active_solution_axis}')
+        if VERBOSE > 1: self._logger.info(f'verify started on axis: {self.active_solution_axis}')
         self.fsm_update_TMR = ResettableTimer(FSM_UPDATE_RATE_SEC, self.fsm_update_and_manage_tmr)
         self.fsm_update_TMR.start()
         self.fsm_start(self.active_solution_axis)
@@ -605,41 +613,38 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     def on_save_calibration_btn_click(self):
         if self.tab_layout.save_calibration_btn.disabled: return
-
         self.send_printer_command('M500')
-
         self.sts_calibration_saved = True
-
-        self.send_logger_info('Saved Calibration successfully')
+        self.send_client_logger_info('Sent printer: M500 (settings saved to EEPROM).')
         self.update_tab_layout()
 
 
     def on_vtol_slider_update(self, val):
         val = float(val)
         if (val/100.) != self.calibration_vtol:
-            self.calibration_vtol = val/100.
+            if self.get_selected_calibration_type() == 'ei2h':
+                self.calibration_vtol = max(0.01, val/100.) # 2H EI does not support 0 vtol.
+            else: self.calibration_vtol = val/100.
             if self.active_solution_axis == 'x': self.x_calibration_sent_to_printer = False
             elif self.active_solution_axis == 'y': self.y_calibration_sent_to_printer = False
             self.sts_calibration_saved = False
             self.send_client_clear_verification_result()
             self.send_client_calibration_result(self.get_selected_calibration_type())
             self.update_tab_layout()
-            
-    def on_start_over_btn_click(self):
-        #Reset all the states in the server
+
+
+    def on_clear_session_btn_click(self):
+        if self.tab_layout.clear_session_btn.disabled: return
+
+        # FSM State Reset
+        self.fsm_reset()
+        self.fsm.state = AxisRespnsFSMStates.IDLE
+
+        # Plugin Data Reset
         self.sts_self_test_active = False
         self.sts_axis_calibration_active = False
         self.sts_axis_verification_active = False
         self.sts_acclrmtr_connected = False
-        self.tab_layout.calibrate_x_axis_btn.disabled = True
-        self.tab_layout.calibrate_y_axis_btn.disabled = True
-        self.tab_layout.load_calibration_btn.disabled = True
-        self.tab_layout.save_calibration_btn.disabled = True
-        self.tab_layout.acclrmtr_connect_btn.state = AcclrmtrConnectButtonStates.NOTCONNECTED
-        self.tab_layout.calibrate_x_axis_btn.state = CalibrateAxisButtonStates.NOTCALIBRATED
-        self.tab_layout.calibrate_y_axis_btn.state = CalibrateAxisButtonStates.NOTCALIBRATED
-        self.tab_layout.load_calibration_btn.state = LoadCalibrationButtonStates.NOTLOADED
-        self.tab_layout.save_calibration_btn.state = SaveCalibrationButtonStates.NOTSAVED
         self.sts_axis_calibration_axis = None
         self.sts_calibration_saved = False
         self.active_solution = None
@@ -647,14 +652,18 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.active_verification_result = None
         self.x_calibration_sent_to_printer = False
         self.y_calibration_sent_to_printer = False
-        self.send_client_layout_status()
+        self.update_tab_layout()
 
-    def send_logger_info(self, text):
+
+    def send_client_logger_info(self, text):
+        now = datetime.now()
+        text_w_timestamp = now.strftime("%H:%M:%S") + ' ' + text
         data = dict(
             type = 'logger_info',
-            message = text
+            message = text_w_timestamp
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
+
 
     ##~~ SimpleApiPlugin mixin
     def get_api_commands(self):
@@ -667,7 +676,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             save_calibration_btn_click=[],
             vtol_slider_update=['val'],
             get_connection_status=[],
-            start_over_btn_click=[]
+            start_over_btn_click=[],
+            clear_session_btn_click=[]
         )
 
     
@@ -680,11 +690,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'save_calibration_btn_click': self.on_save_calibration_btn_click()
         elif command == 'vtol_slider_update': self.on_vtol_slider_update(data['val'])
         elif command == 'get_connection_status': self.report_connection_status()
-        elif command == 'start_over_btn_click': self.on_start_over_btn_click()
+        elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
+
 
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
-        self._logger.info(f'Got line from printer: {line}')
+        if VERBOSE > 2: self._logger.info(f'Got line from printer: {line}')
         if not self.initialized: return line
         if 'M494' in line:
             if 'FTMCFG' in line:
@@ -698,18 +709,23 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                             self.fsm.axis_reported_len_recvd = True
                             self.fsm.axis_reported_len = float(result[key])
                 self.metadata['FTMCFG'] = result
-                self._logger.info('Metadata updated:')
-                self._logger.info(self.metadata)
+                if VERBOSE > 1: self._logger.info('Metadata updated:')
+                if VERBOSE > 1: self._logger.info(self.metadata)
             elif 'profile done' in line:
                 if self.fsm.state == AxisRespnsFSMStates.SWEEP:
                     self.fsm.sweep_done_recvd = True
-                    self._logger.info(f'Got sweep done message')
-                    self.send_logger_info('Sweep done successfully!!')
-
+                    if VERBOSE > 1: self._logger.info(f'Got sweep done message')
+            # Will be obsolete in new firmware.
+            elif 'len=' in line:
+                if self.fsm.state == AxisRespnsFSMStates.GET_AXIS_INFO:
+                    self.fsm.axis_reported_len_recvd = True
+                    split_line = re.split(r"M494 len=", line.strip())
+                    self.fsm.axis_reported_len = float(split_line[1])
+                    if VERBOSE > 1: self._logger.info(f'Got reported length = {self.fsm.axis_reported_len}')
 
         elif self.fsm.state == AxisRespnsFSMStates.CENTER and (self.fsm.axis.upper() + ':') in line:
             self.fsm.axis_last_reported_pos = parse_position_line(line)[self.fsm.axis]
-            self._logger.info(f'Got reported position = {self.fsm.axis_last_reported_pos}')
+            if VERBOSE > 1: self._logger.info(f'Got reported position = {self.fsm.axis_last_reported_pos}')
         elif 'NAME:' in line or line.startswith('NAME.'):
             split_line = regex_firmware_splitter.split(line.strip())[
                 1:
@@ -719,8 +735,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     result[key] = value.strip()
             if result.get('FIRMWARE_NAME') is not None:
                 self.metadata['FIRMWARE'] = result
-                self._logger.info('Metadata updated:')
-                self._logger.info(self.metadata)
+                if VERBOSE > 1: self._logger.info('Metadata updated:')
+                if VERBOSE > 1: self._logger.info(self.metadata)
         elif 'M92' in line:
             match = regex_steps_per_unit.search(line)
             if match is not None:
@@ -732,8 +748,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.fsm.axis_reported_steps_per_mm = result[self.fsm.axis]
                 self.fsm.axis_reported_steps_per_mm_recvd = True
                 self.metadata['STEPSPERUNIT'] = str(result)
-                self._logger.info('Metadata updated:')
-                self._logger.info(self.metadata)
+                if VERBOSE > 1: self._logger.info('Metadata updated:')
+                if VERBOSE > 1: self._logger.info(self.metadata)
         return line
 
 
@@ -850,7 +866,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     
     def fsm_on_GET_AXIS_INFO_entry(self):
-        self.send_printer_command('M494')
+        # self.send_printer_command('M494') # For new firmware, send M494 only.
+        self.send_printer_command('M494 L ' + self.fsm.axis.upper())
         self.send_printer_command('M92')
 
     
@@ -876,7 +893,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
     
     def fsm_on_CENTER_during(self):
         self.send_printer_command('M114')
-        self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
+        if VERBOSE > 1: self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
         if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or not self._settings.get(["home_axis_before_calibration"]) or SIMULATION:
             
             if self.fsm.axis_centering_wait_time >= self.fsm.axis_reported_len/2/(MOVE_TO_CENTER_SPEED_MM_PER_MIN/60):
@@ -908,8 +925,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if self.fsm.in_state_time > FSM_SWEEP_START_DLY and not self.fsm.sweep_initiated:
             if not SIMULATION:
 
-                f1 = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
-                
+                f1_max = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+                if self._settings.get(["override_end_frequency"]):
+                    f1 = min( f1_max, float(self._settings.get(["end_frequency_override"])))
+                else:
+                    f1 = f1_max
+                    
                 # M494
                 #
                 #  *    A<mode> Start / abort a frequency sweep profile.
@@ -929,21 +950,31 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 #  *    J<float> Delay time from opening step to sweep.
                 #  *    K<float> Delay time from sweep to closing step.
 
+                # mode_code = 0
+                # if self.fsm.axis == 'x': mode_code = 1
+                # elif self.fsm.axis == 'y': mode_code = 2
+                # # Note: the integer casts below are to match the postdata casts in
+                # # service abstraction. Service should support floats, but needs verification.
+                # cmd =    'M494' + ' A' + str(mode_code) \
+                #                 + ' B' + str(int(self._settings.get(["starting_frequency"]))) \
+                #                 + ' C' + str(f1) \
+                #                 + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
+                #                 + ' E' + str(int(self._settings.get(["acceleration_amplitude"]))) \
+                #                 + ' F' + str(self._settings.get(["step_time"])) \
+                #                 + ' H' + str(self._settings.get(["step_acceleration"])) \
+                #                 + ' I' + str(self._settings.get(["delay1_time"])) \
+                #                 + ' J' + str(self._settings.get(["delay2_time"])) \
+                #                 + ' K' + str(self._settings.get(["delay3_time"])) \
+
+                # For new firmware, use the above instead.
                 mode_code = 0
                 if self.fsm.axis == 'x': mode_code = 1
                 elif self.fsm.axis == 'y': mode_code = 2
-                # Note: the integer casts below are to match the postdata casts in
-                # service abstraction. Service should support floats, but needs verification.
-                cmd =    'M494' + ' A' + str(mode_code) \
-                                + ' B' + str(int(self._settings.get(["starting_frequency"]))) \
-                                + ' C' + str(f1) \
-                                + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
-                                + ' E' + str(int(self._settings.get(["acceleration_amplitude"]))) \
-                                + ' F' + str(self._settings.get(["step_time"])) \
-                                + ' H' + str(self._settings.get(["step_acceleration"])) \
-                                + ' I' + str(self._settings.get(["delay1_time"])) \
-                                + ' J' + str(self._settings.get(["delay2_time"])) \
-                                + ' K' + str(self._settings.get(["delay3_time"])) \
+                cmd =     'M494 F' + str(mode_code) \
+                            + ' S' + str(int(self._settings.get(["starting_frequency"]))) \
+                            + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
+                            + ' E' + str(f1) \
+                            + ' A' + str(int(self._settings.get(["acceleration_amplitude"])))
 
                 self.send_printer_command(cmd)
 
@@ -952,12 +983,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if not self.fsm.accelerometer_stopped and ((SIMULATION and self.fsm.in_state_time > 3.) or
                                                (not SIMULATION and self.fsm.sweep_done_recvd)):
             self.fsm.accelerometer_process.communicate('stop'.encode())
-            self._logger.info('Triggering accelerometer data collection stop.')
+            if VERBOSE > 1: self._logger.info('Triggering accelerometer data collection stop.')
             self.fsm.accelerometer_stopped = True
 
         if self.fsm.accelerometer_process.poll() is not None:
             f_abort = False
-            self._logger.info(f'External process (acquire) done with code: {self.fsm.accelerometer_process.returncode}')
+            if VERBOSE > 1: self._logger.info(f'External process (acquire) done with code: {self.fsm.accelerometer_process.returncode}')
             if self.fsm.accelerometer_process.returncode == 0:
                 self.sts_acclrmtr_active = False
                 self.fsm.state = AxisRespnsFSMStates.ANALYZE
@@ -1001,7 +1032,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.fsm.missed_sample_retry_count = 0
 
         if not SIMULATION:
-            f1 = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+            f1_max = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+            if self._settings.get(["override_end_frequency"]):
+                f1 = min( f1_max, float(self._settings.get(["end_frequency_override"])))
+            else:
+                f1 = f1_max    
         else:
             f1 = SIMULATION_f1
 
@@ -1020,12 +1055,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             else:
                 self.active_solution = InpShprSolution(wc, zt, w_gui_bp, G_gui)
                 self.active_solution_axis = self.fsm.axis
+                self.tab_layout.select_zvd_cal_btn.disabled = False
+                self.on_select_calibration_btn_click('zvd') # Set ZVD as default shaper selection.
             finally:
                 self.sts_axis_calibration_active = False
                 self.update_tab_layout()
-            # end of the calibration
-            self.send_logger_info('Please click Input Shapers to view the list of available shaping techniques.' + '<br>' + 'Select any one of the input shapers.')
-
         else:
             try:
                 client_ID = self._settings.get(["ORG"])
@@ -1042,11 +1076,10 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.active_verification_result = g_gui
                 if self.active_solution_axis == 'x':
                  self.x_calibration_sent_to_printer = True
-                 self.send_logger_info('X Calibration Applied successfully')
                 elif self.active_solution_axis == 'y':
                  self.y_calibration_sent_to_printer = True
-                 self.send_logger_info('Y Calibration Applied successfully')
-                self.send_client_verification_result()
+                self.send_client_popup(type='success', title='Calibration Applied', message=('The calibration for the '+self.active_solution_axis.upper()+' axis was applied successfully.'))
+                    
             finally:
                 self.sts_axis_verification_active = False
                 self.update_tab_layout()
@@ -1079,11 +1112,15 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     acceleration_amplitude=4000,
                     starting_frequency=5,
                     frequency_sweep_rate=4,
-                    step_time=0.05,
-                    step_acceleration=4000,
-                    delay1_time=0.5,
-                    delay2_time=1.,
-                    delay3_time=1. )
+                    override_end_frequency=False,
+                    end_frequency_override=80
+                    # New firmware only.
+                    # step_time=0.05,
+                    # step_acceleration=4000,
+                    # delay1_time=0.5,
+                    # delay2_time=1.,
+                    # delay3_time=1.
+                    )
 
     def get_template_vars(self):
         return dict(ORG=self._settings.get(["ORG"]), 
@@ -1097,11 +1134,14 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     acceleration_amplitude=self._settings.get(["acceleration_amplitude"]),
                     starting_frequency=self._settings.get(["starting_frequency"]),
                     frequency_sweep_rate=self._settings.get(["frequency_sweep_rate"]),
-                    step_time=self._settings.get(["step_time"]),
-                    step_acceleration=self._settings.get(["step_acceleration"]),
-                    delay1_time=self._settings.get(["delay1_time"]),
-                    delay2_time=self._settings.get(["delay2_time"]),
-                    delay3_time=self._settings.get(["delay3_time"])
+                    override_end_frequency=self._settings.get(["override_end_frequency"]),
+                    end_frequency_override=self._settings.get(["end_frequency_override"])
+                    # New firmware only.
+                    # step_time=self._settings.get(["step_time"]),
+                    # step_acceleration=self._settings.get(["step_acceleration"]),
+                    # delay1_time=self._settings.get(["delay1_time"]),
+                    # delay2_time=self._settings.get(["delay2_time"]),
+                    # delay3_time=self._settings.get(["delay3_time"])
 )
 
     def get_template_configs(self):
@@ -1112,7 +1152,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Ulendo Calibration Service"
+__plugin_name__ = "Ulendo CaaS"
 
 
 # Set the Python version your plugin is compatible with below. Recommended is Python 3 only for all new plugins.

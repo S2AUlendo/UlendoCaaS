@@ -1,7 +1,4 @@
-/* TODO: Have your plugin's CSS files generated to here. */
-
-.acclrmtr_connect_btn_NOTCONNECTED_style {
-    /* background: rgb(212, 212, 212); */
+.acclrmtr_connect_btn {
     border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
     margin-bottom: 5px;
     text-align: center;
@@ -11,7 +8,6 @@
     padding-left: 20;
     padding-right: 20;
     box-sizing: border-box;
-    background-color: #f5f5f5;
     color: #333;
     text-decoration: none;
     background-position: 0-15px;
@@ -20,56 +16,43 @@
     padding: 4px;
 }
 
+.acclrmtr_connect_btn.NOTCONNECTED_style {
+    background-color: #f5f5f5;
+}
 
-.acclrmtr_connect_btn_NOTCONNECTED_style:hover, .calibrate_axis_btn_NOTCALIBRATED_style:hover, .calibrate_axis_btn_CALIBRATING_style:hover, .zv_shapers_dropDown_btn_style:hover
-{
+.acclrmtr_connect_btn.NOTCONNECTED_style:not(:disabled):hover {
     background-color: #e6e6e6;
     background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
 }
 
-.acclrmtr_connect_btn_CONNECTING_style {
-    /* background: rgb(255, 255, 0); yellow */
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 6px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
+.acclrmtr_connect_btn.NOTCALIBRATED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+.acclrmtr_connect_btn.CONNECTING_style {
     background-color: rgb(255, 255, 0);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
+    color: #777777;
+    cursor: not-allowed;
 }
 
-.acclrmtr_connect_btn_CONNECTED_style {
-    /*background: rgb(0, 255, 0); green */
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background-color:  rgb(0, 255, 0); /*#f5f5f5;*/
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
+.acclrmtr_connect_btn.CONNECTED_style {
+    background-color:  rgb(0, 255, 0);
+}
+
+.acclrmtr_connect_btn.CONNECTED_style:not(:disabled):hover {
+    background-color: #4bff4b;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#4bff4b));
+}
+
+.acclrmtr_connect_btn.CONNECTED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
 }
 
 
-.calibrate_axis_btn_NOTCALIBRATED_style {
-    /* background: rgb(212, 212, 212); */
+
+.calibrate_axis_btn {
     border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
     margin-bottom: 5px;
     text-align: center;
@@ -79,7 +62,6 @@
     padding-left: 20;
     padding-right: 20;
     box-sizing: border-box;
-    background-color: #f5f5f5;
     color: #333;
     text-decoration: none;
     background-position: 0-15px;
@@ -88,70 +70,223 @@
     padding: 4px;
 }
 
-.calibrate_axis_btn_CALIBRATING_style {
-    /* background: rgb(255, 255, 0); yellow */
+.calibrate_axis_btn.NOTCALIBRATED_style {
+    background-color: #f5f5f5;
+}
+
+.calibrate_axis_btn.NOTCALIBRATED_style:not(:disabled):hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.calibrate_axis_btn.NOTCALIBRATED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+.calibrate_axis_btn.CALIBRATING_style {
+    background-color: #ffff00;
+    color: #777777;
+    cursor: not-allowed;
+}
+
+.calibrate_axis_btn.CALIBRATIONREADY_style {
+    background-color: #00ff00;
+}
+
+.calibrate_axis_btn.CALIBRATIONREADY_style:not(:disabled):hover {
+    background-color: #4bff4b;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#4bff4b));
+}
+
+.calibrate_axis_btn.CALIBRATIONREADY_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+.calibrate_axis_btn.CALIBRATIONAPPLIED_style {
+    background-color: #00ffff;
+}
+
+.calibrate_axis_btn.CALIBRATIONAPPLIED_style:not(:disabled):hover {
+    background-color: #56ffff;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#56ffff));
+}
+
+.calibrate_axis_btn.CALIBRATIONAPPLIED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+
+
+
+/* Container holding the dropdown button */
+.is_select_dropdown {
+    position: relative;
+    display: none;
+    width: 50%;
+    padding-left: 20;
+    padding-right: 20;
+}
+
+.is_select_dropbtn {
     border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
     margin-bottom: 5px;
     text-align: center;
     background-repeat: repeat-x;
     display: block;
+    width: 100%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* Dropdown content (hidden by default) */
+.is_select_dropdown_content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 240px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Buttons inside the dropdown */
+.is_select_dropdown_content button {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    width: 100%;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.is_select_dropdown_content button.NOTSELECTED_style {
+    background-color: #f5f5f5;
+}
+
+.is_select_dropdown_content button.NOTSELECTED_style:hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.is_select_dropdown_content button.SELECTED_style {
+    background-color: #bdbdbd;
+}
+
+.is_select_dropdown_content button.SELECTED_style:hover {
+    background-color: #dbdbdb;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#dbdbdb));
+}
+
+.is_select_dropbtn.NOSELECTION_style {
+    background-color: #f5f5f5;
+}
+
+.is_select_dropbtn.NOSELECTION_style:not(:disabled):hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.is_select_dropbtn.NOSELECTION_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+.is_select_dropbtn.SELECTIONACTIVE_style {
+    background-color: #bdbdbd;
+}
+
+.is_select_dropbtn.SELECTIONACTIVE_style:not(:disabled):hover {
+    background-color: #dbdbdb;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#dbdbdb));
+}
+
+.is_select_dropbtn.SELECTIONACTIVE_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+/* Show the dropdown menu on hover */
+.is_select_dropdown:not(.disabled):hover .is_select_dropdown_content {
+    display: block;
+}
+
+
+
+
+
+.load_calibration_btn {
+    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: none;
     width: 50%;
     padding-left: 20;
     padding-right: 20;
     box-sizing: border-box;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.load_calibration_btn.NOTLOADED_style {
+    background-color: #f5f5f5;
+}
+
+.load_calibration_btn.NOTLOADED_style:not(:disabled):hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.load_calibration_btn.NOTLOADED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+.load_calibration_btn.LOADING_style {
     background-color: rgb(255, 255, 0);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-
+    color: #777777;
+    cursor: not-allowed;
 }
 
-.calibrate_axis_btn_CALIBRATIONREADY_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background-color: rgb(0, 255, 0); /*green*/
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-
+.load_calibration_btn.LOADED_style {
+    background-color: #00ffff;
 }
 
-.calibrate_axis_btn_CALIBRATIONAPPLIED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: rgb(0, 255, 255);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
+.load_calibration_btn.LOADED_style:not(:disabled):hover {
+    background-color: #56ffff;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#56ffff));
+}
 
-
+.load_calibration_btn.LOADED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
 }
 
 
-.zv_shapers_dropDown_btn_style{
+
+.save_calibration_btn {
     border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
     margin-bottom: 5px;
     text-align: center;
@@ -161,161 +296,45 @@
     padding-left: 20;
     padding-right: 20;
     box-sizing: border-box;
+    color: #333;
+    text-decoration: none;
+    background-position: 0-15px;
+    transition: background-position .1s linear;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.save_calibration_btn.NOTSAVED_style {
     background-color: #f5f5f5;
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
 }
 
-.select_calibration_btn_group{
-    display: none;
-    width: 50%;
+.save_calibration_btn.NOTSAVED_style:not(:disabled):hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
 }
 
-.show {
-  display: block;
+.save_calibration_btn.NOTSAVED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
 }
 
-.select_calibration_btn_NOTSELECTED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: #f5f5f5;
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-    width: 30%;
+.save_calibration_btn.SAVED_style {
+    background-color: #00ffff;
 }
 
-.select_calibration_btn_SELECTED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 30%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: rgb(79, 79, 79);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
+.save_calibration_btn.SAVED_style:not(:disabled):hover {
+    background-color: #56ffff;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#56ffff));
+}
+
+.save_calibration_btn.SAVED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
 }
 
 
-.load_calibration_btn_NOTLOADED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: none;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: #f5f5f5;
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-}
 
-.load_calibration_btn_LOADING_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: rgb(255, 255, 0);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-
-}
-
-.load_calibration_btn_LOADED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: rgb(0, 255, 255);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-}
-
-.save_calibration_btn_NOTSAVED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: none;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: #f5f5f5;
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-;
-}
-
-.save_calibration_btn_SAVED_style {
-    border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
-    margin-bottom: 5px;
-    text-align: center;
-    background-repeat: repeat-x;
-    display: block;
-    width: 50%;
-    padding-left: 20;
-    padding-right: 20;
-    box-sizing: border-box;
-    background: rgb(0, 255, 255);
-    color: #333;
-    text-decoration: none;
-    background-position: 0-15px;
-    transition: background-position .1s linear;
-    border-radius: 4px;
-    padding: 4px;
-}
-
-.start_over_btn_style {
+.clear_session_btn {
     border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
     margin-bottom: 5px;
     text-align: center;
@@ -333,6 +352,19 @@
     border-radius: 4px;
     padding: 4px;
 }
+
+.clear_session_btn:not(:disabled):hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.clear_session_btn:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+
+
 
 #vtol_group {
     display: flex;

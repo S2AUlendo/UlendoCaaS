@@ -1,15 +1,15 @@
-<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
+{# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
 
 <div class="card">
   <div class="card-body">
-    <h5 class="card-title">Ulendo Calibration Plugin</h5>
+    <h5 class="card-title">Ulendo CaaS Calibration Plugin</h5>
   </div>
 </div>
 
 <div class="about_collapsible">
   <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
   <div class="hide">
-    <p class="abouttext">This plugin allows you to automatically tune the vibration compensation algorithms 
+    <p class="abouttext">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
     in Marlin's FTM (Fixed-Time-Motion) module.</p>
     <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
     times by improving printer reliability at higher speeds and accelerations.</p>
@@ -21,7 +21,6 @@
   </div>
 </div>
 
-
 <div id='acclrmtr_live_data_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
 <button id='acclrmtr_connect_btn' data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect Accelerometer') }}</button>
@@ -31,29 +30,21 @@
     <button id='calibrate_y_axis_btn' data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
 </div>
 
-<script>
-  function onClickSelectZvDropDownBtn() {
-    if (( document.getElementById("acclrmtr_connect_btn").innerText == 'Accelerometer Connected') &&
-       ( document.getElementById("calibrate_x_axis_btn").innerText == 'X Calibration Ready' ||
-         document.getElementById("calibrate_y_axis_btn").innerText == 'Y Calibration Ready' )){
-      document.getElementById("select_calibration_div").classList.toggle("show");
-    }
-  }
-</script>
 
-<div id= 'zv_shapers_div_block'>
-  <button id='zv_shapers_dropDown_btn' onclick ="onClickSelectZvDropDownBtn()">Input Shapers</button>
-  <div id =select_calibration_div class="select_calibration_btn_group">
-   <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn" style="display:none;">{{ _('ZV-IS') }}</button>
-   <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="is_select_btn">{{ _('ZVD-IS') }}</button>
-   <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="is_select_btn">{{ _('MZV-IS') }}</button>
-   <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="is_select_btn">{{ _('EI-IS') }}</button>
-   <button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="is_select_btn">{{ _('2HEI-IS') }}</button>
-   <button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="is_select_btn">{{ _('3HEI-IS') }}</button>
+<div class="is_select_dropdown" id="is_select_dropdown_id">
+  <button id="is_select_dropbtn">Shaper Selection</button>
+  <div class="is_select_dropdown_content">
+    <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="is_select_btn">{{ _('ZV-IS') }}</button>
+    <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="is_select_btn">{{ _('ZVD-IS (Recommended)') }}</button>
+    <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="is_select_btn">{{ _('MZV-IS') }}</button>
+    <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="is_select_btn">{{ _('EI-IS') }}</button>
+    <button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="is_select_btn">{{ _('2HEI-IS') }}</button>
+    <button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="is_select_btn">{{ _('3HEI-IS') }}</button>
   </div>
 </div>
 
-<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
+
+{# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
 <div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
 <div id="vtol_group">
@@ -63,19 +54,14 @@
 </div>
 
 <div class="manage_calibration_btn_group">
-<button id='load_calibration_btn' data-bind="click: onClickLoadCalibrationBtn">{{ _('Load Calibration') }}</button>
-<button id='save_calibration_btn' data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
+  <button id='load_calibration_btn' data-bind="click: onClickLoadCalibrationBtn">{{ _('Load Calibration') }}</button>
+  <button id='save_calibration_btn' data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
 </div>
 
-<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script>
+{# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
 <div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
-<button id='start_over_btn' data-bind="click: onClickStartOverBtn">Start Over</button>
+<button id='clear_session_btn' data-bind="click: onClickClearSessionBtn">Clear Session</button>
 
-<div class="log_collapsible">
-  <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.log_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Log') }}</a></div>
-  <div class="hide">
-    <div id='Summary'  data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="scrollspy-example bg-body-tertiary p-3 rounded-2" tabindex="0">
-    <h5> Execution Log </h5>
-    <pre id='status'> </pre>
-</div>
+<h5>Output Log</h5>
+<pre id='output_log'></pre>

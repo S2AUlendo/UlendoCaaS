@@ -1,5 +1,3 @@
-// TODO: invoke an update when / if the server is reconnected
-
 $(function() {
     function AutocalViewModel(parameters) {
         var self = this;
@@ -10,43 +8,27 @@ $(function() {
 
         self.clearAllButtonStates = function() {
             // Reset the state of accelerometer button
-            if (acclrmtr_connect_btn.classList.contains("acclrmtr_connect_btn_NOTCONNECTED_style")){ acclrmtr_connect_btn.classList.remove("acclrmtr_connect_btn_NOTCONNECTED_style"); }
-            if (acclrmtr_connect_btn.classList.contains("acclrmtr_connect_btn_CONNECTING_style")){ acclrmtr_connect_btn.classList.remove("acclrmtr_connect_btn_CONNECTING_style"); }
-            if (acclrmtr_connect_btn.classList.contains("acclrmtr_connect_btn_CONNECTED_style")){ acclrmtr_connect_btn.classList.remove("acclrmtr_connect_btn_CONNECTED_style"); }
-            acclrmtr_connect_btn.classList.add("acclrmtr_connect_btn_NOTCONNECTED_style"); // default state is not connected state
-
+            acclrmtr_connect_btn.className = "acclrmtr_connect_btn";
             // Reset the state of Calibrate button
-            var calibrate_axis_btns = document.querySelectorAll("div.calibrate_axis_btn_group button");
+            var calibrate_axis_btns = document.querySelectorAll(".calibrate_axis_btn_group button");
             for (var i = 0; i < calibrate_axis_btns.length; i++) {
-                if (calibrate_axis_btns[i].classList.contains("calibrate_axis_btn_NOTCALIBRATED_style")) { calibrate_axis_btns[i].classList.remove("calibrate_axis_btn_NOTCALIBRATED_style"); }
-                if (calibrate_axis_btns[i].classList.contains("calibrate_axis_btn_CALIBRATING_style")) { calibrate_axis_btns[i].classList.remove("calibrate_axis_btn_CALIBRATING_style"); }
-                if (calibrate_axis_btns[i].classList.contains("calibrate_axis_btn_CALIBRATIONREADY_style")) { calibrate_axis_btns[i].classList.remove("calibrate_axis_btn_CALIBRATIONREADY_style"); }
-                if (calibrate_axis_btns[i].classList.contains("calibrate_axis_btn_CALIBRATIONAPPLIED_style")) { calibrate_axis_btns[i].classList.remove("calibrate_axis_btn_CALIBRATIONAPPLIED_style"); }
-                calibrate_axis_btns[i].classList.add("calibrate_axis_btn_NOTCALIBRATED_style"); // default state is not calibrated state
+                calibrate_axis_btns[i].className = "calibrate_axis_btn";
             }
 
-	    // Reset the state of ZV Shapers button
-            var select_calibration_btns = document.querySelectorAll("div.select_calibration_btn_group button");
+            // Reset the state of the shaper dropdown button.
+            is_select_dropbtn.className = "is_select_dropbtn";
+
+	        // Reset the state of shaper selection buttons.
+            var select_calibration_btns = document.querySelectorAll(".is_select_dropdown_content button");
             for (var i = 0; i < select_calibration_btns.length; i++) {
-                if (select_calibration_btns[i].classList.contains("select_calibration_btn_NOTSELECTED_style")) { select_calibration_btns[i].classList.remove("select_calibration_btn_NOTSELECTED_style"); }
-                if (select_calibration_btns[i].classList.contains("select_calibration_btn_SELECTED_style")) { select_calibration_btns[i].classList.remove("select_calibration_btn_SELECTED_style"); }
-                select_calibration_btns[i].classList.add("select_calibration_btn_NOTSELECTED_style"); // default state is not selected state
+                select_calibration_btns[i].className = "select_calibration_btn_NOTSELECTED_style";
             }
 
-            // Reset the state of Load Calibration
-            if (load_calibration_btn.classList.contains("load_calibration_btn_NOTLOADED_style")){ load_calibration_btn.classList.remove("load_calibration_btn_NOTLOADED_style"); }
-            if (load_calibration_btn.classList.contains("load_calibration_btn_LOADING_style")){ load_calibration_btn.classList.remove("load_calibration_btn_LOADING_style"); }
-            if (load_calibration_btn.classList.contains("load_calibration_btn_LOADED_style")){ load_calibration_btn.classList.remove("load_calibration_btn_LOADED_style"); }
-            load_calibration_btn.classList.add("load_calibration_btn_NOTLOADED_style"); // default state is not connected state
+            load_calibration_btn.className = "load_calibration_btn";
 
-            // Reset the state of Save Calibration
-            if (save_calibration_btn.classList.contains("save_calibration_btn_NOTSAVED_style")){ save_calibration_btn.classList.remove("save_calibration_btn_NOTSAVED_style"); }
-            if (save_calibration_btn.classList.contains("save_calibration_btn_SAVED_style")){ save_calibration_btn.classList.remove("save_calibration_btn_SAVED_style"); }
-            save_calibration_btn.classList.add("save_calibration_btn_NOTSAVED_style"); // default state is not saved state
+            save_calibration_btn.className = "save_calibration_btn";
 
-            // Reset the drop down button
-            if (document.getElementById("select_calibration_div").classList.contains("show")){document.getElementById("select_calibration_div").classList.remove("show");}
-            document.getElementById("select_calibration_div").classList.add("zv_shapers_dropDown_btn_style");
+            clear_session_btn.className = "clear_session_btn";
        }
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
@@ -60,9 +42,6 @@ $(function() {
                     yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false }
                 };
                 Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout);
-                // Display the calibrate button after accelerometer connection.
-                document.getElementById('calibrate_x_axis_btn').style.display = "block";
-                document.getElementById('calibrate_y_axis_btn').style.display = "block";
                 return;
             }
 
@@ -71,13 +50,11 @@ $(function() {
                 let series1 = { x: data.w_bp, y: data.G, mode: "lines", name: 'Rspns' };
                 let series2 = { x: data.w_bp, y: data.compensator_mag, mode: "lines", name: 'Cmpnstr Rspns' };
                 let series3 = { x: data.w_bp, y: data.new_mag, mode: "lines", name: 'New Rspns Estim' };
-                var layout = { title: 'Calibration Preview',
-                    xaxis: { title: 'Frequency [rad/sec]', showgrid: false, zeroline: false, autorange: true },
+                var layout = { title: 'Calibration Preview: '.concat(data.istype.toUpperCase()),
+                    xaxis: { title: 'Frequency [Hz]', showgrid: false, zeroline: false, autorange: true },
                     yaxis: { title: 'Magnitude', showline: false }
                     };
                 Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout);
-                // Display the load calibration button only after input shpaers are selected.
-                document.getElementById('load_calibration_btn').style.display = "block";
             }
 
             if (data.type == "verification_result") {
@@ -86,13 +63,10 @@ $(function() {
                 let series3 = { x: data.w_bp, y: data.new_mag, mode: "lines", name: 'New Rspns Estim' };
                 let series4 = { x: data.w_bp, y: data.G, mode: "lines", name: 'New Rspns Meas' };
                 var layout = { title: 'Verification Result',
-                    xaxis: { title: 'Frequency [rad/sec]', showgrid: false, zeroline: false, autorange: true },
+                    xaxis: { title: 'Frequency [Hz]', showgrid: false, zeroline: false, autorange: true },
                     yaxis: { title: 'Magnitude', showline: false }
                     };
                 Plotly.newPlot('verification_results_graph', [series1, series2, series3, series4], layout);
-                // Display the save calibration button only after verification steps are processed.
-                document.getElementById('save_calibration_btn').style.display = "block";
-                document.getElementById('status').innerHTML += '<br>' + 'Calibration Loaded!!' + '<br>' + 'Verification results are plotted successfully.'
             }
 
 
@@ -110,39 +84,97 @@ $(function() {
             }
 
             if (data.type == "logger_info") {
-                document.getElementById('status').innerHTML += '<br>' + data.message;
+                output_log.innerHTML += data.message + '<br>';
             }
 
             if (data.type == "layout_status_1") {
                 self.clearAllButtonStates();
                 acclrmtr_connect_btn.disabled = data.acclrmtr_connect_btn_disabled;
                 
-                acclrmtr_connect_btn.classList.add("acclrmtr_connect_btn_".concat(data.acclrmtr_connect_btn_state, "_style"));
-                calibrate_x_axis_btn.classList.add("calibrate_axis_btn_".concat(data.calibrate_x_axis_btn_state, "_style"));
-                calibrate_y_axis_btn.classList.add("calibrate_axis_btn_".concat(data.calibrate_y_axis_btn_state, "_style"));
+                acclrmtr_connect_btn.classList.add("".concat(data.acclrmtr_connect_btn_state, "_style"));
+                calibrate_x_axis_btn.classList.add("".concat(data.calibrate_x_axis_btn_state, "_style"));
+                calibrate_y_axis_btn.classList.add("".concat(data.calibrate_y_axis_btn_state, "_style"));
                 
                 if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { acclrmtr_connect_btn.innerText = 'Connect Accelerometer'; }
                 else if (data.acclrmtr_connect_btn_state == 'CONNECTING') { acclrmtr_connect_btn.innerText = 'Connecting'; }
-                else if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
-                   acclrmtr_connect_btn.innerText = 'Accelerometer Connected';
+                
+                if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
+                    acclrmtr_connect_btn.innerText = 'Accelerometer Connected';
+                    calibrate_x_axis_btn.style.display = "block";   // TODO: control the visibility of buttons server-side
+                                                                    // in order to match the rest of the software flow.
+                    calibrate_y_axis_btn.style.display = "block";
+                } else {
+                    calibrate_x_axis_btn.style.display = "none";
+                    calibrate_y_axis_btn.style.display = "none";
                 }
 
+                is_select_dropdown_id.style.display = "none";
+                save_calibration_btn.style.display = "none";
                 if (data.calibrate_x_axis_btn_state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') { calibrate_x_axis_btn.innerText = 'Calibrating X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     calibrate_x_axis_btn.innerText = 'X Calibration Ready';
+                    is_select_dropdown_id.style.display = "inline-block";
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {
-                   calibrate_x_axis_btn.innerText = 'X Calibration Applied';
+                   calibrate_x_axis_btn.innerText = 'X Calibration Loaded';
+                   save_calibration_btn.style.display = "block";
+                // is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
+                                                                         // after loading without re-running the calibration routing.
                 }
 
                 if (data.calibrate_y_axis_btn_state == 'NOTCALIBRATED') { calibrate_y_axis_btn.innerText = 'Calibrate Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATING') { calibrate_y_axis_btn.innerText = 'Calibrating Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONREADY') {
                    calibrate_y_axis_btn.innerText = 'Y Calibration Ready';
+                   is_select_dropdown_id.style.display = "inline-block";
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
-                    calibrate_y_axis_btn.innerText = 'Y Calibration Applied';
+                    calibrate_y_axis_btn.innerText = 'Y Calibration Loaded';
+                    save_calibration_btn.style.display = "block";
+                //  \is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
+                                                                           // after loading without re-running the calibration routing.
+                                                                        }
+
+                if ( data.select_zv_btn_state == 'SELECTED' ) {
+                    is_select_dropbtn.innerText = 'ZV Shaper Selected'
+                    select_zv_cal_btn.classList.add('SELECTED_style');
+                }
+                if ( data.select_zvd_btn_state == 'SELECTED' ) {
+                    is_select_dropbtn.innerText = 'ZVD Shaper Selected'
+                    select_zvd_cal_btn.classList.add('SELECTED_style');
+                }
+                if ( data.select_mzv_btn_state == 'SELECTED' ) {
+                    is_select_dropbtn.innerText = 'MZV Shaper Selected'
+                    select_mzv_cal_btn.classList.add('SELECTED_style');
+                }
+                if ( data.select_ei_btn_state == 'SELECTED' ) {
+                    is_select_dropbtn.innerText = 'EI Shaper Selected'
+                    select_ei_cal_btn.classList.add('SELECTED_style');
+                }
+                if ( data.select_ei2h_btn_state == 'SELECTED' ) {
+                    is_select_dropbtn.innerText = '2 Hump EI Shaper Selected'
+                    select_ei2h_cal_btn.classList.add('SELECTED_style');
+                }
+                if ( data.select_ei3h_btn_state == 'SELECTED' ) {
+                    is_select_dropbtn.innerText = '3 Hump EI Shaper Selected'
+                    select_ei3h_cal_btn.classList.add('SELECTED_style');
+                }
+
+                save_calibration_btn.classList.add("".concat(data.save_calibration_btn_state, "_style"));
+                
+                if (    data.select_zv_btn_state   == "SELECTED" ||
+                        data.select_zvd_btn_state  == "SELECTED" ||
+                        data.select_mzv_btn_state  == "SELECTED" ||
+                        data.select_ei_btn_state   == "SELECTED" ||
+                        data.select_ei2h_btn_state == "SELECTED" ||
+                        data.select_ei3h_btn_state == "SELECTED"    ) {
+                    is_select_dropbtn.classList.add("SELECTIONACTIVE_style");
+                    load_calibration_btn.style.display = "block";
+                } else {
+                    is_select_dropbtn.classList.add("NOSELECTION_style");
+                    is_select_dropbtn.innerText = "Shaper Selection";
+                    load_calibration_btn.style.display = "none";
                 }
 
                 if (data.load_calibration_btn_state == 'NOTLOADED') { load_calibration_btn.innerText = 'Load Calibration'; }
@@ -153,24 +185,21 @@ $(function() {
                   load_calibration_btn.innerText = 'Calibration Loaded';
                 }
 
-
-                zv_shapers_dropDown_btn.classList.add("zv_shapers_dropDown_btn_style");;
-                document.getElementById("select_calibration_div").classList.add("select_calibration_btn_group");
-
-                select_zv_cal_btn.classList.add("select_calibration_btn_".concat(data.select_zv_btn_state, "_style"));
-                select_zvd_cal_btn.classList.add("select_calibration_btn_".concat(data.select_zvd_btn_state, "_style"));
-                select_mzv_cal_btn.classList.add("select_calibration_btn_".concat(data.select_mzv_btn_state, "_style"));
-                select_ei_cal_btn.classList.add("select_calibration_btn_".concat(data.select_ei_btn_state, "_style"));
-                select_ei2h_cal_btn.classList.add("select_calibration_btn_".concat(data.select_ei2h_btn_state, "_style"));
-                select_ei3h_cal_btn.classList.add("select_calibration_btn_".concat(data.select_ei3h_btn_state, "_style"));
-
-                load_calibration_btn.classList.add("load_calibration_btn_".concat(data.load_calibration_btn_state, "_style"));
+                load_calibration_btn.classList.add("".concat(data.load_calibration_btn_state, "_style"));
                 
-                save_calibration_btn.classList.add("save_calibration_btn_".concat(data.save_calibration_btn_state, "_style"));
-                start_over_btn.classList.add("start_over_btn_style");
-
                 calibrate_x_axis_btn.disabled = data.calibrate_x_axis_btn_disabled;
                 calibrate_y_axis_btn.disabled = data.calibrate_y_axis_btn_disabled;
+                is_select_dropbtn.disabled = (    data.select_zv_btn_disabled &&
+                        data.select_zvd_btn_disabled &&
+                        data.select_mzv_btn_disabled &&
+                        data.select_ei_btn_disabled &&
+                        data.select_ei2h_btn_disabled &&
+                        data.select_ei3h_btn_disabled );
+
+                if (is_select_dropbtn.disabled) {
+                    is_select_dropdown_id.classList.add('disabled'); }
+                else { is_select_dropdown_id.classList.remove('disabled'); }
+
                 select_zv_cal_btn.disabled = data.select_zv_btn_disabled;
                 select_zvd_cal_btn.disabled = data.select_zvd_btn_disabled;
                 select_mzv_cal_btn.disabled = data.select_mzv_btn_disabled;
@@ -180,13 +209,14 @@ $(function() {
                 load_calibration_btn.disabled = data.load_calibration_btn_disabled;
                 save_calibration_btn.disabled = data.save_calibration_btn_disabled;
 
+                clear_session_btn.disabled = data.clear_session_btn_disabled;
+
                 if (data.vtol_slider_visible) { document.getElementById("vtol_group").style.display = 'flex'; }
                 else document.getElementById("vtol_group").style.display = 'none';
 
                 return;
             }
 
-            
             if (data.type == "popup") {
                 new PNotify({
                     title: data.title,
@@ -196,7 +226,6 @@ $(function() {
                 });
                 return;
             }
-
 
             if (data.type == "printer_connection_status") {
                 if (data.status == 'connected') {
@@ -220,11 +249,14 @@ $(function() {
                                     text: gettext("Proceed"),
                                     addClass: "btn-primary",
                                     click: function () {
-                                        if (self.last_axis_click == 'load') { OctoPrint.simpleApiCommand("autocal", "load_calibration_btn_click"); }
+                                        if (self.last_axis_click == 'load') {
+                                            Plotly.purge('verification_results_graph');
+                                            OctoPrint.simpleApiCommand("autocal", "load_calibration_btn_click");
+                                        }
                                         else {
-                                           OctoPrint.simpleApiCommand("autocal", "calibrate_axis_btn_click", {axis: self.last_axis_click});
-                                           // Display the input shpaers button only after calibration is ready.
-                                           document.getElementById('zv_shapers_dropDown_btn').style.display = "block";
+                                            Plotly.purge('calibration_results_graph');
+                                            Plotly.purge('verification_results_graph');
+                                            OctoPrint.simpleApiCommand("autocal", "calibrate_axis_btn_click", {axis: self.last_axis_click});
                                         }
                                         motion_prompt.remove();
                                         motion_prompt = undefined;
@@ -252,7 +284,6 @@ $(function() {
         };
 
         self.onClickAcclrmtrConnectBtn = function() {
-            document.getElementById('status').innerHTML = "Connecting Accelerometer...";
             OctoPrint.simpleApiCommand("autocal", "acclrmtr_connect_btn_click");
         };
 
@@ -262,7 +293,6 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'x';
-            document.getElementById('status').innerHTML += "<br>" + "Calibrating X...";
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -272,7 +302,6 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'y';
-            document.getElementById('status').innerHTML += "<br>" + "Calibrating Y...";
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
@@ -282,67 +311,79 @@ $(function() {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'load';
-            document.getElementById('status').innerHTML += "<br>" + "Loading Calibration...";
-            document.getElementById('status').innerHTML += '<br>' + 'We are going to do the verification steps';
             OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
         self.onClickSelectZvCalBtn = function() {
-            document.getElementById('status').innerHTML += '<br>' + 'Selected ZV';
             OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", {type: "zv"});
         }
         self.onClickSelectZvdCalBtn = function() {
-            document.getElementById('status').innerHTML += '<br>' + 'Selected ZVD';
             OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", {type: "zvd"});
         }
         self.onClickSelectMzvCalBtn = function() {
-           document.getElementById('status').innerHTML += '<br>' + 'Selected MZV';
            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", {type: "mzv"});
         }
         self.onClickSelectEiCalBtn = function() {
-           document.getElementById('status').innerHTML += '<br>' + 'Selected EI';
            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", {type: "ei"});
         }
         self.onClickSelectEi2hCalBtn = function() {
-           document.getElementById('status').innerHTML += '<br>' + 'Selected 2HEI';
            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", {type: "ei2h"});
         }
         self.onClickSelectEi3hCalBtn = function() {
-           document.getElementById('status').innerHTML += '<br>' + 'Selected 3HEI';
            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", {type: "ei3h"});
         }
 
         document.getElementById("vtolslider").oninput = function() { OctoPrint.simpleApiCommand("autocal", "vtol_slider_update", {val: vtolslider.value}); };
 
         self.onClickSaveCalibrationBtn = function() {
-            document.getElementById('status').innerHTML += '<br>' + 'Saving Calibration...';
             OctoPrint.simpleApiCommand("autocal", "save_calibration_btn_click");
         }
 
-        self.onClickStartOverBtn = function() {
-            if (confirm("Are you sure you want to start over?") == true) {
-                document.getElementById('status').innerHTML = 'Reset Done successfully, Start again!!';
-                OctoPrint.simpleApiCommand("autocal", "start_over_btn_click");
+        self.onClickClearSessionBtn = function() {
+            clear_session_prompt = new PNotify({
+                title: gettext("Confirm Clear Session"),
+                text: gettext(
+                    "<p>Are you sure you want to clear the current session?</p>"
+                ),
+                hide: false,
+                confirm: {
+                    confirm: true,
+                    buttons: [
+                        {
+                            text: gettext("Cancel"),
+                            click: function () {
+                                clear_session_prompt.remove();
+                                clear_session_prompt = undefined;
+                            }
+                        },
+                        {
+                            text: gettext("Yes"),
+                            addClass: "btn-primary",
+                            click: function () {
+                                OctoPrint.simpleApiCommand("autocal", "clear_session_btn_click");
+                                
+                                // Delete all the graphs created.
+                                Plotly.purge('acclrmtr_live_data_graph');
+                                Plotly.purge('calibration_results_graph');
+                                Plotly.purge('verification_results_graph');
+                                // Scroll to top of the document.
+                                document.body.scrollTop = 0;
+                                document.documentElement.scrollTop = 0;
+                                
+                                output_log.innerHTML = '';
 
-                self.clearAllButtonStates(); // reset the styles in the web/front end side.
-                // Hide all the buttons
-                document.getElementById('calibrate_x_axis_btn').style.display = "none";
-                document.getElementById('calibrate_y_axis_btn').style.display = "none";
-                document.getElementById('zv_shapers_dropDown_btn').style.display = "none";
-                document.getElementById('load_calibration_btn').style.display = "none";
-                document.getElementById('save_calibration_btn').style.display = "none";
-
-                // Delete all the graphs created
-                Plotly.purge('acclrmtr_live_data_graph');
-                Plotly.purge('calibration_results_graph');
-                Plotly.purge('verification_results_graph');
-                // Scroll to top of the document
-                document.body.scrollTop = 0;
-                document.documentElement.scrollTop = 0;
-            }
-            else {
-                document.getElementById('status').innerHTML += '<br>' + 'Start Over Cancelled!!';
-            }
+                                clear_session_prompt.remove();
+                                clear_session_prompt = undefined;
+                            }
+                        }
+                    ]
+                },
+                buttons: {
+                    closer: false,
+                    sticker: false
+                }
+            });    
+            return;
         }
 
 
