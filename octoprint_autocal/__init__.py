@@ -875,7 +875,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if self.fsm.in_state_time > GET_AXIS_INFO_TIMEOUT:
             self.sts_axis_calibration_active = False
             self.sts_axis_verification_active = False
-            self.send_client_popup(type='error', title='Axis Info. Error', message='Couldn\'t get information about the axis. Is the firmware correct?')
+            self.send_client_popup(type='error', title='Axis Info. Error', message='Couldn\'t get information about the axis. Is the firmware compatible?')
             self.fsm.state = AxisRespnsFSMStates.IDLE
             self.update_tab_layout()
         else:

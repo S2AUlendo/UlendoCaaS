@@ -137,27 +137,27 @@ $(function() {
                                                                         }
 
                 if ( data.select_zv_btn_state == 'SELECTED' ) {
-                    is_select_dropbtn.innerText = 'ZV Shaper Selected'
+                    is_select_dropbtn.innerText = 'ZV Selected (Click to change)'
                     select_zv_cal_btn.classList.add('SELECTED_style');
                 }
                 if ( data.select_zvd_btn_state == 'SELECTED' ) {
-                    is_select_dropbtn.innerText = 'ZVD Shaper Selected'
+                    is_select_dropbtn.innerText = 'ZVD Selected (Click to change)'
                     select_zvd_cal_btn.classList.add('SELECTED_style');
                 }
                 if ( data.select_mzv_btn_state == 'SELECTED' ) {
-                    is_select_dropbtn.innerText = 'MZV Shaper Selected'
+                    is_select_dropbtn.innerText = 'MZV Selected (Click to change)'
                     select_mzv_cal_btn.classList.add('SELECTED_style');
                 }
                 if ( data.select_ei_btn_state == 'SELECTED' ) {
-                    is_select_dropbtn.innerText = 'EI Shaper Selected'
+                    is_select_dropbtn.innerText = 'EI Selected (Click to change)'
                     select_ei_cal_btn.classList.add('SELECTED_style');
                 }
                 if ( data.select_ei2h_btn_state == 'SELECTED' ) {
-                    is_select_dropbtn.innerText = '2 Hump EI Shaper Selected'
+                    is_select_dropbtn.innerText = '2 Hump EI Selected (Click to change)'
                     select_ei2h_cal_btn.classList.add('SELECTED_style');
                 }
                 if ( data.select_ei3h_btn_state == 'SELECTED' ) {
-                    is_select_dropbtn.innerText = '3 Hump EI Shaper Selected'
+                    is_select_dropbtn.innerText = '3 Hump EI Selected (Click to change)'
                     select_ei3h_cal_btn.classList.add('SELECTED_style');
                 }
 
@@ -173,16 +173,16 @@ $(function() {
                     load_calibration_btn.style.display = "block";
                 } else {
                     is_select_dropbtn.classList.add("NOSELECTION_style");
-                    is_select_dropbtn.innerText = "Shaper Selection";
+                    is_select_dropbtn.innerText = "Select Shaper";
                     load_calibration_btn.style.display = "none";
                 }
 
-                if (data.load_calibration_btn_state == 'NOTLOADED') { load_calibration_btn.innerText = 'Load Calibration'; }
+                if (data.load_calibration_btn_state == 'NOTLOADED') { load_calibration_btn.innerText = 'Load and Verify Calibration'; }
                 if (data.load_calibration_btn_state == 'LOADING') {
-                    load_calibration_btn.innerText = 'Loading Calibration';
+                    load_calibration_btn.innerText = 'Verifying Calibration';
                 }
                 if (data.load_calibration_btn_state == 'LOADED') {
-                  load_calibration_btn.innerText = 'Calibration Loaded';
+                  load_calibration_btn.innerText = 'Calibration Loaded and Verified';
                 }
 
                 load_calibration_btn.classList.add("".concat(data.load_calibration_btn_state, "_style"));
