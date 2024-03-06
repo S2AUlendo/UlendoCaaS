@@ -549,7 +549,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             w_bp = (self.active_solution.w_bp / 2. / pi).tolist(),
             G = self.active_solution.G.tolist(),
             compensator_mag = ismag.tolist(),
-            new_mag = (self.active_solution.G * ismag).tolist()
+            new_mag = (self.active_solution.G * ismag).tolist(),
+            axis = self.active_solution_axis
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
@@ -565,14 +566,21 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if VERBOSE > 1: self._logger.info(f'Sending calibration ' + type)
 
         mode_code = ''
+        # For new firmware:
+        # if type == 'zv': mode_code = '1'
+        # elif type == 'zvd': mode_code = '2'
+        # elif type == 'zvdd': mode_code = '3'
+        # elif type == 'zvddd': mode_code = '4'
+        # elif type == 'mzv': mode_code = '8'
+        # elif type == 'ei': mode_code = '5'
+        # elif type == 'ei2h': mode_code = '6'
+        # elif type == 'ei3h': mode_code = '7'
         if type == 'zv': mode_code = '1'
         elif type == 'zvd': mode_code = '2'
-        elif type == 'zvdd': mode_code = '3'
-        elif type == 'zvddd': mode_code = '4'
-        elif type == 'mzv': mode_code = '8'
-        elif type == 'ei': mode_code = '5'
-        elif type == 'ei2h': mode_code = '6'
-        elif type == 'ei3h': mode_code = '7'
+        elif type == 'mzv': mode_code = '6'
+        elif type == 'ei': mode_code = '3'
+        elif type == 'ei2h': mode_code = '4'
+        elif type == 'ei3h': mode_code = '5'
 
         frequency_code = ''
         zeta_code = ''

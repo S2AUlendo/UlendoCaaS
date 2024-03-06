@@ -47,10 +47,10 @@ $(function() {
 
 
             if (data.type == "calibration_result") {
-                let series1 = { x: data.w_bp, y: data.G, mode: "lines", name: 'Rspns' };
-                let series2 = { x: data.w_bp, y: data.compensator_mag, mode: "lines", name: 'Cmpnstr Rspns' };
-                let series3 = { x: data.w_bp, y: data.new_mag, mode: "lines", name: 'New Rspns Estim' };
-                var layout = { title: 'Calibration Preview: '.concat(data.istype.toUpperCase()),
+                let series1 = { x: data.w_bp, y: data.G, mode: "lines", name: 'Before<br>Shaper' };
+                let series2 = { x: data.w_bp, y: data.compensator_mag, mode: "lines", name: 'Shaper<br>Response' };
+                let series3 = { x: data.w_bp, y: data.new_mag, mode: "lines", name: 'After<br>Shaper' };
+                var layout = { title: ''.concat(data.axis.toUpperCase(), ' Axis Calibration Preview using ', data.istype.toUpperCase()),
                     xaxis: { title: 'Frequency [Hz]', showgrid: false, zeroline: false, autorange: true },
                     yaxis: { title: 'Magnitude', showline: false }
                     };
