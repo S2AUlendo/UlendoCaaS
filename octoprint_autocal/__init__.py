@@ -1117,7 +1117,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     starting_frequency=self._settings.get(["starting_frequency"]),
                     frequency_sweep_rate=self._settings.get(["frequency_sweep_rate"]),
                     override_end_frequency=self._settings.get(["override_end_frequency"]),
-                    end_frequency_override=self._settings.get(["end_frequency_override"])
+                    end_frequency_override=self._settings.get(["end_frequency_override"]),
                     step_time=self._settings.get(["step_time"]),
                     step_acceleration=self._settings.get(["step_acceleration"]),
                     delay1_time=self._settings.get(["delay1_time"]),
