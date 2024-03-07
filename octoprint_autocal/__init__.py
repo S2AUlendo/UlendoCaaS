@@ -566,21 +566,14 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if VERBOSE > 1: self._logger.info(f'Sending calibration ' + type)
 
         mode_code = ''
-        # For new firmware:
-        # if type == 'zv': mode_code = '1'
-        # elif type == 'zvd': mode_code = '2'
-        # elif type == 'zvdd': mode_code = '3'
-        # elif type == 'zvddd': mode_code = '4'
-        # elif type == 'mzv': mode_code = '8'
-        # elif type == 'ei': mode_code = '5'
-        # elif type == 'ei2h': mode_code = '6'
-        # elif type == 'ei3h': mode_code = '7'
         if type == 'zv': mode_code = '1'
         elif type == 'zvd': mode_code = '2'
-        elif type == 'mzv': mode_code = '6'
-        elif type == 'ei': mode_code = '3'
-        elif type == 'ei2h': mode_code = '4'
-        elif type == 'ei3h': mode_code = '5'
+        elif type == 'zvdd': mode_code = '3'
+        elif type == 'zvddd': mode_code = '4'
+        elif type == 'mzv': mode_code = '8'
+        elif type == 'ei': mode_code = '5'
+        elif type == 'ei2h': mode_code = '6'
+        elif type == 'ei3h': mode_code = '7'
 
         frequency_code = ''
         zeta_code = ''
@@ -723,13 +716,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 if self.fsm.state == AxisRespnsFSMStates.SWEEP:
                     self.fsm.sweep_done_recvd = True
                     if VERBOSE > 1: self._logger.info(f'Got sweep done message')
-            # Will be obsolete in new firmware.
-            elif 'len=' in line:
-                if self.fsm.state == AxisRespnsFSMStates.GET_AXIS_INFO:
-                    self.fsm.axis_reported_len_recvd = True
-                    split_line = re.split(r"M494 len=", line.strip())
-                    self.fsm.axis_reported_len = float(split_line[1])
-                    if VERBOSE > 1: self._logger.info(f'Got reported length = {self.fsm.axis_reported_len}')
 
         elif self.fsm.state == AxisRespnsFSMStates.CENTER and (self.fsm.axis.upper() + ':') in line:
             self.fsm.axis_last_reported_pos = parse_position_line(line)[self.fsm.axis]
@@ -874,8 +860,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
     
     def fsm_on_GET_AXIS_INFO_entry(self):
-        # self.send_printer_command('M494') # For new firmware, send M494 only.
-        self.send_printer_command('M494 L ' + self.fsm.axis.upper())
+        self.send_printer_command('M494')
         self.send_printer_command('M92')
 
     
@@ -958,31 +943,21 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 #  *    J<float> Delay time from opening step to sweep.
                 #  *    K<float> Delay time from sweep to closing step.
 
-                # mode_code = 0
-                # if self.fsm.axis == 'x': mode_code = 1
-                # elif self.fsm.axis == 'y': mode_code = 2
-                # # Note: the integer casts below are to match the postdata casts in
-                # # service abstraction. Service should support floats, but needs verification.
-                # cmd =    'M494' + ' A' + str(mode_code) \
-                #                 + ' B' + str(int(self._settings.get(["starting_frequency"]))) \
-                #                 + ' C' + str(f1) \
-                #                 + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
-                #                 + ' E' + str(int(self._settings.get(["acceleration_amplitude"]))) \
-                #                 + ' F' + str(self._settings.get(["step_time"])) \
-                #                 + ' H' + str(self._settings.get(["step_acceleration"])) \
-                #                 + ' I' + str(self._settings.get(["delay1_time"])) \
-                #                 + ' J' + str(self._settings.get(["delay2_time"])) \
-                #                 + ' K' + str(self._settings.get(["delay3_time"])) \
-
-                # For new firmware, use the above instead.
                 mode_code = 0
                 if self.fsm.axis == 'x': mode_code = 1
                 elif self.fsm.axis == 'y': mode_code = 2
-                cmd =     'M494 F' + str(mode_code) \
-                            + ' S' + str(int(self._settings.get(["starting_frequency"]))) \
-                            + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
-                            + ' E' + str(f1) \
-                            + ' A' + str(int(self._settings.get(["acceleration_amplitude"])))
+                # Note: the integer casts below are to match the postdata casts in
+                # service abstraction. Service should support floats, but needs verification.
+                cmd =    'M494' + ' A' + str(mode_code) \
+                                + ' B' + str(int(self._settings.get(["starting_frequency"]))) \
+                                + ' C' + str(f1) \
+                                + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
+                                + ' E' + str(int(self._settings.get(["acceleration_amplitude"]))) \
+                                + ' F' + str(self._settings.get(["step_time"])) \
+                                + ' H' + str(self._settings.get(["step_acceleration"])) \
+                                + ' I' + str(self._settings.get(["delay1_time"])) \
+                                + ' J' + str(self._settings.get(["delay2_time"])) \
+                                + ' K' + str(self._settings.get(["delay3_time"])) \
 
                 self.send_printer_command(cmd)
 
@@ -1121,13 +1096,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     starting_frequency=5,
                     frequency_sweep_rate=4,
                     override_end_frequency=False,
-                    end_frequency_override=80
-                    # New firmware only.
-                    # step_time=0.05,
-                    # step_acceleration=4000,
-                    # delay1_time=0.5,
-                    # delay2_time=1.,
-                    # delay3_time=1.
+                    end_frequency_override=80,
+                    step_time=0.05,
+                    step_acceleration=4000,
+                    delay1_time=0.5,
+                    delay2_time=1.,
+                    delay3_time=1.
                     )
 
     def get_template_vars(self):
@@ -1144,12 +1118,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     frequency_sweep_rate=self._settings.get(["frequency_sweep_rate"]),
                     override_end_frequency=self._settings.get(["override_end_frequency"]),
                     end_frequency_override=self._settings.get(["end_frequency_override"])
-                    # New firmware only.
-                    # step_time=self._settings.get(["step_time"]),
-                    # step_acceleration=self._settings.get(["step_acceleration"]),
-                    # delay1_time=self._settings.get(["delay1_time"]),
-                    # delay2_time=self._settings.get(["delay2_time"]),
-                    # delay3_time=self._settings.get(["delay3_time"])
+                    step_time=self._settings.get(["step_time"]),
+                    step_acceleration=self._settings.get(["step_acceleration"]),
+                    delay1_time=self._settings.get(["delay1_time"]),
+                    delay2_time=self._settings.get(["delay2_time"]),
+                    delay3_time=self._settings.get(["delay3_time"])
 )
 
     def get_template_configs(self):
