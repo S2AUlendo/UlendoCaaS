@@ -4,9 +4,11 @@ Ulendo's Calibration as a Service
 
 # Instructions to Autocalibrate in Octoprint
 
-These instructions are intended to configure Octoprint with the Ulendo Autocalibration plugin from a fresh Raspbian install. 
+These instructions are intended to configure Octoprint with the Ulendo Autocalibration plugin from a fresh Raspbian install.
+
 The install script has been tested on Raspberry Pi 3 and 4, running Raspberry Pi OS Lite (compatible with Pi 3/4/400/5)
-Save [Autocal-Install.sh](https://github.com/S2AUlendo/UlendoCaaS/blob/main/Autocal-Install.sh) to your home folder.
+
+Save [Autocal-Install.sh](Autocal-Install.sh) to your home folder.
 
 ## Setup (RPi)
 
