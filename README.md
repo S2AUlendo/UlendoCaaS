@@ -13,14 +13,11 @@ Download [Autocal-Install.sh](Autocal-Install.sh) and follow the instructions be
 ## Setup (RPi)
 
 	sudo chmod +x Autocal-Install.sh
-	sudo . ./Autocal-Install.sh
+	. ./Autocal-Install.sh
 
 ## Usage:
 	The setup script will start the server for you the first time you run it. 
 
 	To run octoprint as usual:
-		source venv/bin/activate
-		venv/bin/octoprint serve
-		
-	Note: You may use PuTTY Secure Copy (pscp) to transfer data between machines, e.g.:
-		pscp pi@octopi.local:/home/pi/a_folder/a_file.csv c:\Users\user001\Documents
+		source ~/OctoPrint/venv/bin/activate
+		~/OctoPrint/venv/bin/octoprint serve
