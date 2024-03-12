@@ -8,11 +8,10 @@ These instructions are intended to configure Octoprint with the Ulendo Autocalib
 
 The install script has been tested on Raspberry Pi 3 and 4, running Raspberry Pi OS Lite (compatible with Pi 3/4/400/5)
 
-Save [Autocal-Install.sh](Autocal-Install.sh) to your home folder.
+Download [Autocal-Install.sh](Autocal-Install.sh) and follow the instructions below:
 
 ## Setup (RPi)
 
-	cd ~
 	sudo chmod +x Autocal-Install.sh
 	sudo . ./Autocal-Install.sh
 
