@@ -13,7 +13,7 @@ DEPENDENCIES="python3 python3-pip python3-dev python3-setuptools python3-venv gi
 
 # update apt and the OS
 sudo apt update
-sudo apt upgrade
+sudo apt upgrade -y
 
 # install all dependencies and say yes to space used prompt
 sudo apt install -y $DEPENDENCIES
