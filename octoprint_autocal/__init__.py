@@ -82,6 +82,14 @@ class InpShprSolution():
     def __init__(self, wc, zt, w_bp, G): self.wc = wc; self.zt = zt; self.w_bp = w_bp; self.G = G
 
 
+class SweepConfig:
+    def __init__(self, f0, f1, dfdt, a, step_ti, step_a, dly1_ti, dly2_ti, dly3_ti):
+        self.f0 = f0; self.f1 = f1; self.dfdt = dfdt; self.a = a
+        self.step_ti = step_ti; self.step_a = step_a; self.dly1_ti = dly1_ti; self.dly2_ti = dly2_ti; self.dly3_ti = dly3_ti
+    def as_dict(self): return { "f0": self.f0, "f1": self.f1, "dfdt": self.dfdt, "a": self.a,
+                                "step_ti": self.step_ti, "step_a": self.step_a, "dly1_ti": self.dly1_ti, "dly2_ti": self.dly2_ti, "dly3_ti": self.dly3_ti }
+
+
 class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     octoprint.plugin.AssetPlugin,
                     octoprint.plugin.TemplatePlugin,
@@ -960,7 +968,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             self.fsm_kill()
     
     def fsm_on_SWEEP_entry(self):
-        self.send_printer_command('M494')
         self.send_printer_command('M115')
     
         self.acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
@@ -983,10 +990,20 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
                 f1_max = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
                 if self._settings.get(["override_end_frequency"]):
-                    f1 = min( f1_max, float(self._settings.get(["end_frequency_override"]))) # TODO confirm float or int ?
+                    f1 = min( f1_max, int(self._settings.get(["end_frequency_override"]))) # TODO confirm float or int ?
                 else:
                     f1 = f1_max
-                    
+                
+                self.sweep_cfg = SweepConfig(   f0=int(self._settings.get(["starting_frequency"])),
+                                                f1=int(f1),
+                                                dfdt=int(self._settings.get(["frequency_sweep_rate"])),
+                                                a=int(self._settings.get(["acceleration_amplitude"])),
+                                                step_ti=int(self._settings.get(["step_time"])),
+                                                step_a=int(self._settings.get(["step_acceleration"])),
+                                                dly1_ti=int(self._settings.get(["delay1_time"])),
+                                                dly2_ti=int(self._settings.get(["delay2_time"])),
+                                                dly3_ti=int(self._settings.get(["delay3_time"]))
+                                            )
                 # M494
                 #
                 #  *    A<mode> Start / abort a frequency sweep profile.
@@ -994,7 +1011,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 #  *       0: None active.
                 #  *       1: Continuous sweep on X axis.
                 #  *       2: Continuous sweep on Y axis.
-                #  *       3: Abort the current sweep.
+                #  *       99: Abort the current sweep.
                 #  * 
                 #  *    B<float> Start frequency.
                 #  *    C<float> End frequency.
@@ -1009,18 +1026,16 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 mode_code = 0
                 if self.fsm.axis == 'x': mode_code = 1
                 elif self.fsm.axis == 'y': mode_code = 2
-                # Note: the integer casts below are to match the postdata casts in
-                # service abstraction. Service should support floats, but needs verification.
                 cmd =    'M494' + ' A' + str(mode_code) \
-                                + ' B' + str(int(self._settings.get(["starting_frequency"]))) \
-                                + ' C' + str(f1) \
-                                + ' D' + str(int(self._settings.get(["frequency_sweep_rate"]))) \
-                                + ' E' + str(int(self._settings.get(["acceleration_amplitude"]))) \
-                                + ' F' + str(self._settings.get(["step_time"])) \
-                                + ' H' + str(self._settings.get(["step_acceleration"])) \
-                                + ' I' + str(self._settings.get(["delay1_time"])) \
-                                + ' J' + str(self._settings.get(["delay2_time"])) \
-                                + ' K' + str(self._settings.get(["delay3_time"])) \
+                                + ' B' + str(self.sweep_cfg.f0) \
+                                + ' C' + str(self.sweep_cfg.f1) \
+                                + ' D' + str(self.sweep_cfg.dfdt) \
+                                + ' E' + str(self.sweep_cfg.a) \
+                                + ' F' + f'{self.sweep_cfg.step_ti/1000:0.3f}' \
+                                + ' H' + str(self.sweep_cfg.step_a) \
+                                + ' I' + f'{self.sweep_cfg.dly1_ti/1000:0.3f}' \
+                                + ' J' + f'{self.sweep_cfg.dly2_ti/1000:0.3f}' \
+                                + ' K' + f'{self.sweep_cfg.dly3_ti/1000:0.3f}' \
 
                 self.send_printer_command(cmd)
 
@@ -1068,15 +1083,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         
         self.fsm.missed_sample_retry_count = 0
 
-        if not SIMULATION:
-            f1_max = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
-            if self._settings.get(["override_end_frequency"]):
-                f1 = min( f1_max, float(self._settings.get(["end_frequency_override"])))
-            else:
-                f1 = f1_max    
-        else:
-            f1 = SIMULATION_f1
-
         if not self.sts_axis_verification_active:
             try:
                 client_ID = self._settings.get(["ORG"])
@@ -1084,7 +1090,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 machine_ID = self._settings.get(["MACHINEID"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -1104,7 +1110,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 machine_ID = self._settings.get(["MACHINEID"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                _, g_gui = autocal_service_guidata(self.fsm.axis, f1, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
+                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)

@@ -40,7 +40,7 @@ def read_acclrmtr_data(axis):
 
 
 
-def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
+def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
 
     now = datetime.now()
 
@@ -49,7 +49,6 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                     'ZAXISRESPONSE': read_acclrmtr_data('z'),
                     'AXIS': axis,
                     'OPERATION': 'SOLVE',
-                    'f1': f1,
                     'METADATA': metadata if metadata is not {} else 'N/A',
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
@@ -58,16 +57,11 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                      },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
-                        'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
+                        'CLIENT_VERSION':'V0.3',               # TODO: Get the plugin version number from octoprint
                         'RequestSource': get_source_ip()
                     },
-                    "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["starting_frequency"])),
-                        "TMP_PARAM_SWEEP_f1": int(f1),
-                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["acceleration_amplitude"])),   
-                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["frequency_sweep_rate"])),
-                        "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
-                    }, 
+                    "SWEEP_CFG": sweep_cfg.as_dict(),
+                    "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
                         "PRINTER_MODEL":self._settings.get(["MODELID"]),
@@ -75,8 +69,8 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
                         'MANUFACTURER_NAME': ""
                     },                    
                 }
-    
-    with open('solve_post.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
+
+    with open('solve_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
     
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
     response_body = json.loads(postreq.text)
@@ -93,7 +87,7 @@ def autocal_service_solve(axis, f1, metadata, client_ID, access_ID, machine_ID, 
     else: return None
 
 
-def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
+def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
     
     now = datetime.now()
     postdata =  {   'XAXISRESPONSE': read_acclrmtr_data('x'),
@@ -101,7 +95,6 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     'ZAXISRESPONSE': read_acclrmtr_data('z'),
                     'AXIS': axis,
                     'OPERATION': 'VERIFY',
-                    'f1': f1,
                     'METADATA': metadata if metadata is not {} else 'N/A',
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
@@ -110,16 +103,11 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
-                        'CLIENT_VERSION':'V0.01',               # TODO: Get the plugin version number from octoprint
+                        'CLIENT_VERSION':'V0.3',               # TODO: Get the plugin version number from octoprint
                         'RequestSource': get_source_ip()
                     },
-                    "PARAMETERS": {
-                        "TMP_PARAM_SWEEP_f0": int(self._settings.get(["starting_frequency"])),
-                        "TMP_PARAM_SWEEP_f1": int(f1),
-                        "TMP_PARAM_SWEEP_A": int(self._settings.get(["acceleration_amplitude"])),   
-                        "TMP_PARAM_SWEEP_dfdt": int(self._settings.get(["frequency_sweep_rate"])),
-                        "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
-                    },
+                    "SWEEP_CFG": sweep_cfg.as_dict(),
+                    "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
                     "PRINTER": {
                         "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
                         "PRINTER_MODEL":self._settings.get(["MODELID"]),
@@ -128,7 +116,7 @@ def autocal_service_guidata(axis, f1, metadata, client_ID, access_ID, machine_ID
                     }, 
                 }
     
-    with open('verify_post.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
+    with open('verify_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
 
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
     response_body = json.loads(postreq.text)
