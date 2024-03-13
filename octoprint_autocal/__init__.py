@@ -149,14 +149,6 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         printer.commands(cmd)
 
 
-    ##~~ SettingsPlugin mixin
-
-    def get_settings_defaults(self):
-        return {
-            # put your plugin's default settings here
-        }
-
-
     ##~~ AssetPlugin mixin
 
     def get_assets(self):
@@ -1170,11 +1162,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                     frequency_sweep_rate=4,
                     override_end_frequency=False,
                     end_frequency_override=80,
-                    step_time=0.05,
+                    step_time=50,
                     step_acceleration=4000,
-                    delay1_time=0.5,
-                    delay2_time=1.,
-                    delay3_time=1.
+                    delay1_time=500,
+                    delay2_time=1000,
+                    delay3_time=1000
                     )
 
     def get_template_vars(self):
