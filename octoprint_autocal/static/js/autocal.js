@@ -228,7 +228,11 @@ $(function() {
             }
 
             if (data.type == "prompt_popup") {
-                prompt = new PNotify({
+            	if (typeof server_prompt !== 'undefined') {
+            	    server_prompt.remove();
+            	    server_prompt= undefined;
+            	}
+                server_prompt = new PNotify({
                     title: gettext(data.title),
                     text: gettext(data.message),
                     hide: false,
@@ -239,8 +243,8 @@ $(function() {
                                 text: gettext("Cancel"),
                                 click: function () {
                                     OctoPrint.simpleApiCommand("autocal", "prompt_cancel_click");
-                                    prompt.remove();
-                                    prompt = undefined;
+                                    server_prompt.remove();
+                                    server_prompt = undefined;
                                 }
                             },
                             {
@@ -248,8 +252,8 @@ $(function() {
                                 addClass: "btn-primary",
                                 click: function () {
                                     OctoPrint.simpleApiCommand("autocal", "prompt_proceed_click");
-                                    prompt.remove();
-                                    prompt = undefined;
+                                    server_prompt.remove();
+                                    server_prompt = undefined;
                                 }
                             }
                         ]
@@ -375,6 +379,10 @@ $(function() {
         }
 
         self.onClickClearSessionBtn = function() {
+            if (typeof clear_session_prompt !== 'undefined') {
+                clear_session_prompt.remove();
+                clear_session_prompt= undefined;
+            }
             clear_session_prompt = new PNotify({
                 title: gettext("Confirm Clear Session"),
                 text: gettext(

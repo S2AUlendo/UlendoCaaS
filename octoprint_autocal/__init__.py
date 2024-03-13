@@ -734,13 +734,14 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 result = {}
                 for _, key, value in chunks(split_line, 3):
                         result[key] = value.strip()
-                        if key == self.fsm.axis.upper() + '_MAX_LENGTH':
-                            self.fsm.axis_reported_len_recvd = True
-                            self.fsm.axis_reported_len = float(result[key])
+                        if self.fsm.state == AxisRespnsFSMStates.GET_AXIS_INFO:
+                            if key == self.fsm.axis.upper() + '_MAX_LENGTH':
+                                self.fsm.axis_reported_len_recvd = True
+                                self.fsm.axis_reported_len = float(result[key])
                 self.metadata['FTMCFG'] = result
                 if VERBOSE > 1: self._logger.info('Metadata updated:')
                 if VERBOSE > 1: self._logger.info(self.metadata)
-            elif 'profile done' in line:
+            elif 'profile ran to completion' in line:
                 if self.fsm.state == AxisRespnsFSMStates.SWEEP:
                     self.fsm.sweep_done_recvd = True
                     if VERBOSE > 1: self._logger.info(f'Got sweep done message')
@@ -772,9 +773,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.metadata['STEPSPERUNIT'] = str(result)
                 if VERBOSE > 1: self._logger.info('Metadata updated:')
                 if VERBOSE > 1: self._logger.info(self.metadata)
-        elif self.fsm.state == AxisRespnsFSMStates.CENTER and 'echo:Home' in line and 'first' in line:
+        elif self.fsm.state == AxisRespnsFSMStates.CENTER and 'echo:Home' in line and 'First' in line:
             split_line_0 = re.split(r"echo:Home ", line.strip())
-            split_line_1 = re.split(r" first", split_line_0[1].strip())
+            split_line_1 = re.split(r" First", split_line_0[1].strip())
             self.fsm.printer_requires_additional_homing = True
             self.fsm.printer_additional_homing_axes = split_line_1[0]
 
@@ -859,6 +860,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.fsm.sweep_done_recvd = False
         self.fsm.accelerometer_stopped = False
 
+        self.fsm.printer_requires_additional_homing = False
+
         if not reset_for_retry:
             self.fsm.axis = None
             self.fsm.missed_sample_retry_count = 0
@@ -886,7 +889,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 os.remove(os.path.join(os.path.dirname(__file__), '..', 'data', file))
 
         if self.fsm.printer_requires_additional_homing:
-            if (self._settings.get(["home_axis_before_calibration"])):
+            if (not self._settings.get(["home_axis_before_calibration"])):
                 self.send_client_popup(type='error', title='Homing Configuration Error',
                                        message='Your printer wants homing to occur before it can accept \
                                                 movement commands, but homing before calibration is disa\
@@ -907,9 +910,10 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             if self.awaiting_prompt_popup_reply: return
             else:
                 if self.prompt_popup_response == 'cancel':
-                    self.fsm_kill()
+                    self.fsm_kill(); return
                 if self.prompt_popup_response == 'proceed':
                     self.send_printer_command('G28 ' + self.fsm.printer_additional_homing_axes)
+                    self.fsm.printer_requires_additional_homing = False
         self.fsm.state = AxisRespnsFSMStates.GET_AXIS_INFO
 
     
@@ -941,6 +945,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
     
     def fsm_on_CENTER_during(self):
         if self.fsm.printer_requires_additional_homing:
+            self.fsm.axis_reported_len_recvd = False
             self.fsm.state = AxisRespnsFSMStates.HOME
         self.send_printer_command('M114')
         if VERBOSE > 1: self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
@@ -1037,7 +1042,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 if self.fsm.missed_sample_retry_count < MAX_RETRIES_FOR_MISSED_SAMPLES: # Setup a retry
                     self.fsm.missed_sample_retry_count += 1
 
-                    self.send_printer_command('M494 F99')
+                    self.send_printer_command('M494 A99')
                     
                     self.send_client_popup(type='info', title='Retrying', message='Some accelerometer data was lost, the routine will be retried.')
                     
@@ -1053,7 +1058,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 f_abort = True
                 
             if f_abort:
-                self.send_printer_command('M494 F99')
+                self.send_printer_command('M494 A99')
                 self.fsm_kill()
 
         return
@@ -1140,6 +1145,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_acclrmtr_active = False
         self.fsm_reset()
         self.fsm.state = AxisRespnsFSMStates.IDLE
+        self.fsm.state_prev = AxisRespnsFSMStates.NONE
 
         self.update_tab_layout()
 
