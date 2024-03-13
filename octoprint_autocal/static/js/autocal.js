@@ -227,6 +227,41 @@ $(function() {
                 return;
             }
 
+            if (data.type == "prompt_popup") {
+                prompt = new PNotify({
+                    title: gettext(data.title),
+                    text: gettext(data.message),
+                    hide: false,
+                    confirm: {
+                        confirm: true,
+                        buttons: [
+                            {
+                                text: gettext("Cancel"),
+                                click: function () {
+                                    OctoPrint.simpleApiCommand("autocal", "prompt_cancel_click");
+                                    prompt.remove();
+                                    prompt = undefined;
+                                }
+                            },
+                            {
+                                text: gettext("Proceed"),
+                                addClass: "btn-primary",
+                                click: function () {
+                                    OctoPrint.simpleApiCommand("autocal", "prompt_proceed_click");
+                                    prompt.remove();
+                                    prompt = undefined;
+                                }
+                            }
+                        ]
+                    },
+                    buttons: {
+                        closer: false,
+                        sticker: false
+                    }
+                });
+                return;
+            }
+
             if (data.type == "printer_connection_status") {
                 if (data.status == 'connected') {
                     motion_prompt = new PNotify({

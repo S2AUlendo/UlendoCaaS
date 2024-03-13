@@ -74,6 +74,10 @@ class AxisRespnsFSMData():
         self.missed_sample_retry_count = 0
 
 
+        self.printer_requires_additional_homing = False
+        self.printer_additional_homing_axes = None
+
+
 class InpShprSolution():
     def __init__(self, wc, zt, w_bp, G): self.wc = wc; self.zt = zt; self.w_bp = w_bp; self.G = G
 
@@ -336,6 +340,17 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             message=message,
             hide=hide
         )
+        self._plugin_manager.send_plugin_message(self._identifier, data)
+
+
+    def send_client_prompt_popup(self, title, message):
+        data = dict(
+            type='prompt_popup',
+            title=title,
+            message=message
+        )
+        self.awaiting_prompt_popup_reply = True
+        self.prompt_popup_response = None
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
 
@@ -656,6 +671,15 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         self.update_tab_layout()
 
 
+    def on_prompt_cancel_click(self):
+        self.awaiting_prompt_popup_reply = False
+        self.prompt_popup_response = 'cancel'
+
+    def on_prompt_proceed_click(self):
+        self.awaiting_prompt_popup_reply = False
+        self.prompt_popup_response = 'proceed'
+
+
     def send_client_logger_info(self, text):
         now = datetime.now()
         text_w_timestamp = now.strftime("%H:%M:%S") + ' ' + text
@@ -678,7 +702,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             vtol_slider_update=['val'],
             get_connection_status=[],
             start_over_btn_click=[],
-            clear_session_btn_click=[]
+            clear_session_btn_click=[],
+            prompt_cancel_click=[],
+            prompt_proceed_click=[]
         )
 
     
@@ -692,6 +718,8 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'vtol_slider_update': self.on_vtol_slider_update(data['val'])
         elif command == 'get_connection_status': self.report_connection_status()
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
+        elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
+        elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
 
 
     ##~~ Hooks
@@ -744,6 +772,12 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.metadata['STEPSPERUNIT'] = str(result)
                 if VERBOSE > 1: self._logger.info('Metadata updated:')
                 if VERBOSE > 1: self._logger.info(self.metadata)
+        elif self.fsm.state == AxisRespnsFSMStates.CENTER and 'echo:Home' in line and 'first' in line:
+            split_line_0 = re.split(r"echo:Home ", line.strip())
+            split_line_1 = re.split(r" first", split_line_0[1].strip())
+            self.fsm.printer_requires_additional_homing = True
+            self.fsm.printer_additional_homing_axes = split_line_1[0]
+
         return line
 
 
@@ -851,11 +885,31 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
             if (os.path.isfile(os.path.join(os.path.dirname(__file__), '..', 'data', file))):
                 os.remove(os.path.join(os.path.dirname(__file__), '..', 'data', file))
 
-        if (self._settings.get(["home_axis_before_calibration"])):
-            self.send_printer_command('G28 ' + self.fsm.axis.upper())
+        if self.fsm.printer_requires_additional_homing:
+            if (self._settings.get(["home_axis_before_calibration"])):
+                self.send_client_popup(type='error', title='Homing Configuration Error',
+                                       message='Your printer wants homing to occur before it can accept \
+                                                movement commands, but homing before calibration is disa\
+                                                bled in settings. Re-enable the setting and try again.')
+                self.fsm_kill()
+            else:
+                self.send_client_prompt_popup(title='Printer Homing Confirm',
+                                                message='Your printer wants to home the ' + 
+                                                self.fsm.printer_additional_homing_axes + ' axes before \
+                                                moving. Verify motion is clear and proceed.')
+        else:
+            if (self._settings.get(["home_axis_before_calibration"])):
+                self.send_printer_command('G28 ' + self.fsm.axis.upper())
 
     
     def fsm_on_HOME_during(self):
+        if self.fsm.printer_requires_additional_homing:
+            if self.awaiting_prompt_popup_reply: return
+            else:
+                if self.prompt_popup_response == 'cancel':
+                    self.fsm_kill()
+                if self.prompt_popup_response == 'proceed':
+                    self.send_printer_command('G28 ' + self.fsm.printer_additional_homing_axes)
         self.fsm.state = AxisRespnsFSMStates.GET_AXIS_INFO
 
     
@@ -868,23 +922,26 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if self.fsm.in_state_time > GET_AXIS_INFO_TIMEOUT:
             self.sts_axis_calibration_active = False
             self.sts_axis_verification_active = False
-            self.send_client_popup(type='error', title='Axis Info. Error', message='Couldn\'t get information about the axis. Is the firmware compatible?')
-            self.fsm.state = AxisRespnsFSMStates.IDLE
-            self.update_tab_layout()
+            self.send_client_popup(type='error', title='Axis Info. Error',
+                                   message='Couldn\'t get information about the axis. Is the firmware compatible?')
+            self.fsm_kill()
         else:
             if self.fsm.axis_reported_len_recvd:
-                self.fsm.state = AxisRespnsFSMStates.CENTER
+                if (self._settings.get(["home_axis_before_calibration"])):
+                    self.fsm.state = AxisRespnsFSMStates.CENTER
+                else: self.fsm.state = AxisRespnsFSMStates.SWEEP
             if SIMULATION:
                 self.fsm.axis_reported_len = 255.
                 self.fsm.state = AxisRespnsFSMStates.CENTER
 
     
     def fsm_on_CENTER_entry(self):
-        if (self._settings.get(["home_axis_before_calibration"])):
-            self.send_printer_command('G1 ' + self.fsm.axis.upper() + str(round(self.fsm.axis_reported_len/2)) + ' F' + str(MOVE_TO_CENTER_SPEED_MM_PER_MIN))
+        self.send_printer_command('G1 ' + self.fsm.axis.upper() + str(round(self.fsm.axis_reported_len/2)) + ' F' + str(MOVE_TO_CENTER_SPEED_MM_PER_MIN))
 
     
     def fsm_on_CENTER_during(self):
+        if self.fsm.printer_requires_additional_homing:
+            self.fsm.state = AxisRespnsFSMStates.HOME
         self.send_printer_command('M114')
         if VERBOSE > 1: self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
         if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or not self._settings.get(["home_axis_before_calibration"]) or SIMULATION:
@@ -893,8 +950,9 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 self.fsm.state = AxisRespnsFSMStates.SWEEP
             self.fsm.axis_centering_wait_time += FSM_UPDATE_RATE_SEC
         if self.fsm.in_state_time > CENTER_AXIS_TIMEOUT:
-            self.send_client_popup(type='error', title='Axis Center Timeout', message='Timed out moving the axis to center.')
-            self.fsm.state = AxisRespnsFSMStates.IDLE
+            self.send_client_popup(type='error', title='Axis Center Timeout',
+                                   message='Unknown error moving the axis to center.')
+            self.fsm_kill()
     
     def fsm_on_SWEEP_entry(self):
         self.send_printer_command('M494')
@@ -920,7 +978,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
 
                 f1_max = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
                 if self._settings.get(["override_end_frequency"]):
-                    f1 = min( f1_max, float(self._settings.get(["end_frequency_override"])))
+                    f1 = min( f1_max, float(self._settings.get(["end_frequency_override"]))) # TODO confirm float or int ?
                 else:
                     f1 = f1_max
                     
@@ -996,16 +1054,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                 
             if f_abort:
                 self.send_printer_command('M494 F99')
-
-                self.sts_axis_calibration_active = False
-                self.sts_axis_verification_active = False
-                self.sts_acclrmtr_connected = False
-
-                self.sts_acclrmtr_active = False
-                self.fsm_reset()
-                self.fsm.state = AxisRespnsFSMStates.IDLE
-
-                self.update_tab_layout()
+                self.fsm_kill()
 
         return
 
@@ -1081,6 +1130,18 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         else: return
 
         self.fsm.state = AxisRespnsFSMStates.HOME
+
+    
+    def fsm_kill(self):
+        self.sts_axis_calibration_active = False
+        self.sts_axis_verification_active = False
+        self.sts_acclrmtr_connected = False
+
+        self.sts_acclrmtr_active = False
+        self.fsm_reset()
+        self.fsm.state = AxisRespnsFSMStates.IDLE
+
+        self.update_tab_layout()
 
 
     def get_settings_defaults(self):
