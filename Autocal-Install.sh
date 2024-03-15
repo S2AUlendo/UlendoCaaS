@@ -43,6 +43,31 @@ git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
 cd OctoPrint-Autocal
 ../venv/bin/octoprint dev plugin:install
 
-# start the server
-cd ~/OctoPrint
-venv/bin/octoprint serve
+#leave the python virtual environment
+deactivate
+
+# create the octoprint system service
+SERVICE="[Unit]
+Description=Octoprint Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=\"LC_ALL=C.UTF-8\"
+Environment=\"LANG=C.UTF-8\"
+Type=exec
+User=octopi
+ExecStart=/home/octopi/OctoPrint/venv/bin/octoprint  
+
+[Install]
+WantedBy=multi-user.target"
+
+echo "$SERVICE" | sudo tee -a /etc/systemd/system/octoprint.service >/dev/null
+
+# enable and start the octoprint system service
+sudo systemctl enable octoprint.service
+sudo service octoprint start
+
+#return home
+cd ~
+echo "installation complete"

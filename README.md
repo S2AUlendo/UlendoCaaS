@@ -16,7 +16,8 @@ Download [Autocal-Install.sh](Autocal-Install.sh) and follow the instructions be
 	. ./Autocal-Install.sh
 
 ## Usage:
-	The setup script will start the server for you the first time you run it. 
+	The setup script will start the server for you and create the octoprint service.
+	The octoprint service will automatically start octoprint with the OS when it boots. 
 
 	To run octoprint as usual:
 		source ~/OctoPrint/venv/bin/activate
