@@ -11,6 +11,10 @@ test $? -eq 0 || exit -1 "script must be run as root to install dependencies"
 # list them in one place for ease of updating
 DEPENDENCIES="python3 python3-pip python3-dev python3-setuptools python3-venv git libyaml-dev build-essential libffi-dev libssl-dev libopenblas-dev liblapack-dev pigpio gcc g++ gfortran"
 
+# get current user
+$USER="$(whoami)"
+echo "current user = $USER"
+
 # update apt and the OS
 sudo apt update
 sudo apt upgrade -y
@@ -56,13 +60,13 @@ Wants=network-online.target
 Environment=\"LC_ALL=C.UTF-8\"
 Environment=\"LANG=C.UTF-8\"
 Type=exec
-User=octopi
-ExecStart=/home/octopi/OctoPrint/venv/bin/octoprint  
+User=$USER
+ExecStart=/home/$USER/OctoPrint/venv/bin/octoprint  
 
 [Install]
 WantedBy=multi-user.target"
 
-echo "$SERVICE" | sudo tee -a /etc/systemd/system/octoprint.service >/dev/null
+echo "$SERVICE" | sudo tee /etc/systemd/system/octoprint.service >/dev/null
 
 # enable and start the octoprint system service
 sudo systemctl enable octoprint.service
