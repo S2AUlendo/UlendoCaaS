@@ -880,6 +880,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
     
 
     def fsm_on_HOME_entry(self):
+        global GET_AXIS_INFO_TIMEOUT
 
         if not self.sts_axis_verification_active:
             self.send_printer_command('M493 S1 ' + self.fsm.axis.upper() + '0')
@@ -900,6 +901,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                                                 message='Your printer wants to home the ' + 
                                                 self.fsm.printer_additional_homing_axes + ' axes before \
                                                 moving. Verify motion is clear and proceed.')
+                GET_AXIS_INFO_TIMEOUT = 45 # Temporarily prevent an error during a longer homing. TODO: properly monitor busy response
         else:
             if (self._settings.get(["home_axis_before_calibration"])):
                 self.send_printer_command('G28 ' + self.fsm.axis.upper())
@@ -1027,8 +1029,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
                                 + ' H' + str(self.sweep_cfg.step_a) \
                                 + ' I' + f'{self.sweep_cfg.dly1_ti/1000:0.3f}' \
                                 + ' J' + f'{self.sweep_cfg.dly2_ti/1000:0.3f}' \
-                                + ' K' + f'{self.sweep_cfg.dly3_ti/1000:0.3f}' \
-
+                                + ' K' + f'{self.sweep_cfg.dly3_ti/1000:0.3f}'
                 self.send_printer_command(cmd)
 
             self.fsm.sweep_initiated = True
