@@ -12,13 +12,11 @@ test $? -eq 0 || exit -1 "script must be run as root to install dependencies"
 DEPENDENCIES="python3 python3-pip python3-dev python3-setuptools python3-venv git libyaml-dev build-essential libffi-dev libssl-dev libopenblas-dev liblapack-dev pigpio gcc g++ gfortran"
 
 # get current user
-$USER="$(whoami)"
+USER="$(whoami)"
 echo "current user = $USER"
 
-$INSTALL="/home/$USER/OctoPrint"
-$EXECUTE="/home/$USER/OctoPrint/venv/bin/octoprint"
-$PLUGIN="/home/$USER/OctoPrint/OctoPrint-Autocal"
-$SERVICE="/etc/systemd/system/octoprint.service"
+INSTALL="/home/$USER/OctoPrint"
+PLUGIN="/home/$USER/OctoPrint/OctoPrint-Autocal"
 
 # update apt and the OS
 sudo apt update
@@ -33,26 +31,19 @@ sudo pigpiod
 
 # if OctoPrint has been installed, update it 
 if [ -d "/home/$USER/OctoPrint" ]
+then
+  # if the plugin has been installed before, pull the latest version
+  if [ -d "/home/$USER/OctoPrint/OctoPrint-Autocal" ]
   then
-
-  if [ -d "/home/$USER/OctoPrint/venv/bin/octoprint" ]
-
-  then
-    # if the plugin has been installed before, pull the latest version
-    if [ -d "/home/$USER/OctoPrint/OctoPrint-Autocal" ]
-
-    then
-      cd "/home/$USER/OctoPrint/OctoPrint-Autocal"
-      git pull origin main
-
-    fi
-
+    cd $PLUGIN
+    git pull origin main
+    latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+    git checkout $latestTag    
   fi
-
 fi
 
 # if the OctoPrint dir doesn't exist, perform a fresh install
-if [ ! -d /home/$USER/OctoPrint ] 
+if [ ! -d "/home/$USER/OctoPrint" ] 
 then
   # the python virtual environment, octoprint, and the plugin will be installed here
   cd ~
@@ -69,6 +60,9 @@ then
 
   # get the plugin
   git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
+  cd OctoPrint-Autocal
+  latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+  git checkout $latestTag 
 
   # install the plugin
   cd OctoPrint-Autocal
