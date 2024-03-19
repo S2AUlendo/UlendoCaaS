@@ -37,6 +37,7 @@ then
   then
     cd $PLUGIN
     git pull origin main
+    git fetch --tags
     latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
     git checkout $latestTag    
   fi
@@ -61,6 +62,7 @@ then
   # get the plugin
   git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
   cd OctoPrint-Autocal
+  git fetch --tags
   latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
   git checkout $latestTag 
 
