@@ -12,6 +12,7 @@ Download [Autocal-Install.sh](Autocal-Install.sh) and follow the instructions be
 
 ## Setup (RPi)
 
+	curl https://raw.githubusercontent.com/S2AUlendo/UlendoCaaS/main/Autocal-Install.sh > Autocal-Install.sh
 	sudo chmod +x Autocal-Install.sh
 	. ./Autocal-Install.sh
 
