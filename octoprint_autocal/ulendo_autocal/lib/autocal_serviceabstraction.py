@@ -69,10 +69,7 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, machi
                         'MANUFACTURER_NAME': ""
                     },                    
                 }
-    # f_x_anim = open(os.path.join(os.path.dirname(__file__) , '..', 'data', 'tmpxfild'), 'ab')
-    #with open('solve_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
-    
-    # alternate file write method - ddelpreto
+   
     post_filename = 'solve_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt'
     post_file = open(os.path.join(os.path.dirname(__file__) , '..', 'data', post_filename), 'w') 
     json.dump(postdata, post_file, sort_keys=True, indent=4, ensure_ascii=False)
@@ -81,7 +78,6 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, machi
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
     response_body = json.loads(postreq.text)
     
-    #with open('json_response.txt', 'w') as fout: json.dump(response_body, fout, sort_keys=True, indent=4, ensure_ascii=False)
     response_filename = 'json_response.txt'
     response_file = open(os.path.join(os.path.dirname(__file__), '..', 'data', response_filename), 'w')
     json.dump(response_body, response_file, sort_keys=True, indent=4, ensure_ascii=False)
@@ -126,7 +122,6 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, mac
                     }, 
                 }
     
-    #with open('verify_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt', 'w') as fout: json.dump(postdata, fout, sort_keys=True, indent=4, ensure_ascii=False)
     verify_filename = 'verify_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt'
     verify_file = open(os.path.join(os.path.dirname(__file__), '..', 'data', verify_filename), 'w')
     json.dump(postdata, verify_file, sort_keys=True, indent=4, ensure_ascii=False)

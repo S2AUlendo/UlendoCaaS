@@ -43,9 +43,7 @@ if [ -d "/home/$USER/OctoPrint" ]
 
     then
       cd "/home/$USER/OctoPrint/OctoPrint-Autocal"
-      pwd
-      git pull origin main    
-      ../venv/bin/octoprint dev plugin:install
+      git pull origin main
 
     fi
 
@@ -106,4 +104,4 @@ sudo service octoprint start
 
 #return home
 cd ~
-echo "installation complete\n"
+echo "installation complete"
