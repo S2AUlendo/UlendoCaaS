@@ -15,6 +15,11 @@ DEPENDENCIES="python3 python3-pip python3-dev python3-setuptools python3-venv gi
 $USER="$(whoami)"
 echo "current user = $USER"
 
+$INSTALL="/home/$USER/OctoPrint"
+$EXECUTE="/home/$USER/OctoPrint/venv/bin/octoprint"
+$PLUGIN="/home/$USER/OctoPrint/OctoPrint-Autocal"
+$SERVICE="/etc/systemd/system/octoprint.service"
+
 # update apt and the OS
 sudo apt update
 sudo apt upgrade -y
@@ -26,29 +31,55 @@ sudo apt install -y $DEPENDENCIES
 sudo systemctl enable pigpiod
 sudo pigpiod
 
-# the python virtual environment, octoprint, and the plugin will be installed here
-cd ~
-mkdir -p OctoPrint && cd OctoPrint
+# if OctoPrint has been installed, update it 
+if [ -d "/home/$USER/OctoPrint" ]
+  then
 
-# create the virtual environment
-python3 -m venv venv
-source venv/bin/activate
-# update pip and wheel
-pip install --upgrade pip wheel
-# install IO and Octoprint
-pip install control
-pip install pigpio
-pip install octoprint
+  if [ -d "/home/$USER/OctoPrint/venv/bin/octoprint" ]
 
-# get the plugin
-git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
+  then
+    # if the plugin has been installed before, pull the latest version
+    if [ -d "/home/$USER/OctoPrint/OctoPrint-Autocal" ]
 
-# install the plugin
-cd OctoPrint-Autocal
-../venv/bin/octoprint dev plugin:install
+    then
+      cd "/home/$USER/OctoPrint/OctoPrint-Autocal"
+      pwd
+      git pull origin main    
+      ../venv/bin/octoprint dev plugin:install
 
-#leave the python virtual environment
-deactivate
+    fi
+
+  fi
+
+fi
+
+# if the OctoPrint dir doesn't exist, perform a fresh install
+if [ ! -d /home/$USER/OctoPrint ] 
+then
+  # the python virtual environment, octoprint, and the plugin will be installed here
+  cd ~
+  mkdir -p OctoPrint && cd OctoPrint
+
+  # create the virtual environment
+  python3 -m venv venv
+  source venv/bin/activate
+  # update pip and wheel
+  pip install --upgrade pip wheel
+  # install IO and Octoprint
+  pip install pigpio
+  pip install octoprint
+
+  # get the plugin
+  git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-Autocal
+
+  # install the plugin
+  cd OctoPrint-Autocal
+  ../venv/bin/octoprint dev plugin:install
+
+  #leave the python virtual environment
+  deactivate
+
+fi
 
 # create the octoprint system service
 SERVICE="[Unit]
@@ -69,9 +100,10 @@ WantedBy=multi-user.target"
 echo "$SERVICE" | sudo tee /etc/systemd/system/octoprint.service >/dev/null
 
 # enable and start the octoprint system service
+sudo systemctl daemon-reload
 sudo systemctl enable octoprint.service
 sudo service octoprint start
 
 #return home
 cd ~
-echo "installation complete"
+echo "installation complete\n"
