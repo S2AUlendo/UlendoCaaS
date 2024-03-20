@@ -982,7 +982,7 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         if self.fsm.in_state_time > FSM_SWEEP_START_DLY and not self.fsm.sweep_initiated:
             if not SIMULATION:
 
-                f1_max = floor(sqrt(self._settings.get(["acceleration_amplitude"])*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+                f1_max = floor(sqrt(int(self._settings.get(["acceleration_amplitude"]))*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
                 if self._settings.get(["override_end_frequency"]):
                     f1 = min( f1_max, int(self._settings.get(["end_frequency_override"]))) # TODO confirm float or int ?
                 else:
