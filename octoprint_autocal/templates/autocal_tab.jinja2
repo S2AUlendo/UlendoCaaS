@@ -9,12 +9,12 @@
 <div class="about_collapsible">
   <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
   <div class="hide">
-    <p class="abouttext">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
+    <p class="abouttext">HELLO!!! Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
     in Marlin's FTM (Fixed-Time-Motion) module.</p>
     <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
     times by improving printer reliability at higher speeds and accelerations.</p>
     <div class="alert alert-block">
-      <strong>{{ _('Note: ') }}</strong>{{ _('Requires compatible firmware (Marlin 2.2+). 
+      <strong>{{ _('Note: ') }}</strong>{ { _('Requires compatible firmware (Marlin 2.2+). 
         Get the latest Marlin firmware for your printer <a href="https://github.com/MarlinFirmware/Marlin">here</a>. Find out more 
         about Ulendo\'s advance solutions for additive manufacturing at <a href="https://www.ulendo.io/">ulendo.io</a>') }}
     </div>
@@ -23,12 +23,12 @@
 
 <div id='acclrmtr_live_data_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
+<div>Accelerometer: </div>
 <button id='acclrmtr_connect_btn' class="btn" data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect Accelerometer') }}</button>
 
 <div class="calibrate_axis_btn_group">
-    <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
-    <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
-    <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Test') }}</button>
+    <button id='calibrate_x_axis_btn' class="btn btn-block" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
+    <button id='calibrate_y_axis_btn' class="btn btn-block" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
 </div>
 
 

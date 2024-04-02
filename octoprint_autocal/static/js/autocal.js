@@ -95,14 +95,14 @@ $(function() {
                 calibrate_x_axis_btn.classList.add("".concat(data.calibrate_x_axis_btn_state, "_style"));
                 calibrate_y_axis_btn.classList.add("".concat(data.calibrate_y_axis_btn_state, "_style"));
                 
-                if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { acclrmtr_connect_btn.innerText = 'Connect Accelerometer'; }
+                if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { acclrmtr_connect_btn.innerText = 'Connect'; }
                 else if (data.acclrmtr_connect_btn_state == 'CONNECTING') { acclrmtr_connect_btn.innerText = 'Connecting'; }
                 
                 if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
-                    acclrmtr_connect_btn.innerText = 'Accelerometer Connected';
-                    calibrate_x_axis_btn.style.display = "block";   // TODO: control the visibility of buttons server-side
+                    acclrmtr_connect_btn.innerText = 'Connected';
+                    calibrate_x_axis_btn.style.display = "inline";   // TODO: control the visibility of buttons server-side
                                                                     // in order to match the rest of the software flow.
-                    calibrate_y_axis_btn.style.display = "block";
+                    calibrate_y_axis_btn.style.display = "inline";
                 } else {
                     calibrate_x_axis_btn.style.display = "none";
                     calibrate_y_axis_btn.style.display = "none";
@@ -110,7 +110,7 @@ $(function() {
 
                 is_select_dropdown_id.style.display = "none";
                 save_calibration_btn.style.display = "none";
-                if (data.calibrate_x_axis_btn_state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
+                if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') { calibrate_x_axis_btn.innerText = 'Calibrating X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     calibrate_x_axis_btn.innerText = 'X Calibration Ready';
