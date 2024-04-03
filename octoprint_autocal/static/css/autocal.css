@@ -2,6 +2,7 @@
     --button-border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) rgba(0,0,0,0.25);
     --button-inner-shadow: inset 0px -8px 8px rgba(0,0,0,0.06);
     --button-border-width: 0.8px;
+    --graph-background: url("../img/graph-background.png") no-repeat center;
 }
 
 #setup_container {

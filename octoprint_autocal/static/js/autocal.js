@@ -39,7 +39,25 @@ $(function() {
                 let series1 = { x: data.values_x, y: data.values_y, mode: "lines", name: 'Axis Acceleration' };
                 var layout = { title: 'Accelerometer Data',
                     xaxis: { title: 'Time [sec]', showgrid: false, zeroline: false, autorange: true },
-                    yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false }
+                    yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false },
+                    font: {
+                        family: "Helvetica",
+                        size: 11.6667,
+                        images: [
+                            {
+                                source: "https://images.plot.ly/language-icons/api-home/r-logo.png",
+                                xref: "x",
+                                yref: "y",
+                                x: 1,
+                                y: 3,
+                                sizex: 2,
+                                sizey: 2,
+                                sizing: "stretch",
+                                opacity: 0.4,
+                                layer: "below"
+                            }
+                          ],
+                    }
                 };
                 Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout);
                 return;
@@ -52,7 +70,25 @@ $(function() {
                 let series3 = { x: data.w_bp, y: data.new_mag, mode: "lines", name: 'After<br>Shaper' };
                 var layout = { title: ''.concat(data.axis.toUpperCase(), ' Axis Calibration Preview using ', data.istype.toUpperCase()),
                     xaxis: { title: 'Frequency [Hz]', showgrid: false, zeroline: false, autorange: true },
-                    yaxis: { title: 'Magnitude', showline: false }
+                    yaxis: { title: 'Magnitude', showline: false },
+                    font: {
+                        family: "Helvetica",
+                        size: 11.6667,
+                        images: [
+                            {
+                                source: "https://images.plot.ly/language-icons/api-home/r-logo.png",
+                                xref: "x",
+                                yref: "y",
+                                x: 1,
+                                y: 3,
+                                sizex: 2,
+                                sizey: 2,
+                                sizing: "stretch",
+                                opacity: 0.4,
+                                layer: "below"
+                            }
+                          ],
+                    }
                     };
                 Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout);
             }
