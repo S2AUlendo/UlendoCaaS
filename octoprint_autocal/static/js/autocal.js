@@ -150,7 +150,7 @@ $(function() {
                 if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') { calibrate_x_axis_btn.innerText = 'Calibrating X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
-                    calibrate_x_axis_btn.innerText = 'X Calibration Ready';
+                    calibrate_x_ready_label.style.display = "block";
                     is_select_dropdown_id.style.display = "inline-block";
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {

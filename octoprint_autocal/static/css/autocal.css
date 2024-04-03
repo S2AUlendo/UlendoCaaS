@@ -13,6 +13,11 @@
     gap: 10px;
 }
 
+.line-break{
+    flex-basis: 100%;
+    width: 0%;
+}
+
 #accelerometer_child{
     display: flex;
     align-items: center; /* Center content vertically */
@@ -22,6 +27,24 @@
 .calibrate_axis_btn_group {
     display: flex;
     flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.ready-labels {
+    display: flex;
+    text-align: center;
+    justify-content: space-around;
+    flex-grow: 1;
+}
+
+.calibrate_x_ready_label{
+    display:none !important;
+}
+
+.calibrate_y_ready_label{
+    display:none !important; 
 }
 
 .acclrmtr_connect_btn {
@@ -96,6 +119,7 @@
     transition: background-position .1s linear;
     border-radius: 4px;
     padding: 4px;
+    flex-grow: 1;
 }
 
 .calibrate_axis_btn.NOTCALIBRATED_style {
