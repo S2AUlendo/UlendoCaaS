@@ -100,6 +100,7 @@ $(function() {
                 
                 if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
                     acclrmtr_connect_btn.innerText = 'Connected';
+                    acclrmtr_connect_btn.classList.add("btn-success");
                     calibrate_x_axis_btn.style.display = "inline";   // TODO: control the visibility of buttons server-side
                                                                     // in order to match the rest of the software flow.
                     calibrate_y_axis_btn.style.display = "inline";
