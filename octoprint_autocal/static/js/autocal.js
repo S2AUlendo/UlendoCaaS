@@ -151,11 +151,15 @@ $(function() {
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') { calibrate_x_axis_btn.innerText = 'Calibrating X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     calibrate_x_ready_label.style.display = "block";
+                    calibrate_x_ready_label.style.setProperty("display", "block", "important");
+                    calibrate_x_ready_label.classList.add("label-info");
+                    calibrate_x_ready_label.innerText = "Ready";
                     is_select_dropdown_id.style.display = "inline-block";
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {
-                   calibrate_x_axis_btn.innerText = 'X Calibration Loaded';
                    save_calibration_btn.style.display = "block";
+                   calibrate_x_ready_label.classList.add("label-success");
+                   calibrate_x_ready_label.innerText = "Calibrated";
                 // is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                                                                          // after loading without re-running the calibration routing.
                 }
@@ -163,12 +167,15 @@ $(function() {
                 if (data.calibrate_y_axis_btn_state == 'NOTCALIBRATED') { calibrate_y_axis_btn.innerText = 'Calibrate Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATING') { calibrate_y_axis_btn.innerText = 'Calibrating Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONREADY') {
-                   calibrate_y_axis_btn.innerText = 'Y Calibration Ready';
+                   calibrate_y_ready_label.style.setProperty("display", "block", "important");
+                   calibrate_y_ready_label.classList.add("label-info");
+                   calibrate_y_ready_label.innerText = "Ready";
                    is_select_dropdown_id.style.display = "inline-block";
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
-                    calibrate_y_axis_btn.innerText = 'Y Calibration Loaded';
-                    save_calibration_btn.style.display = "block";
+                   save_calibration_btn.style.display = "block";
+                   calibrate_y_ready_label.classList.add("label-success");
+                   calibrate_y_ready_label.innerText = "Calibrated";
                 //  \is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                                                                            // after loading without re-running the calibration routing.
                                                                         }
