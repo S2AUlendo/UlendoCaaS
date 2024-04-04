@@ -13,7 +13,7 @@
 <div class="about_collapsible">
   <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
   <div class="hide">
-    <p class="abouttext">HELLO!!! Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
+    <p class="abouttext">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
     in Marlin's FTM (Fixed-Time-Motion) module.</p>
     <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
     times by improving printer reliability at higher speeds and accelerations.</p>
@@ -42,9 +42,10 @@
     </div>
   </div>
 
-
+  <div id="calibration_instructions">
+    <p class="abouttext">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  </div>  
   <div class="is_select_dropdown" id="is_select_dropdown_id">
-    
     <div class="is_select_dropdown_content btn-group">
         <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="btn is_select_btn">{{ _('ZV-IS') }}</button>
         <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="btn is_select_btn">{{ _('ZVD-IS (Recommended)') }}</button>

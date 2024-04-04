@@ -8,11 +8,19 @@ $(function () {
 
         self.clearAllButtonStates = function () {
             // Reset the state of accelerometer button
-            acclrmtr_connect_btn.classList.add("acclrmtr_connect_btn");
+            acclrmtr_connect_btn.className = "acclrmtr_connect_btn btn";
+            var calibration_state_labels = document.getElementById('calibration_state_labels');
+            var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
+            var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
+            var calibration_instructions = document.getElementById('calibration_instructions');
+            calibration_state_labels.style.visibility ="hidden";
+            calibrate_x_status_label.style.visibility ="hidden";
+            calibrate_y_status_label.style.visibility ="hidden";
+            calibration_instructions.style.display = "none";
             // Reset the state of Calibrate button
             var calibrate_axis_btns = document.querySelectorAll(".calibrate_axis_btn_group button");
             for (var i = 0; i < calibrate_axis_btns.length; i++) {
-                calibrate_axis_btns[i].classList.add("calibrate_axis_btn");
+                calibrate_axis_btns[i].className = "calibrate_axis_btn btn";
             }
 
             // Reset the state of the shaper dropdown button.
@@ -21,20 +29,14 @@ $(function () {
             // Reset the state of shaper selection buttons.
             var select_calibration_btns = document.querySelectorAll(".is_select_dropdown_content button");
             for (var i = 0; i < select_calibration_btns.length; i++) {
-                select_calibration_btns[i].classList.add("select_calibration_btn_NOTSELECTED_style");
+                select_calibration_btns[i].className = "select_calibration_btn_NOTSELECTED_style btn";
             }
 
-            var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
-            var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
+            load_calibration_btn.className = "load_calibration_btn btn btn-primary";
 
-            calibrate_x_status_label.style.visibility = "hidden";
-            calibrate_y_status_label.style.visibility = "hidden";
+            save_calibration_btn.className = "save_calibration_btn btn btn-primary";
 
-            load_calibration_btn.classList.add("load_calibration_btn");
-
-            save_calibration_btn.classList.add("save_calibration_btn");
-
-            clear_session_btn.classList.add("clear_session_btn");
+            clear_session_btn.className = "clear_session_btn btn";
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
@@ -44,7 +46,7 @@ $(function () {
             if (data.type == "acclrmtr_live_data") {
                 let series1 = { x: data.values_x, y: data.values_y, mode: "lines", name: 'Axis Acceleration' };
                 var layout = {
-                    autosize: true,
+                    width: $('#calibration_results_graph').parent().width(),
                     title: 'Accelerometer Data',
                     xaxis: { title: 'Time [sec]', showgrid: false, zeroline: false, autorange: true },
                     yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false },
@@ -67,7 +69,8 @@ $(function () {
                         ],
                     }
                 };
-                Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout);
+                var config = {responsive: true}
+                Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout, config);
                 return;
             }
 
@@ -77,7 +80,7 @@ $(function () {
                 let series2 = { x: data.w_bp, y: data.compensator_mag, mode: "lines", name: 'Shaper<br>Response' };
                 let series3 = { x: data.w_bp, y: data.new_mag, mode: "lines", name: 'After<br>Shaper' };
                 var layout = {
-                    autosize: true,
+                    width: $('#calibration_results_graph').parent().width(),
                     title: ''.concat(data.axis.toUpperCase(), ' Axis Calibration Preview using ', data.istype.toUpperCase()),
                     xaxis: { title: 'Frequency [Hz]', showgrid: false, zeroline: false, autorange: true },
                     yaxis: { title: 'Magnitude', showline: false },
@@ -100,7 +103,8 @@ $(function () {
                         ],
                     }
                 };
-                Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout);
+                var config = {responsive: true}
+                Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout, config);
             }
 
             if (data.type == "verification_result") {
@@ -140,15 +144,17 @@ $(function () {
                 var calibration_state_labels = document.getElementById('calibration_state_labels');
                 var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
                 var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
+                var calibration_instructions = document.getElementById('calibration_instructions');
 
                 acclrmtr_connect_btn.classList.add("".concat(data.acclrmtr_connect_btn_state, "_style"));
                 calibrate_x_axis_btn.classList.add("".concat(data.calibrate_x_axis_btn_state, "_style"));
                 calibrate_y_axis_btn.classList.add("".concat(data.calibrate_y_axis_btn_state, "_style"));
 
-                if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { acclrmtr_connect_btn.innerText = 'Connect'; }
+                if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { 
+                    acclrmtr_connect_btn.innerText = 'Connect'; 
+                }
                 else if (data.acclrmtr_connect_btn_state == 'CONNECTING') { 
                     acclrmtr_connect_btn.innerText = 'Connecting'; 
-                    calibrate_x_status_label.style.visibility ="hidden";
                 }
 
                 if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
@@ -157,8 +163,7 @@ $(function () {
                     calibrate_x_axis_btn.style.display = "inline";   // TODO: control the visibility of buttons server-side
                     // in order to match the rest of the software flow.
                     calibrate_y_axis_btn.style.display = "inline";
-                    calibrate_x_status_label.style.visibility = "visible";
-                    calibrate_y_status_label.style.visibility = "visible";
+                    calibration_state_labels.style.visibility = "visible";
                 } else {
                     calibrate_x_axis_btn.style.display = "none";
                     calibrate_y_axis_btn.style.display = "none";
@@ -171,32 +176,35 @@ $(function () {
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') {
                     let message = "Calibrating";
                     calibrate_x_axis_btn.innerText = 'Calibrate X';
-                    calibrate_x_status_label.classList.remove("label-info");
+                    self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-warning");
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message; 
-                    calibrate_y_status_label.style.visibility = "hidden";// this to maintain spacing for flex, it would still be invisible
+                    calibrate_x_status_label.style.visibility = "inherit";
+                    calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     console.log("X label: ", calibrate_x_status_label.innerText);
                     let message = "Ready";
-                    // self.removeLabelClass(calibrate_x_status_label, "label-");
+                    // self.removeClass(calibrate_x_status_label, "label-");
                     console.log("x", message);
                     calibrate_x_status_label.classList.add("label-info");
                     is_select_dropdown_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message; 
                     calibrate_y_status_label.innerText = message;
-                    calibrate_y_status_label.style.visibility = "hidden";  // this to maintain spacing for flex, it would still be invisible
-                    
+                    calibrate_x_status_label.style.visibility = "inherit";
+                    calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
+                    calibration_instructions.style.display = "block";  
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     let message = "Calibrated";
                     save_calibration_btn.style.display = "block";
-                    calibrate_x_status_label.classList.remove("label-info");
+                    self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-success");
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message; 
-                    calibrate_y_status_label.style.visibility = "hidden";  // this to maintain spacing for flex, it would still be invisible
+                    calibrate_x_status_label.style.visibility = "inherit"; //inherits parent style
+                    calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                     // is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                     // after loading without re-running the calibration routing.
                 }
@@ -204,28 +212,33 @@ $(function () {
                 if (data.calibrate_y_axis_btn_state == 'NOTCALIBRATED') { calibrate_y_axis_btn.innerText = 'Calibrate Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATING') {
                     let message = "Calibrating";
-                    calibrate_y_status_label.classList.remove("label-info");
+                    self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-warning");
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
-                    calibrate_y_status_label.style.visibility = "hidden";// this to maintain spacing for flex, it would still be invisible
+                    calibrate_y_status_label.style.visibility = "inherit";
+                    calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONREADY') {
                     let message = "Ready";
+                    self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-info");
                     is_select_dropdown_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
-                    calibrate_y_status_label.style.visibility = "hidden";// this to maintain spacing for flex, it would still be invisible
+                    calibrate_y_status_label.style.visibility = "inherit";
+                    calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible// this to maintain spacing for flex, it would still be invisible
+                    calibration_instructions.style.display = "block"; 
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     let message = "Calibrated";
                     save_calibration_btn.style.display = "block";
-                    calibrate_x_status_label.classList.remove("label-info");
+                    self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-success");
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
-                    calibrate_y_status_label.style.visibility = "hidden";// this to maintain spacing for flex, it would still be invisible 
+                    calibrate_y_status_label.style.visibility = "inherit";
+                    calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                     //  \is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                     // after loading without re-running the calibration routing.
                 }
@@ -269,10 +282,8 @@ $(function () {
                     data.select_ei_btn_state == "SELECTED" ||
                     data.select_ei2h_btn_state == "SELECTED" ||
                     data.select_ei3h_btn_state == "SELECTED") {
-                    // is_select_dropbtn.classList.add("SELECTIONACTIVE_style");
                     load_calibration_btn.style.display = "block";
                 } else {
-                    // is_select_dropbtn.classList.add("NOSELECTION_style");
                     // is_select_dropbtn.innerText = "Select Shaper";
                     load_calibration_btn.style.display = "none";
                 }
@@ -280,9 +291,13 @@ $(function () {
                 if (data.load_calibration_btn_state == 'NOTLOADED') { load_calibration_btn.innerText = 'Load and Verify Calibration'; }
                 if (data.load_calibration_btn_state == 'LOADING') {
                     load_calibration_btn.innerText = 'Verifying Calibration';
+                    self.removeClass(load_calibration_btn, "btn-");
+                    load_calibration_btn.classList.add("btn-warning");
                 }
                 if (data.load_calibration_btn_state == 'LOADED') {
                     load_calibration_btn.innerText = 'Calibration Loaded and Verified';
+                    self.removeClass(load_calibration_btn, "btn-");
+                    load_calibration_btn.classList.add("btn-success");
                 }
 
                 load_calibration_btn.classList.add("".concat(data.load_calibration_btn_state, "_style"));
@@ -414,11 +429,12 @@ $(function () {
 
         };
         
-        self.removeLabelClass = function(element, prefix) {
+        self.removeClass = function(element, prefix) {
             var classes = element.className.split(" ").filter(function(c) {
-                return c.lastIndexOf(prefix, 0) !==0;
+                return c.lastIndexOf(prefix, 0) !== 0;
             });
-            element.className = classes.join("");
+            console.log(classes);
+            element.className = classes.join(" ").trim();
         }
 
         self.onClickAcclrmtrConnectBtn = function () {
