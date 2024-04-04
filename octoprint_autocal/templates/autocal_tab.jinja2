@@ -36,16 +36,16 @@
     <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
     <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
     <div class="line-break"></div>
-      <div class="status-labels">
-        <div class="calibrate_x_ready_label label"><!-- X Calibration Status --></div>
-        <div class="calibrate_y_ready_label label"><!-- Y Calibration Status --></div>
+    <div id="calibration_state_labels">
+      <div id="calibrate_x_status_label" class="label"><!-- X Calibration Status --></div>
+      <div id="calibrate_y_status_label" class="label"><!-- Y Calibration Status --></div>
     </div>
   </div>
 
 
   <div class="is_select_dropdown" id="is_select_dropdown_id">
-    <button id="is_select_dropbtn" class="btn">Click to select shaper</button>
-    <div class="is_select_dropdown_content">
+    
+    <div class="is_select_dropdown_content btn-group">
         <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="btn is_select_btn">{{ _('ZV-IS') }}</button>
         <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="btn is_select_btn">{{ _('ZVD-IS (Recommended)') }}</button>
         <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="btn is_select_btn">{{ _('MZV-IS') }}</button>
