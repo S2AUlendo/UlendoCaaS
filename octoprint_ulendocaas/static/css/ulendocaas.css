@@ -1,0 +1,288 @@
+#setup_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.line-break{
+    flex-basis: 100%;
+    width: 0%;
+}
+
+#accelerometer_child{
+    display: flex;
+    align-items: center; /* Center content vertically */
+    gap: 10px
+}
+
+.calibrate_axis_btn_group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 1px;
+    column-gap: 10px;
+}
+
+#calibration_state_labels {
+    visibility: hidden;
+    display: flex;
+    text-align: center;
+    justify-content: space-around;
+    flex-grow: 1;
+}
+
+#calibration_instructions {
+    display: none;
+    margin-top: auto;
+}
+
+.label:empty,
+.badge:empty {
+    display: inline-block !important; /* or any other display value you prefer */
+}
+
+.calibrate_x_status_label:empty{
+    visibility: hidden;
+}
+
+.calibrate_y_status_label{
+    visibility: hidden;
+}
+
+.manage_calibration_btn_group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+}
+
+.acclrmtr_connect_btn {
+    margin-bottom: 5px;
+    text-align: center;
+    display: block;
+    padding-left: 20;
+    padding-right: 20;
+    text-decoration: none;
+    padding: 4px;
+}
+
+.acclrmtr_connect_btn.NOTCONNECTED_style {
+}
+
+.acclrmtr_connect_btn.NOTCONNECTED_style:not(:disabled):hover {
+}
+
+.acclrmtr_connect_btn.NOTCALIBRATED_style:disabled {
+    cursor: not-allowed;
+}
+
+.acclrmtr_connect_btn.CONNECTING_style {
+    cursor: not-allowed;
+}
+
+.acclrmtr_connect_btn.CONNECTED_style {
+}
+
+.acclrmtr_connect_btn.CONNECTED_style:not(:disabled):hover {
+}
+
+.acclrmtr_connect_btn.CONNECTED_style:disabled {
+    cursor: not-allowed;
+}
+
+
+
+.calibrate_axis_btn {
+    margin-bottom: 5px;
+    text-align: center;
+    display: none;
+    padding-left: 20;
+    padding-right: 20;
+    text-decoration: none;
+    padding: 4px;
+    flex-grow: 1;
+}
+
+.calibrate_axis_btn.NOTCALIBRATED_style {
+}
+
+.calibrate_axis_btn.NOTCALIBRATED_style:not(:disabled):hover {
+}
+
+.calibrate_axis_btn.NOTCALIBRATED_style:disabled {
+    cursor: not-allowed;
+}
+
+.calibrate_axis_btn.CALIBRATING_style {
+    cursor: not-allowed;
+}
+
+.calibrate_axis_btn.CALIBRATIONREADY_style:not(:disabled):hover {
+}
+
+.calibrate_axis_btn.CALIBRATIONREADY_style:disabled {
+    cursor: not-allowed;
+}
+
+.calibrate_axis_btn.CALIBRATIONAPPLIED_style:not(:disabled):hover {
+}
+
+.calibrate_axis_btn.CALIBRATIONAPPLIED_style:disabled {
+    cursor: not-allowed;
+}
+
+
+.is_select_dropdown_content button.NOTSELECTED_style {
+    color: black;
+    background-color: #f5f5f5;
+}
+
+.is_select_dropdown_content button.NOTSELECTED_style:hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.is_select_dropdown_content button.SELECTED_style {
+    color: blue;
+}
+
+.is_select_dropdown_content button.SELECTED_style:hover {
+    background-color: #dbdbdb;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#dbdbdb));
+}
+
+
+
+.load_calibration_btn {
+    margin-bottom: 5px;
+    text-align: center;
+    display: none;
+    padding-left: 20;
+    padding-right: 20;
+    box-sizing: border-box;
+    text-decoration: none;
+    padding: 4px;
+}
+
+.load_calibration_btn.NOTLOADED_style {
+}
+
+.load_calibration_btn.NOTLOADED_style:not(:disabled):hover {
+}
+
+.load_calibration_btn.NOTLOADED_style:disabled {
+    cursor: not-allowed;
+}
+
+.load_calibration_btn.LOADING_style {
+    cursor: not-allowed;
+}
+
+.load_calibration_btn.LOADED_style {
+}
+
+.load_calibration_btn.LOADED_style:not(:disabled):hover {
+}
+
+.load_calibration_btn.LOADED_style:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+
+
+.save_calibration_btn {
+    margin-bottom: 5px;
+    text-align: center;
+    display: none;
+    padding-left: 20;
+    padding-right: 20;
+    text-decoration: none;
+    padding: 4px;
+}
+
+.save_calibration_btn.NOTSAVED_style {
+}
+
+.save_calibration_btn.NOTSAVED_style:not(:disabled):hover {
+}
+
+.save_calibration_btn.NOTSAVED_style:disabled {
+    cursor: not-allowed;
+}
+
+.save_calibration_btn.SAVED_style {
+}
+
+.save_calibration_btn.SAVED_style:not(:disabled):hover {
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#56ffff));
+}
+
+.save_calibration_btn.SAVED_style:disabled {
+    cursor: not-allowed;
+}
+
+.clear_session_btn {
+    margin-bottom: 5px;
+    text-align: center;
+    background-repeat: repeat-x;
+    display: block;
+    padding-left: 20;
+    padding-right: 20;
+    text-decoration: none;
+}
+
+.clear_session_btn:not(:disabled):hover {
+    background-color: #e6e6e6;
+    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
+}
+
+.clear_session_btn:disabled {
+    color: #777777;
+    cursor: not-allowed;
+}
+
+
+#vtol_group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 25px;
+}
+.slidercaption {
+    width: 170px;
+}
+.slidercontainer{
+    width: 100%;
+}
+.slider {
+    flex:1; 
+    outline: none;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%; 
+}
+.slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+pre {
+border : 0;
+background-color: transparent;
+}

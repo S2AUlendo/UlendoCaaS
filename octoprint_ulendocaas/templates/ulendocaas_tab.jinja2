@@ -1,0 +1,77 @@
+{# <script charset="utf-8" src='plugin/ulendocaas/static/plotly.js'></script> #}
+
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Ulendo CaaS Calibration Plugin</h5>
+  </div>
+</div>
+
+<div class="about_collapsible">
+  <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
+  <div class="hide">
+    <p class="abouttext">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
+    in Marlin's FTM (Fixed-Time-Motion) module.</p>
+    <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
+    times by improving printer reliability at higher speeds and accelerations.</p>
+    <div class="alert alert-block">
+      <strong>{{ _('Note: ') }}</strong>{ { _('Requires compatible firmware (Marlin 2.2+). 
+        Get the latest Marlin firmware for your printer <a href="https://github.com/MarlinFirmware/Marlin">here</a>. Find out more 
+        about Ulendo\'s advance solutions for additive manufacturing at <a href="https://www.ulendo.io/">ulendo.io</a>') }}
+    </div>
+  </div>
+</div>
+
+<div id='acclrmtr_live_data_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+<div id = "setup_container">
+  <div id="accelerometer_child" >
+  <div >Accelerometer: </div>
+    <button id='acclrmtr_connect_btn' class="btn" data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect') }}</button>
+  </div>
+  
+  <div class="calibrate_axis_btn_group">    
+    <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
+    <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
+    <div class="line-break"></div>
+    <div id="calibration_state_labels">
+      <div id="calibrate_x_status_label" class="label"><!-- X Calibration Status --></div>
+      <div id="calibrate_y_status_label" class="label"><!-- Y Calibration Status --></div>
+    </div>
+  </div>
+
+  <div id="calibration_instructions">
+    <p class="abouttext">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  </div>  
+  <div class="is_select_dropdown" id="is_select_dropdown_id">
+    <div class="is_select_dropdown_content btn-group">
+        <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="btn is_select_btn">{{ _('ZV-IS') }}</button>
+        <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="btn is_select_btn">{{ _('ZVD-IS (Recommended)') }}</button>
+        <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="btn is_select_btn">{{ _('MZV-IS') }}</button>
+        <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="btn is_select_btn">{{ _('EI-IS') }}</button>
+        <button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="btn is_select_btn">{{ _('2HEI-IS') }}</button>
+        <button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="btn is_select_btn">{{ _('3HEI-IS') }}</button>
+    </div>
+  </div>
+
+
+  {# <script charset="utf-8" src='plugin/ulendocaas/static/plotly.js'></script> #}
+  <div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+  <div id="vtol_group">
+    <span class="slidercaption">Vibration tolerance:</span>
+    <div class="slidercontainer"><input type="range" min="0" max="100" value="5" class="slider" id="vtolslider">
+    </div>
+  </div>
+
+  <div class="manage_calibration_btn_group">
+    <button id='load_calibration_btn' class="btn" data-bind="click: onClickLoadCalibrationBtn">{{ _('Load Calibration') }}</button>
+    <button id='save_calibration_btn' class="btn" data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
+  </div>
+
+  {# <script charset="utf-8" src='plugin/ulendocaas/static/plotly.js'></script> #}
+  <div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+  <button id='clear_session_btn' class="btn" data-bind="click: onClickClearSessionBtn"><i class="icon-remove"></i> Clear Session</button>
+
+</div>
+<h5>Output Log</h5>
+<pre id='output_log'></pre>
