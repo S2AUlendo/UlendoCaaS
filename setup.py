@@ -18,7 +18,7 @@ plugin_version = "0.1.3"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """"Automatically Configure Input Shaping and other advanced algorithms""""
+plugin_description = """Automatically Configure Input Shaping and other advanced algorithms"""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Ulendo Technologies, Inc."
