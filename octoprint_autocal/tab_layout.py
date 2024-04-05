@@ -1,5 +1,4 @@
 from .tab_buttons import *
-from .tab_labels import *
 
 class TabLayout(): # Tab layout to use as singleton
     def __init__(self):
