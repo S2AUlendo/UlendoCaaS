@@ -22,12 +22,8 @@ $(function () {
             for (var i = 0; i < calibrate_axis_btns.length; i++) {
                 calibrate_axis_btns[i].className = "calibrate_axis_btn btn";
             }
-
-            // Reset the state of the shaper dropdown button.
-            // is_select_dropbtn.classList.add("is_select_dropbtn"); REMOVED FOR UI 
-
             // Reset the state of shaper selection buttons.
-            var select_calibration_btns = document.querySelectorAll(".is_select_dropdown_content button");
+            var select_calibration_btns = document.querySelectorAll(".calibrate_select_btn_group_content button");
             for (var i = 0; i < select_calibration_btns.length; i++) {
                 select_calibration_btns[i].className = "select_calibration_btn_NOTSELECTED_style btn";
             }
@@ -52,21 +48,7 @@ $(function () {
                     yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false },
                     font: {
                         family: "Helvetica",
-                        size: 11.6667,
-                        images: [
-                            {
-                                source: "https://images.plot.ly/language-icons/api-home/r-logo.png",
-                                xref: "x",
-                                yref: "y",
-                                x: 1,
-                                y: 3,
-                                sizex: 2,
-                                sizey: 2,
-                                sizing: "stretch",
-                                opacity: 0.4,
-                                layer: "below"
-                            }
-                        ],
+                        size: 11.6667
                     }
                 };
                 var config = {responsive: true}
@@ -86,21 +68,7 @@ $(function () {
                     yaxis: { title: 'Magnitude', showline: false },
                     font: {
                         family: "Helvetica",
-                        size: 11.6667,
-                        images: [
-                            {
-                                source: "https://images.plot.ly/language-icons/api-home/r-logo.png",
-                                xref: "x",
-                                yref: "y",
-                                x: 1,
-                                y: 3,
-                                sizex: 2,
-                                sizey: 2,
-                                sizing: "stretch",
-                                opacity: 0.4,
-                                layer: "below"
-                            }
-                        ],
+                        size: 11.6667
                     }
                 };
                 var config = {responsive: true}
@@ -169,9 +137,8 @@ $(function () {
                     calibrate_y_axis_btn.style.display = "none";
                 }
 
-                is_select_dropdown_id.style.display = "none";
+                calibrate_select_btn_group_id.style.display = "none";
                 save_calibration_btn.style.display = "none";
-                console.log("calibration state", data.calibrate_x_axis_btn_state);
                 if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') {
                     let message = "Calibrating";
@@ -184,12 +151,9 @@ $(function () {
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
-                    console.log("X label: ", calibrate_x_status_label.innerText);
                     let message = "Ready";
-                    // self.removeClass(calibrate_x_status_label, "label-");
-                    console.log("x", message);
                     calibrate_x_status_label.classList.add("label-info");
-                    is_select_dropdown_id.style.display = "inline-block";
+                    calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message; 
                     calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit";
@@ -205,7 +169,6 @@ $(function () {
                     calibrate_y_status_label.innerText = message; 
                     calibrate_x_status_label.style.visibility = "inherit"; //inherits parent style
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    // is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                     // after loading without re-running the calibration routing.
                 }
 
@@ -223,7 +186,7 @@ $(function () {
                     let message = "Ready";
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-info");
-                    is_select_dropdown_id.style.display = "inline-block";
+                    calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
@@ -239,7 +202,6 @@ $(function () {
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
                     calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    //  \is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                     // after loading without re-running the calibration routing.
                 }
 
@@ -284,7 +246,6 @@ $(function () {
                     data.select_ei3h_btn_state == "SELECTED") {
                     load_calibration_btn.style.display = "block";
                 } else {
-                    // is_select_dropbtn.innerText = "Select Shaper";
                     load_calibration_btn.style.display = "none";
                 }
 
@@ -302,9 +263,6 @@ $(function () {
 
                 load_calibration_btn.classList.add("".concat(data.load_calibration_btn_state, "_style"));
 
-                console.log("ZVD state:", select_zvd_cal_btn._state);
-                console.log("ei2h state:", select_ei2h_cal_btn._state);
-                console.log("ei3h state:", select_ei3h_cal_btn._state);
                 calibrate_x_axis_btn.disabled = data.calibrate_x_axis_btn_disabled;
                 calibrate_y_axis_btn.disabled = data.calibrate_y_axis_btn_disabled;
                 select_zv_cal_btn.disabled = data.select_zv_btn_disabled;
@@ -433,7 +391,6 @@ $(function () {
             var classes = element.className.split(" ").filter(function(c) {
                 return c.lastIndexOf(prefix, 0) !== 0;
             });
-            console.log(classes);
             element.className = classes.join(" ").trim();
         }
 
