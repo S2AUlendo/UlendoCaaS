@@ -152,6 +152,7 @@ $(function () {
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     let message = "Ready";
+                    self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-info");
                     calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message; 
@@ -175,7 +176,7 @@ $(function () {
                 if (data.calibrate_y_axis_btn_state == 'NOTCALIBRATED') { calibrate_y_axis_btn.innerText = 'Calibrate Y'; }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATING') {
                     let message = "Calibrating";
-                    self.removeClass(calibrate_x_status_label, "label-");
+                    self.removeClass(calibrate_y_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-warning");
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
@@ -184,7 +185,7 @@ $(function () {
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONREADY') {
                     let message = "Ready";
-                    self.removeClass(calibrate_x_status_label, "label-");
+                    self.removeClass(calibrate_y_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-info");
                     calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message;
@@ -196,7 +197,7 @@ $(function () {
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     let message = "Calibrated";
                     save_calibration_btn.style.display = "block";
-                    self.removeClass(calibrate_x_status_label, "label-");
+                    self.removeClass(calibrate_y_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-success");
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
