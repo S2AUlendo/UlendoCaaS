@@ -157,15 +157,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         # core UI here.
         return {
             "js": ["js/ulendocaas.js", 
-                   "js/plotly.js",
-                   "js/bootstrap.js",
-                   "js/bootstrap.min.js"
+                   "js/plotly.js"
                    ],
-            "css": ["css/ulendocaas.css", 
-                    "css/bootstrap-responsive.css", 
-                    "css/bootstrap-responsive.min.css", 
-                    "css/bootstrap.css", 
-                    "css/bootstrap.min.css",
+            "css": ["css/ulendocaas.css"
                     ]
             # "less": ["less/ulendocaas.less"]
         }

@@ -51,7 +51,6 @@ $(function () {
                     font: {
                         family: "Helvetica",
                         size: 11.6667
-                        size: 11.6667
                     }
                 };
                 var config = {responsive: true}
@@ -71,7 +70,6 @@ $(function () {
                     yaxis: { title: 'Magnitude', showline: false },
                     font: {
                         family: "Helvetica",
-                        size: 11.6667
                         size: 11.6667
                     }
                 };

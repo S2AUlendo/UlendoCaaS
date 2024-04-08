@@ -195,13 +195,7 @@
     text-decoration: none;
 }
 
-.clear_session_btn:not(:disabled):hover {
-    background-color: #e6e6e6;
-    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
-}
-
 .clear_session_btn:disabled {
-    color: #777777;
     cursor: not-allowed;
 }
 
