@@ -51,6 +51,7 @@ $(function () {
                     font: {
                         family: "Helvetica",
                         size: 11.6667
+                        size: 11.6667
                     }
                 };
                 var config = {responsive: true}
@@ -70,6 +71,7 @@ $(function () {
                     yaxis: { title: 'Magnitude', showline: false },
                     font: {
                         family: "Helvetica",
+                        size: 11.6667
                         size: 11.6667
                     }
                 };
@@ -139,6 +141,7 @@ $(function () {
                     calibrate_y_axis_btn.style.display = "none";
                 }
 
+                calibrate_select_btn_group_id.style.display = "none";
                 calibrate_select_btn_group_id.style.display = "none";
                 save_calibration_btn.style.display = "none";
                 if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }

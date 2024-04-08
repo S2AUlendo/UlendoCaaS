@@ -18,10 +18,26 @@
 
 
 
+.label:empty,
+.badge:empty {
+    display: inline-block !important; /* or any other display value you prefer */
+}
+
+
+
 #accelerometer_child{
     display: flex;
     align-items: center; /* Center content vertically */
     gap: 10px
+}
+
+.manage_calibration_btn_group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
 }
 
 .manage_calibration_btn_group {
@@ -63,6 +79,7 @@
 .calibrate_y_status_label{
     visibility: hidden;
 }
+
 
 
 
