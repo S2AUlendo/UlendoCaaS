@@ -11,10 +11,26 @@
     width: 0%;
 }
 
+.label:empty,
+.badge:empty {
+    display: inline-block !important; /* or any other display value you prefer */
+}
+
+
+
 #accelerometer_child{
     display: flex;
     align-items: center; /* Center content vertically */
     gap: 10px
+}
+
+.manage_calibration_btn_group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
 }
 
 .calibrate_axis_btn_group {
@@ -40,11 +56,6 @@
     margin-top: auto;
 }
 
-.label:empty,
-.badge:empty {
-    display: inline-block !important; /* or any other display value you prefer */
-}
-
 .calibrate_x_status_label:empty{
     visibility: hidden;
 }
@@ -53,14 +64,7 @@
     visibility: hidden;
 }
 
-.manage_calibration_btn_group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
 
-}
 
 .acclrmtr_connect_btn {
     margin-bottom: 5px;
@@ -72,24 +76,12 @@
     padding: 4px;
 }
 
-.acclrmtr_connect_btn.NOTCONNECTED_style {
-}
-
-.acclrmtr_connect_btn.NOTCONNECTED_style:not(:disabled):hover {
-}
-
 .acclrmtr_connect_btn.NOTCALIBRATED_style:disabled {
     cursor: not-allowed;
 }
 
 .acclrmtr_connect_btn.CONNECTING_style {
     cursor: not-allowed;
-}
-
-.acclrmtr_connect_btn.CONNECTED_style {
-}
-
-.acclrmtr_connect_btn.CONNECTED_style:not(:disabled):hover {
 }
 
 .acclrmtr_connect_btn.CONNECTED_style:disabled {
@@ -109,12 +101,6 @@
     flex-grow: 1;
 }
 
-.calibrate_axis_btn.NOTCALIBRATED_style {
-}
-
-.calibrate_axis_btn.NOTCALIBRATED_style:not(:disabled):hover {
-}
-
 .calibrate_axis_btn.NOTCALIBRATED_style:disabled {
     cursor: not-allowed;
 }
@@ -123,38 +109,20 @@
     cursor: not-allowed;
 }
 
-.calibrate_axis_btn.CALIBRATIONREADY_style:not(:disabled):hover {
-}
-
 .calibrate_axis_btn.CALIBRATIONREADY_style:disabled {
     cursor: not-allowed;
-}
-
-.calibrate_axis_btn.CALIBRATIONAPPLIED_style:not(:disabled):hover {
 }
 
 .calibrate_axis_btn.CALIBRATIONAPPLIED_style:disabled {
     cursor: not-allowed;
 }
 
-
-.is_select_dropdown_content button.NOTSELECTED_style {
+.calibrate_select_btn_group_content button.NOTSELECTED_style {
     color: black;
-    background-color: #f5f5f5;
 }
 
-.is_select_dropdown_content button.NOTSELECTED_style:hover {
-    background-color: #e6e6e6;
-    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));
-}
-
-.is_select_dropdown_content button.SELECTED_style {
+.calibrate_select_btn_group_content button.SELECTED_style {
     color: blue;
-}
-
-.is_select_dropdown_content button.SELECTED_style:hover {
-    background-color: #dbdbdb;
-    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#dbdbdb));
 }
 
 
@@ -170,12 +138,6 @@
     padding: 4px;
 }
 
-.load_calibration_btn.NOTLOADED_style {
-}
-
-.load_calibration_btn.NOTLOADED_style:not(:disabled):hover {
-}
-
 .load_calibration_btn.NOTLOADED_style:disabled {
     cursor: not-allowed;
 }
@@ -184,18 +146,9 @@
     cursor: not-allowed;
 }
 
-.load_calibration_btn.LOADED_style {
-}
-
-.load_calibration_btn.LOADED_style:not(:disabled):hover {
-}
-
 .load_calibration_btn.LOADED_style:disabled {
-    color: #777777;
     cursor: not-allowed;
 }
-
-
 
 .save_calibration_btn {
     margin-bottom: 5px;
@@ -207,21 +160,8 @@
     padding: 4px;
 }
 
-.save_calibration_btn.NOTSAVED_style {
-}
-
-.save_calibration_btn.NOTSAVED_style:not(:disabled):hover {
-}
-
 .save_calibration_btn.NOTSAVED_style:disabled {
     cursor: not-allowed;
-}
-
-.save_calibration_btn.SAVED_style {
-}
-
-.save_calibration_btn.SAVED_style:not(:disabled):hover {
-    background-image: -webkit-gradient(linear,0 0,0 100%,from(#fff),to(#56ffff));
 }
 
 .save_calibration_btn.SAVED_style:disabled {
