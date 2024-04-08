@@ -22,12 +22,8 @@ $(function () {
             for (var i = 0; i < calibrate_axis_btns.length; i++) {
                 calibrate_axis_btns[i].className = "calibrate_axis_btn btn";
             }
-
-            // Reset the state of the shaper dropdown button.
-            // is_select_dropbtn.classList.add("is_select_dropbtn"); REMOVED FOR UI 
-
             // Reset the state of shaper selection buttons.
-            var select_calibration_btns = document.querySelectorAll(".is_select_dropdown_content button");
+            var select_calibration_btns = document.querySelectorAll(".calibrate_select_btn_group_content button");
             for (var i = 0; i < select_calibration_btns.length; i++) {
                 select_calibration_btns[i].className = "select_calibration_btn_NOTSELECTED_style btn";
             }
@@ -40,7 +36,7 @@ $(function () {
         }
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
-            if (plugin != "ulendocaas") { return; }
+            if (plugin != "autocal") { return; }
 
 
             if (data.type == "acclrmtr_live_data") {
@@ -52,21 +48,7 @@ $(function () {
                     yaxis: { title: 'Acceleration [mm/sec/sec]', showline: false },
                     font: {
                         family: "Helvetica",
-                        size: 11.6667,
-                        images: [
-                            {
-                                source: "https://images.plot.ly/language-icons/api-home/r-logo.png",
-                                xref: "x",
-                                yref: "y",
-                                x: 1,
-                                y: 3,
-                                sizex: 2,
-                                sizey: 2,
-                                sizing: "stretch",
-                                opacity: 0.4,
-                                layer: "below"
-                            }
-                        ],
+                        size: 11.6667
                     }
                 };
                 var config = {responsive: true}
@@ -86,21 +68,7 @@ $(function () {
                     yaxis: { title: 'Magnitude', showline: false },
                     font: {
                         family: "Helvetica",
-                        size: 11.6667,
-                        images: [
-                            {
-                                source: "https://images.plot.ly/language-icons/api-home/r-logo.png",
-                                xref: "x",
-                                yref: "y",
-                                x: 1,
-                                y: 3,
-                                sizex: 2,
-                                sizey: 2,
-                                sizing: "stretch",
-                                opacity: 0.4,
-                                layer: "below"
-                            }
-                        ],
+                        size: 11.6667
                     }
                 };
                 var config = {responsive: true}
@@ -169,9 +137,8 @@ $(function () {
                     calibrate_y_axis_btn.style.display = "none";
                 }
 
-                is_select_dropdown_id.style.display = "none";
+                calibrate_select_btn_group_id.style.display = "none";
                 save_calibration_btn.style.display = "none";
-                console.log("calibration state", data.calibrate_x_axis_btn_state);
                 if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') {
                     let message = "Calibrating";
@@ -184,12 +151,9 @@ $(function () {
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
-                    console.log("X label: ", calibrate_x_status_label.innerText);
                     let message = "Ready";
-                    // self.removeClass(calibrate_x_status_label, "label-");
-                    console.log("x", message);
                     calibrate_x_status_label.classList.add("label-info");
-                    is_select_dropdown_id.style.display = "inline-block";
+                    calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message; 
                     calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit";
@@ -205,7 +169,6 @@ $(function () {
                     calibrate_y_status_label.innerText = message; 
                     calibrate_x_status_label.style.visibility = "inherit"; //inherits parent style
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    // is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                     // after loading without re-running the calibration routing.
                 }
 
@@ -223,7 +186,7 @@ $(function () {
                     let message = "Ready";
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-info");
-                    is_select_dropdown_id.style.display = "inline-block";
+                    calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
@@ -239,7 +202,6 @@ $(function () {
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
                     calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    //  \is_select_dropdown_id.style.display = "inline-block"; // Can use this to control whether the user can select a different shaper
                     // after loading without re-running the calibration routing.
                 }
 
@@ -284,7 +246,6 @@ $(function () {
                     data.select_ei3h_btn_state == "SELECTED") {
                     load_calibration_btn.style.display = "block";
                 } else {
-                    // is_select_dropbtn.innerText = "Select Shaper";
                     load_calibration_btn.style.display = "none";
                 }
 
@@ -302,9 +263,6 @@ $(function () {
 
                 load_calibration_btn.classList.add("".concat(data.load_calibration_btn_state, "_style"));
 
-                console.log("ZVD state:", select_zvd_cal_btn._state);
-                console.log("ei2h state:", select_ei2h_cal_btn._state);
-                console.log("ei3h state:", select_ei3h_cal_btn._state);
                 calibrate_x_axis_btn.disabled = data.calibrate_x_axis_btn_disabled;
                 calibrate_y_axis_btn.disabled = data.calibrate_y_axis_btn_disabled;
                 select_zv_cal_btn.disabled = data.select_zv_btn_disabled;
@@ -349,7 +307,7 @@ $(function () {
                             {
                                 text: gettext("Cancel"),
                                 click: function () {
-                                    OctoPrint.simpleApiCommand("ulendocaas", "prompt_cancel_click");
+                                    OctoPrint.simpleApiCommand("autocal", "prompt_cancel_click");
                                     server_prompt.remove();
                                     server_prompt = undefined;
                                 }
@@ -358,7 +316,7 @@ $(function () {
                                 text: gettext("Proceed"),
                                 addClass: "btn-primary",
                                 click: function () {
-                                    OctoPrint.simpleApiCommand("ulendocaas", "prompt_proceed_click");
+                                    OctoPrint.simpleApiCommand("autocal", "prompt_proceed_click");
                                     server_prompt.remove();
                                     server_prompt = undefined;
                                 }
@@ -397,12 +355,12 @@ $(function () {
                                     click: function () {
                                         if (self.last_axis_click == 'load') {
                                             Plotly.purge('verification_results_graph');
-                                            OctoPrint.simpleApiCommand("ulendocaas", "load_calibration_btn_click");
+                                            OctoPrint.simpleApiCommand("autocal", "load_calibration_btn_click");
                                         }
                                         else {
                                             Plotly.purge('calibration_results_graph');
                                             Plotly.purge('verification_results_graph');
-                                            OctoPrint.simpleApiCommand("ulendocaas", "calibrate_axis_btn_click", { axis: self.last_axis_click });
+                                            OctoPrint.simpleApiCommand("autocal", "calibrate_axis_btn_click", { axis: self.last_axis_click });
                                         }
                                         motion_prompt.remove();
                                         motion_prompt = undefined;
@@ -433,12 +391,11 @@ $(function () {
             var classes = element.className.split(" ").filter(function(c) {
                 return c.lastIndexOf(prefix, 0) !== 0;
             });
-            console.log(classes);
             element.className = classes.join(" ").trim();
         }
 
         self.onClickAcclrmtrConnectBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "acclrmtr_connect_btn_click");
+            OctoPrint.simpleApiCommand("autocal", "acclrmtr_connect_btn_click");
         };
 
         self.onClickCalibrateXAxisBtn = function () {
@@ -447,7 +404,7 @@ $(function () {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'x';
-            OctoPrint.simpleApiCommand("ulendocaas", "get_connection_status"); // Sequence start with checking connection.
+            OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
         self.onClickCalibrateYAxisBtn = function () {
@@ -456,7 +413,7 @@ $(function () {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'y';
-            OctoPrint.simpleApiCommand("ulendocaas", "get_connection_status"); // Sequence start with checking connection.
+            OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
         self.onClickLoadCalibrationBtn = function () {
@@ -465,32 +422,32 @@ $(function () {
                 motion_prompt = undefined;
             }
             self.last_axis_click = 'load';
-            OctoPrint.simpleApiCommand("ulendocaas", "get_connection_status"); // Sequence start with checking connection.
+            OctoPrint.simpleApiCommand("autocal", "get_connection_status"); // Sequence start with checking connection.
         };
 
         self.onClickSelectZvCalBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "zv" });
+            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", { type: "zv" });
         }
         self.onClickSelectZvdCalBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "zvd" });
+            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", { type: "zvd" });
         }
         self.onClickSelectMzvCalBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "mzv" });
+            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", { type: "mzv" });
         }
         self.onClickSelectEiCalBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "ei" });
+            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", { type: "ei" });
         }
         self.onClickSelectEi2hCalBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "ei2h" });
+            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", { type: "ei2h" });
         }
         self.onClickSelectEi3hCalBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "ei3h" });
+            OctoPrint.simpleApiCommand("autocal", "select_calibration_btn_click", { type: "ei3h" });
         }
 
-        document.getElementById("vtolslider").oninput = function () { OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtolslider.value }); };
+        document.getElementById("vtolslider").oninput = function () { OctoPrint.simpleApiCommand("autocal", "vtol_slider_update", { val: vtolslider.value }); };
 
         self.onClickSaveCalibrationBtn = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "save_calibration_btn_click");
+            OctoPrint.simpleApiCommand("autocal", "save_calibration_btn_click");
         }
 
         self.onClickClearSessionBtn = function () {
@@ -518,7 +475,7 @@ $(function () {
                             text: gettext("Yes"),
                             addClass: "btn-primary",
                             click: function () {
-                                OctoPrint.simpleApiCommand("ulendocaas", "clear_session_btn_click");
+                                OctoPrint.simpleApiCommand("autocal", "clear_session_btn_click");
 
                                 // Delete all the graphs created.
                                 Plotly.purge('acclrmtr_live_data_graph');
@@ -558,10 +515,10 @@ $(function () {
         // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
         // the SettingsViewModel been properly populated.
         self.onBeforeBinding = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "get_layout_status");
-            // self.newUrl(self.settings.settings.plugins.ulendocaas.url());
-            // self.newACCESS(self.settings.settings.plugins.ulendocaas.ACCESSID());
-            // self.newORG(self.settings.settings.plugins.ulendocaas.ORG());
+            OctoPrint.simpleApiCommand("autocal", "get_layout_status");
+            // self.newUrl(self.settings.settings.plugins.autocal.url());
+            // self.newACCESS(self.settings.settings.plugins.autocal.ACCESSID());
+            // self.newORG(self.settings.settings.plugins.autocal.ORG());
         }
     };
 
@@ -577,6 +534,6 @@ $(function () {
         ["settingsViewModel"],
 
         // Finally, this is the list of selectors for all elements we want this view model to be bound to.
-        ["#tab_plugin_ulendocaas"]
+        ["#tab_plugin_autocal"]
     ]);
 });

@@ -1,4 +1,4 @@
-{# <script charset="utf-8" src='plugin/ulendocaas/static/plotly.js'></script> #}
+{# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
 
 <div class="card">
   <div class="card-body">
@@ -14,7 +14,7 @@
     <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
     times by improving printer reliability at higher speeds and accelerations.</p>
     <div class="alert alert-block">
-      <strong>{{ _('Note: ') }}</strong>{ { _('Requires compatible firmware (Marlin 2.2+). 
+      <strong>{{ _('Note: ') }}</strong>{{ _('Requires compatible firmware (Marlin 2.2+). 
         Get the latest Marlin firmware for your printer <a href="https://github.com/MarlinFirmware/Marlin">here</a>. Find out more 
         about Ulendo\'s advance solutions for additive manufacturing at <a href="https://www.ulendo.io/">ulendo.io</a>') }}
     </div>
@@ -41,8 +41,8 @@
   <div id="calibration_instructions">
     <p class="abouttext">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
   </div>  
-  <div class="is_select_dropdown" id="is_select_dropdown_id">
-    <div class="is_select_dropdown_content btn-group">
+  <div class="calibrate_select_btn_group" id="calibrate_select_btn_group_id">
+    <div class="calibrate_select_btn_group_content btn-group">
         <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="btn is_select_btn">{{ _('ZV-IS') }}</button>
         <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="btn is_select_btn">{{ _('ZVD-IS (Recommended)') }}</button>
         <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="btn is_select_btn">{{ _('MZV-IS') }}</button>
@@ -53,7 +53,7 @@
   </div>
 
 
-  {# <script charset="utf-8" src='plugin/ulendocaas/static/plotly.js'></script> #}
+  {# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
   <div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
   <div id="vtol_group">
@@ -67,7 +67,7 @@
     <button id='save_calibration_btn' class="btn" data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
   </div>
 
-  {# <script charset="utf-8" src='plugin/ulendocaas/static/plotly.js'></script> #}
+  {# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
   <div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
   <button id='clear_session_btn' class="btn" data-bind="click: onClickClearSessionBtn"><i class="icon-remove"></i> Clear Session</button>
