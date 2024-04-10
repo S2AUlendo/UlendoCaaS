@@ -24,10 +24,9 @@
 <div id='acclrmtr_live_data_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 <div id = "setup_container">
   <div id="accelerometer_child" >
-  <div >Accelerometer: </div>
+    <div>Accelerometer: </div>
     <button id='acclrmtr_connect_btn' class="btn" data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect') }}</button>
   </div>
-  
   <div class="calibrate_axis_btn_group">    
     <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
     <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
@@ -39,7 +38,24 @@
   </div>
 
   <div id="calibration_instructions">
-    <p class="abouttext">Select an input shaping option below. Using input shaping reduces vibrations in your printer by moving the motors in a way that counteracts natural frequencies.</p>
+    <h5 class="card-title">Calibrate Input Shaping</h5>
+    <p class="instrtext">Select an input shaping option below. Using input shaping reduces vibrations in your printer by moving the motors in a way that counteracts natural frequencies.</p>
+      <div class="calibration_instr_collapsible">
+        <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.calibration_instr_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Calibration profile options (advanced)') }}</a></div>
+        <div class="hide alert alert-info">
+            <p class="instrtext">
+                  In 3D printers, input shapers trade off vibration reduction effectiveness for reaction time. Shapers will introduce rounding in your print jobs, with more rounding for more effective shapers. The available shaper options rank as follows: </p>
+                  <ul>
+                      <li>ZV (Zero Vibration): Least effective, least rounding.</li>
+                      <li>MZV (Modified Zero Vibration): Less effective, less rounding.</li>
+                      <li>ZVD (Zero Vibration Derivative): Balanced effectiveness, balanced rounding.</li>
+                      <li>EI (Extra Insensitive):  Balanced effectiveness, balanced rounding.</li>
+                      <li>2HEI (2 Hump Extra Insensitive): More effective, more rounding.</li>
+                      <li>3HEI (3 Hump Extra Insensitive): Most effective, most rounding.</li>                  
+                  </ul>
+                  
+        </div>
+        </div>
   </div>  
   <div class="calibrate_select_btn_group" id="calibrate_select_btn_group_id">
     <div class="calibrate_select_btn_group_content btn-group">
@@ -57,14 +73,21 @@
   <div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
   <div id="vtol_group">
-    <span class="slidercaption">Vibration tolerance:</span>
-    <div class="slidercontainer"><input type="range" min="0" max="100" value="5" class="slider" id="vtolslider">
+    <div class="vibration_slider_collapsible">
+        <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.vibration_slider_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Vibration Tolerance Info') }}</a></div>
+        <div class="hide alert alert-info">
+          <div class="instrtext"> Extra Insensitive input shapers (EI, 2HEI, 3HEI) allow for the vibration tolerance to be set. Increasing this value allows more vibration at the calibrated frequency, but better performance if this frequency changes. Decreasing this value allows for less vibration at the calibrated frequency, but worse performance if this frequency changes. The default value of 5% is a good starting point.</div>
+        </div>
+    </div>
+    <div class="slidercontainer">
+      <label for="vibrateTolSlider">Vibration Tolerance: <span id="vibration_tol_val"></span>%</label>
+      <input type="range" name="vibrateTolSlider" min="0" max="100" value="5" class="slider" id="vtolslider">
     </div>
   </div>
 
   <div class="manage_calibration_btn_group">
     <button id='load_calibration_btn' class="btn" data-bind="click: onClickLoadCalibrationBtn">{{ _('Load Calibration') }}</button>
-    <button id='save_calibration_btn' class="btn" data-bind="click: onClickSaveCalibrationBtn">{{ _('Save to EEPROM') }}</button>
+    <button id='save_calibration_btn' class="btn" data-bind="click: onClickSaveCalibrationBtn"><i class="icon-hdd"></i> Save to EEPROM</button>
   </div>
 
   {# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}

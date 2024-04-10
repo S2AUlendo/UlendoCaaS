@@ -173,12 +173,12 @@
 <script>
   function enforceRange(input) {
 
-    const min = input.min;
-    const max = input.max;
-
-    if (input.value < input.min) {
+    const min = Number(input.min);
+    const max = Number(input.max);
+    console.log("value", input.value)
+    if (Number(input.value) < min) {
       input.value = min; // reset to lower bound if below range
-    } else if (input.value > input.max) {
+    } else if (Number(input.value) > max) {
       input.value = max; // vice versa
     }
   }

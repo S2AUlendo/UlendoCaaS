@@ -121,14 +121,14 @@ $(function () {
                 calibrate_y_axis_btn.classList.add("".concat(data.calibrate_y_axis_btn_state, "_style"));
 
                 if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { 
-                    acclrmtr_connect_btn.innerText = 'Connect'; 
+                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connect'; 
                 }
                 else if (data.acclrmtr_connect_btn_state == 'CONNECTING') { 
-                    acclrmtr_connect_btn.innerText = 'Connecting'; 
+                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connecting'; 
                 }
 
                 if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
-                    acclrmtr_connect_btn.innerText = 'Connected';
+                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connected';
                     acclrmtr_connect_btn.classList.add("btn-success");
                     calibrate_x_axis_btn.style.display = "inline";   // TODO: control the visibility of buttons server-side
                     // in order to match the rest of the software flow.
@@ -279,7 +279,11 @@ $(function () {
 
                 clear_session_btn.disabled = data.clear_session_btn_disabled;
 
-                if (data.vtol_slider_visible) { document.getElementById("vtol_group").style.display = 'flex'; }
+                if (data.vtol_slider_visible) { 
+                    const curVibrationTolerance = document.getElementById("vtolslider").value;
+                    document.getElementById("vtol_group").style.display = 'flex';
+                    document.getElementById("vibration_tol_val").innerText = curVibrationTolerance; // set default Vibration Tolerance value
+                }
                 else document.getElementById("vtol_group").style.display = 'none';
 
                 return;
@@ -447,7 +451,10 @@ $(function () {
             OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "ei3h" });
         }
 
-        document.getElementById("vtolslider").oninput = function () { OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtolslider.value }); };
+        document.getElementById("vtolslider").oninput = function () { 
+            document.getElementById("vibration_tol_val").innerText = vtolslider.value;
+            OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtolslider.value }); 
+        };
 
         self.onClickSaveCalibrationBtn = function () {
             OctoPrint.simpleApiCommand("ulendocaas", "save_calibration_btn_click");
