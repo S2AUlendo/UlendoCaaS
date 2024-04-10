@@ -12,13 +12,13 @@
     <div class="control-group">     
         <label class="control-label">{{ _('ORG') }}</label>
         <div class="controls">
-			<input type="text" class="form-control input-block-level" data-bind="value: settings.plugins.autocal.ORG">
+			<input type="text" class="form-control input-block-level" data-bind="value: settings.plugins.ulendocaas.ORG">
         </div>
 	</div>
 	<div class="control-group">     
         <label class="control-label">{{ _('ACCESSID') }}</label>
         <div class="controls">            
-			<input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.ACCESSID">
+			<input type="text" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.ACCESSID">
         </div>
 	</div>
   <p class="card-text">Use a useful label to identify your machine. This information will be used to sort and 
@@ -26,19 +26,19 @@
 	<div class="control-group">             
     <label class="control-label">{{ _('MACHINEID') }}</label>
         <div class="controls">            
-			<input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.MACHINEID">
+			<input type="text" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.MACHINEID">
         </div>
     </div>
   <div class="control-group">
     <label class="control-label">{{ _('MODELID') }}</label>
     <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.MODELID">
+      <input type="text" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.MODELID">
     </div>
   </div>
   <div class="control-group">
     <label class="control-label">{{ _('MANUFACTURER_NAME') }}</label>
     <div class="controls">
-      <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.MANUFACTURER_NAME">
+      <input type="text" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.MANUFACTURER_NAME">
     </div>
   </div>
 
@@ -51,7 +51,7 @@
           <div class="control-group">
             <div class="controls">
               <label class="checkbox">
-                <input type="checkbox" data-bind="checked: settings.plugins.autocal.home_axis_before_calibration"> {{ _('Home Axis Before Calibrating') }}
+                <input type="checkbox" data-bind="checked: settings.plugins.ulendocaas.home_axis_before_calibration"> {{ _('Home Axis Before Calibrating') }}
                 <div class="help-block">  <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Disabling this may damage your machine. Use this if you want to center the axis yourself before starting the calibration.') }}</div>
               </label>
             </div>
@@ -62,7 +62,7 @@
             <label class="control-label">{{ _('Acceleration Amplitude') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="500" max="20000" class="input-block-level" data-bind="value: settings.plugins.autocal.acceleration_amplitude" onchange="enforceRange(this)">
+                <input type="number" min="500" max="20000" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.acceleration_amplitude" onchange="enforceRange(this)">
                 <span class="add-on">mm/sec/sec</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. This sets the acceleration amplitude at which the calibration is performed. It is suggested to roughly match this with your intended printing acceleration, but it should be lowered if you notice your printer skipping steps during the calibration routine.') }}</div>
@@ -73,7 +73,7 @@
             <label class="control-label">{{ _('Starting Frequency') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="1" max="5" class="input-block-level" data-bind="value: settings.plugins.autocal.starting_frequency" onchange="enforceRange(this)">
+                <input type="number" min="1" max="5" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.starting_frequency" onchange="enforceRange(this)">
                 <span class="add-on">Hz</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too low may damage your machine. If changing, decrement gradually from the default value.') }}</div>
@@ -84,7 +84,7 @@
             <label class="control-label">{{ _('Frequency Sweep Rate') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="1" max="100" class="input-block-level" data-bind="value: settings.plugins.autocal.frequency_sweep_rate" onchange="enforceRange(this)">
+                <input type="number" min="1" max="100" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.frequency_sweep_rate" onchange="enforceRange(this)">
                 <span class="add-on">Hz/sec</span>
               </div>
               <div class="help-block">{{ _('Rate at which the machine will increase excitation frequency from the starting frequency. Increase this to collect more data and potentially refine your results.') }}</div>
@@ -94,7 +94,7 @@
           <div class="control-group">
             <div class="controls">
               <label class="checkbox">
-                <input type="checkbox" data-bind="checked: settings.plugins.autocal.override_end_frequency"> {{ _('Override End Frequency') }}
+                <input type="checkbox" data-bind="checked: settings.plugins.ulendocaas.override_end_frequency"> {{ _('Override End Frequency') }}
                 <div class="help-block">{{ _('Enables overriding the end frequency with the value below. Not recommended as the plugin computes the correct value for you. If you want to speed things up, use the frequency sweep rate setting instead.') }}</div>
               </label>
             </div>
@@ -104,7 +104,7 @@
             <label class="control-label">{{ _('End Frequency Override') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="10" max="800" class="input-block-level" data-bind="value: settings.plugins.autocal.end_frequency_override" onchange="enforceRange(this)">
+                <input type="number" min="10" max="800" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.end_frequency_override" onchange="enforceRange(this)">
                 <span class="add-on">Hz</span>
               </div>
               <div class="help-block">{{ _('End frequency used if the override is enabled.') }}</div>
@@ -115,7 +115,7 @@
             <label class="control-label">{{ _('Step Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="10" max="1000" class="input-block-level" data-bind="value: settings.plugins.autocal.step_time" onchange="enforceRange(this)">
+                <input type="number" min="10" max="1000" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.step_time" onchange="enforceRange(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. Controls duration of the profile\'s opening and closing movements.') }}</div>
@@ -126,7 +126,7 @@
             <label class="control-label">{{ _('Step Acceleration') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="500" max="20000" class="input-block-level" data-bind="value: settings.plugins.autocal.step_acceleration" onchange="enforceRange(this)">
+                <input type="number" min="500" max="20000" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.step_acceleration" onchange="enforceRange(this)">
                 <span class="add-on">mm/sec/sec</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _('Setting this too high may damage your machine. If changing, increase gradually from the default value. Controls acceleration of the profile\'s opening and closing movements.') }}</div>
@@ -137,7 +137,7 @@
             <label class="control-label">{{ _('Delay 1 Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="1" max="10000" class="input-block-level" data-bind="value: settings.plugins.autocal.delay1_time" onchange="enforceRange(this)">
+                <input type="number" min="1" max="10000" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.delay1_time" onchange="enforceRange(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block">{{ _('Controls the time delay between moving to axis center and starting the calibration profile.') }}</div>
@@ -148,7 +148,7 @@
             <label class="control-label">{{ _('Delay 2 Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="1" max="10000" class="input-block-level" data-bind="value: settings.plugins.autocal.delay2_time" onchange="enforceRange(this)">
+                <input type="number" min="1" max="10000" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.delay2_time" onchange="enforceRange(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block">{{ _('Controls the time delay the opening movement and the frequency sweep.') }}</div>
@@ -159,7 +159,7 @@
             <label class="control-label">{{ _('Delay 3 Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="number" min="1" max="10000" class="input-block-level" data-bind="value: settings.plugins.autocal.delay3_time" onchange="enforceRange(this)">
+                <input type="number" min="1" max="10000" class="input-block-level" data-bind="value: settings.plugins.ulendocaas.delay3_time" onchange="enforceRange(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block">{{ _('Controls the time delay between the sweep and the closing movement.') }}</div>
