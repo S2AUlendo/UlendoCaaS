@@ -173,6 +173,7 @@ $(function () {
                     calibrate_y_status_label.innerText = message; 
                     calibrate_x_status_label.style.visibility = "inherit"; //inherits parent style
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
+                    calibration_instructions.style.display = "block";  
                     // after loading without re-running the calibration routing.
                 }
 
@@ -206,6 +207,7 @@ $(function () {
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
                     calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
+                    calibration_instructions.style.display = "block";  
                     // after loading without re-running the calibration routing.
                 }
 
