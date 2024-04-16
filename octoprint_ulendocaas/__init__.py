@@ -926,6 +926,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     def fsm_on_GET_AXIS_INFO_entry(self):
         self.send_printer_command('M494')
         self.send_printer_command('M92')
+        self.send_client_popup(type='info', title='Calibrating',
+                                   message='Initiating calibration sweep procedure...')
 
     
     def fsm_on_GET_AXIS_INFO_during(self):
@@ -1082,13 +1084,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         if not self.sts_axis_verification_active:
             try:
+                self.send_client_popup(type='info', title='Processing Data', message='Processing data, please wait...')
                 client_ID = self._settings.get(["ORG"])
                 access_ID = self._settings.get(["ACCESSID"])
                 machine_ID = self._settings.get(["MACHINEID"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
                 wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
-
+                self.send_client_popup(type='success', title='Calibration Received', message='')
+                
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
                 self.active_solution = None
@@ -1107,6 +1111,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 machine_ID = self._settings.get(["MACHINEID"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
+                self.send_client_popup(type='info', title='Verifying Calibration', message='Please wait...')
                 _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self)
 
             except Exception as e:
