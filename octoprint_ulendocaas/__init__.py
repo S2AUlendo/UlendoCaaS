@@ -1091,9 +1091,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 org_ID = self._settings.get(["ORG"])
                 access_ID = self._settings.get(["ACCESSID"])
                 machine_ID = self._settings.get(["MACHINEID"])
+                machine_name = self._settings.get(["MACHINENAME"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, model_ID, manufacturer_name, self)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
                 self.send_client_popup(type='success', title='Calibration Received', message='')
                 
             except Exception as e:
@@ -1113,10 +1114,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 org_ID = self._settings.get(["ORG"])
                 access_ID = self._settings.get(["ACCESSID"])
                 machine_ID = self._settings.get(["MACHINEID"])
+                machine_name = self._settings.get(["MACHINENAME"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
                 self.send_client_popup(type='info', title='Verifying Calibration', message='Please wait...')
-                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, model_ID, manufacturer_name, self)
+                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -1166,7 +1168,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         return dict(CLIENTID="150e79f76c1440cc8e89bb128fa54725",
                     ORG="ULENDO", 
                     ACCESSID="OVER9000", 
-                    MACHINEID="Lulzbot", 
+                    MACHINEID="3f121213083d9e18044d80782f3bfacb", 
+                    MACHINENAME="Lulzbot", 
                     url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="TAZPro",
                     CONDITIONS="DEFAULT",

@@ -40,7 +40,7 @@ def read_acclrmtr_data(axis):
 
 
 
-def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, model_ID, manufacturer_name, self):
+def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
 
     now = datetime.now()
 
@@ -54,7 +54,8 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_I
                         'CLIENT_ID': client_ID,
                         'ORG_ID': org_ID,
                         'ACCESS_ID': access_ID,
-                        'MACHINE_ID': machine_ID
+                        'MACHINE_ID': machine_ID,
+                        'MACHINE_NAME': machine_name
                      },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
@@ -94,7 +95,7 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_I
     else: return None
 
 
-def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, model_ID, manufacturer_name, self):
+def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
     
     now = datetime.now()
     postdata =  {   'XAXISRESPONSE': read_acclrmtr_data('x'),
@@ -107,7 +108,8 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org
                         'CLIENT_ID': client_ID,
                         'ORG_ID': org_ID,
                         'ACCESS_ID': access_ID,
-                        'MACHINE_ID': machine_ID
+                        'MACHINE_ID': machine_ID,
+                        'MACHINE_NAME': machine_name
                     },
                     'REQUEST': {
                         'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
