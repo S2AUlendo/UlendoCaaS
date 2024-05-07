@@ -5,7 +5,7 @@ SIMULATION_f1 = 80
 FSM_UPDATE_RATE_SEC = 0.25
 ACCLRMTR_LIVE_VIEW_RATE_SEC = 0.1
 ACCLRMTR_LIVE_VIEW_NUM_SAMPLES = 200
-ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR = 8
+ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR = 24
 
 VERBOSE = 1 # 0 -- Muted.
             # 1 -- Send errors to octoprint logger.
@@ -22,5 +22,5 @@ MAX_RETRIES_FOR_MISSED_SAMPLES = 2
 GET_AXIS_INFO_TIMEOUT = 10.
 CENTER_AXIS_TIMEOUT = 12.
 
-SERVICE_URL = 'https://hhl7skagae.execute-api.us-east-2.amazonaws.com/live/solve'
+SERVICE_URL = 'https://5prqd9d1ed.execute-api.us-east-2.amazonaws.com/test/solve'
 SERVICE_TIMEOUT_THD = 30

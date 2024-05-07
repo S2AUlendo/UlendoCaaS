@@ -40,7 +40,7 @@ def read_acclrmtr_data(axis):
 
 
 
-def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
+def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, model_ID, manufacturer_name, self):
 
     now = datetime.now()
 
@@ -52,6 +52,7 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, machi
                     'METADATA': metadata if metadata is not {} else 'N/A',
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
+                        'ORG_ID': org_ID,
                         'ACCESS_ID': access_ID,
                         'MACHINE_ID': machine_ID
                      },
@@ -93,7 +94,7 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, machi
     else: return None
 
 
-def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, machine_ID, model_ID, manufacturer_name, self):
+def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, model_ID, manufacturer_name, self):
     
     now = datetime.now()
     postdata =  {   'XAXISRESPONSE': read_acclrmtr_data('x'),
@@ -104,6 +105,7 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, mac
                     'METADATA': metadata if metadata is not {} else 'N/A',
                     'ACCESS':{
                         'CLIENT_ID': client_ID,
+                        'ORG_ID': org_ID,
                         'ACCESS_ID': access_ID,
                         'MACHINE_ID': machine_ID
                     },
