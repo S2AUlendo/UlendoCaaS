@@ -1110,7 +1110,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 machine_name = self._settings.get(["MACHINENAME"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                self._logger.info({'clientId': client_ID, 'org_ID': org_ID, 'access_ID': access_ID, 'machine_Name': machine_name, 'machine_ID': machine_ID})
                 wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
                 self.send_client_popup(type='success', title='Calibration Received', message='')
                 
