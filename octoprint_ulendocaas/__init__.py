@@ -158,15 +158,14 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         machine_id_unset = self._settings.get(["MACHINEID"]) is None
         machine_name_unset = self._settings.get(["MACHINENAME"]) is None
         
-        return True
-        # return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
+        return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
     
-    # to test wizard since it only shows up once per version
+    # (DEBUG) to test wizard since it only shows up once per version
     # OctoPrint will only display such wizard dialogs to the user which belong to plugins that
     # report True in their is_wizard_required() method and
     # have not yet been shown to the user in the version currently being reported by the get_wizard_version() method
-    def get_wizard_version(self):
-        return random.randint(0, 1000)
+    # def get_wizard_version(self):
+    #     return random.randint(0, 1000)
     
     ##~~ AssetPlugin mixin
 
