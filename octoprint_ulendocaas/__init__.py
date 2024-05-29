@@ -1165,11 +1165,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
 
     def get_settings_defaults(self):
-        return dict(CLIENTID="150e79f76c1440cc8e89bb128fa54725",
+        return dict(CLIENTID="80dd403cf6044a4a86a0c927949d1fb8",
                     ORG="ULENDO", 
-                    ACCESSID="OVER9000", 
-                    MACHINEID="3f121213083d9e18044d80782f3bfacb", 
-                    MACHINENAME="Lulzbot", 
+                    ACCESSID="H9ZB-JFBR-XU2J-S2CA", 
+                    MACHINEID="233640f341c44f29b8acf5ed0fca55c9", 
+                    MACHINENAME="Ian's Ender 3", 
                     url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="TAZPro",
                     CONDITIONS="DEFAULT",
