@@ -17,6 +17,29 @@ import numpy as np
 from datetime import datetime        
 import socket
 
+def verify_credentials(org_id, access_id, machine_id, self):
+    now = datetime.now()
+    postdata =  {   'ACTION': 'VERIFY',
+                    'TASK': 'CHECK_CREDENTIALS',
+                    'ACCESS':{
+                        'CLIENT_ID': org_id,
+                        'ACCESS_ID': access_id,
+                        'MACHINE_ID': machine_id,
+                    },
+                    'REQUEST': {
+                        'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
+                        'CLIENT_VERSION':'V0.3',               # TODO: Get the plugin version number from octoprint
+                        'RequestSource': get_source_ip()
+                    }
+                }
+    
+    postreq = requests.post(SERVICE_URL, json=json.dumps(postdata))
+    response_body = json.loads(postreq.text)
+    self._logger.info('Output from verifying', response_body)
+
+    if response_body['status'] == 'failed': raise_exception_from_response(response_body['message'])
+    else: return True
+    
 def get_source_ip():
 
     hostname = socket.gethostname()

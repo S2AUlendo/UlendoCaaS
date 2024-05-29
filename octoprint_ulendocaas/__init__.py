@@ -8,6 +8,7 @@ import struct
 import sys
 import os
 import re
+import random
 
 from math import pi, sqrt, floor
 from datetime import datetime
@@ -19,7 +20,7 @@ import octoprint.plugin
 from .ulendo_autocal.autocal_cfg import *
 from .ulendo_autocal.lib.autocal_ismags import get_ismag
 from .ulendo_autocal.autocal_exceptions import SignalSyncError, NoSignalError, NoQualifiedSolution, NoVibrationDetected, AutocalInternalServerError
-from .ulendo_autocal.lib.autocal_serviceabstraction import autocal_service_solve, autocal_service_guidata
+from .ulendo_autocal.lib.autocal_serviceabstraction import autocal_service_solve, autocal_service_guidata, verify_credentials
 
 from .tab_layout import *
 from .tab_buttons import *
@@ -157,14 +158,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         machine_id_unset = self._settings.get(["MACHINEID"]) is None
         machine_name_unset = self._settings.get(["MACHINENAME"]) is None
         
-        return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
+        return True
+        # return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
     
     # to test wizard since it only shows up once per version
     # OctoPrint will only display such wizard dialogs to the user which belong to plugins that
     # report True in their is_wizard_required() method and
     # have not yet been shown to the user in the version currently being reported by the get_wizard_version() method
-    # def get_wizard_version(self):
-    #     return random.randint(0, 1000)
+    def get_wizard_version(self):
+        return random.randint(0, 1000)
     
     ##~~ AssetPlugin mixin
 
@@ -726,7 +728,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             start_over_btn_click=[],
             clear_session_btn_click=[],
             prompt_cancel_click=[],
-            prompt_proceed_click=[]
+            prompt_proceed_click=[],
+            verify_credentials_click=[]
         )
 
     
@@ -742,8 +745,23 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
+        elif command == 'verify_credentials_click': self.on_verify_credentials_click()
 
-
+    def on_verify_credentials_click(self):
+        # Perform the logic to verify the credentials here
+        org_id = self._settings.get(["ORG"])
+        access_id = self._settings.get(["ACCESSID"])
+        machine_id = self._settings.get(["MACHINEID"])
+        
+        # Perform the verification logic using the username and password
+        check_status = verify_credentials(org_id, access_id, machine_id, self)
+        # If the credentials are valid, display a success message
+        if check_status:
+            self.send_client_popup(type='success', title='Credentials Verified', message='Credentials are valid.')
+        else:
+            # If the credentials are invalid, display an error message
+            self.send_client_popup(type='error', title='Invalid Credentials', message='Credentials are invalid.')
+        
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
         if VERBOSE > 2: self._logger.info(f'Got line from printer: {line}')

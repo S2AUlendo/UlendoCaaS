@@ -402,6 +402,11 @@ $(function () {
             });
             element.className = classes.join(" ").trim();
         }
+        
+        self.onClickVerifyCredentials = function() {
+            console.log('yo?')
+            OctoPrint.simpleApiCommand("ulendocaas", "verify_credentials_click");
+        }
 
         self.onClickAcclrmtrConnectBtn = function () {
             OctoPrint.simpleApiCommand("ulendocaas", "acclrmtr_connect_btn_click");
