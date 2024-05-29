@@ -95,7 +95,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     octoprint.plugin.AssetPlugin,
                     octoprint.plugin.TemplatePlugin,
                     octoprint.plugin.SimpleApiPlugin,
-                    octoprint.plugin.StartupPlugin
+                    octoprint.plugin.StartupPlugin,
+                    octoprint.plugin.WizardPlugin
 ):
 
     def __init__(self):
@@ -149,7 +150,22 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         from octoprint.server import printer
         printer.commands(cmd)
 
-
+    # WizardPlugin mixin
+    def is_wizard_required(self):
+        access_id_unset = self._settings.get(["ACCESSID"]) is None
+        org_id_unset = self._settings.get(["ORG"]) is None
+        machine_id_unset = self._settings.get(["MACHINEID"]) is None
+        machine_name_unset = self._settings.get(["MACHINENAME"]) is None
+        
+        return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
+    
+    # to test wizard since it only shows up once per version
+    # OctoPrint will only display such wizard dialogs to the user which belong to plugins that
+    # report True in their is_wizard_required() method and
+    # have not yet been shown to the user in the version currently being reported by the get_wizard_version() method
+    # def get_wizard_version(self):
+    #     return random.randint(0, 1000)
+    
     ##~~ AssetPlugin mixin
 
     def get_assets(self):
@@ -1094,6 +1110,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 machine_name = self._settings.get(["MACHINENAME"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
+                self._logger.info({'clientId': client_ID, 'org_ID': org_ID, 'access_ID': access_ID, 'machine_Name': machine_name, 'machine_ID': machine_ID})
                 wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
                 self.send_client_popup(type='success', title='Calibration Received', message='')
                 
@@ -1165,11 +1182,17 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
 
     def get_settings_defaults(self):
-        return dict(CLIENTID="80dd403cf6044a4a86a0c927949d1fb8",
-                    ORG="ULENDO", 
-                    ACCESSID="H9ZB-JFBR-XU2J-S2CA", 
-                    MACHINEID="233640f341c44f29b8acf5ed0fca55c9", 
-                    MACHINENAME="Ian's Ender 3", 
+        return dict(
+                    # CLIENTID="80dd403cf6044a4a86a0c927949d1fb8",
+                    # ORG="ULENDO", 
+                    # ACCESSID="H9ZB-JFBR-XU2J-S2CA", 
+                    # MACHINEID="233640f341c44f29b8acf5ed0fca55c9", 
+                    # MACHINENAME="Ian's Ender 3", 
+                    CLIENTID=None,
+                    ORG=None, 
+                    ACCESSID=None, 
+                    MACHINEID=None, 
+                    MACHINENAME=None, 
                     url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="TAZPro",
                     CONDITIONS="DEFAULT",
