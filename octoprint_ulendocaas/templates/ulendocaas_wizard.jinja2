@@ -1,0 +1,34 @@
+<div class="card">
+    <div class="card-body">
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">{{ _('ORG') }}</label>
+                <div class="controls">
+                    <input type="text" class="form-control input-block-level"
+                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.ORG">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">{{ _('ACCESSID') }}</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.ACCESSID">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">{{ _('MACHINEID') }}</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.MACHINEID">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">{{ _('MACHINENAME') }}</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.MACHINENAME">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
