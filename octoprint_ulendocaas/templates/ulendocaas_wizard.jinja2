@@ -1,32 +1,35 @@
 <div class="card">
     <div class="card-body">
         <form class="form-horizontal">
+            <p>Enter the credentials in the space provided below to get started. </p>
             <div class="control-group">
                 <label class="control-label">{{ _('ORG') }}</label>
                 <div class="controls">
                     <input type="text" class="form-control input-block-level"
-                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.ORG">
+                        data-bind="value: settings.settings.plugins.ulendocaas.ORG">
                 </div>
             </div>
             <div class="control-group">
                 <label class="control-label">{{ _('ACCESSID') }}</label>
                 <div class="controls">
                     <input type="text" class="input-block-level"
-                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.ACCESSID">
+                        data-bind="value: settings.settings.plugins.ulendocaas.ACCESSID">
                 </div>
             </div>
+            <p>It is important to use the provided <b>MACHINEID</b> in order to authenticate your device with our service.</p>
             <div class="control-group">
                 <label class="control-label">{{ _('MACHINEID') }}</label>
                 <div class="controls">
                     <input type="text" class="input-block-level"
-                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.MACHINEID">
+                        data-bind="value: settings.settings.plugins.ulendocaas.MACHINEID">
                 </div>
             </div>
+            <p>Use a useful machine name to identify your machine. This information will be used to sort and identify your machine in the CaaS Central UI.</p>
             <div class="control-group">
                 <label class="control-label">{{ _('MACHINENAME') }}</label>
                 <div class="controls">
                     <input type="text" class="input-block-level"
-                        data-bind="value: settingsViewModel.settings.plugins.ulendocaas.MACHINENAME">
+                        data-bind="value: settings.settings.plugins.ulendocaas.MACHINENAME">
                 </div>
             </div>
         </form>
