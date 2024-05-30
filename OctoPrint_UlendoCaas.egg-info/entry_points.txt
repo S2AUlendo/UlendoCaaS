@@ -1,2 +1,0 @@
-[octoprint.plugin]
-ulendocaas = octoprint_ulendocaas

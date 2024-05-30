@@ -1,3 +1,0 @@
-OctoPrint
-numpy
-pigpio
