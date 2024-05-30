@@ -1,5 +1,6 @@
 
 *.pyc
-octoprint_ulendocaas\__pycache__
-octoprint_ulendocaas\ulendo_autocal\data\*
+octoprint_ulendocaas/__pycache__
+octoprint_ulendocaas/ulendo_autocal/data/*
 solve_post.txt
+OctoPrint_UlendoCaas.egg-info/
