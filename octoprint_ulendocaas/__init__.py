@@ -661,7 +661,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_calibration_saved = True
         self.send_client_logger_info('Sent printer: M500 (settings saved to EEPROM).')
         self.send_client_popup(type='info', title='Saved to EEPROM',
-                                message='Settings have been saved to printer')
+                                message='Settings have been saved to printer.')
         self.update_tab_layout()
 
 
