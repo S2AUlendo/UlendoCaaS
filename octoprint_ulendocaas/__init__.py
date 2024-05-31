@@ -3,12 +3,13 @@
 from __future__ import absolute_import
 
 import subprocess
+import flask
 import requests
 import struct
 import sys
 import os
 import re
-import random
+import json
 
 from math import pi, sqrt, floor
 from datetime import datetime
@@ -135,6 +136,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         self.metadata = {}
         if not SIMULATION:
+            self.tab_layout.is_active_client = self.on_startup_verify_credentials()
             model = subprocess.check_output('cat /proc/cpuinfo', shell=True).strip()
             split_line = re.split(b'\n', model)
             for line in split_line:
@@ -143,7 +145,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         self.initialized = True
 
-
+    def on_startup_verify_credentials(self):
+        org_id, access_id, machine_id = self.get_credentials()
+        check_status = verify_credentials(org_id, access_id, machine_id, self)
+        return check_status
+    
     def send_printer_command(self, cmd):
         if SIMULATION:
             if VERBOSE > 1: self._logger.info('SIMULATION sending command to printer: ' + cmd)
@@ -165,7 +171,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     # report True in their is_wizard_required() method and
     # have not yet been shown to the user in the version currently being reported by the get_wizard_version() method
     # def get_wizard_version(self):
-    #     return random.randint(0, 1000)
+    #     return int(datetime.now().timestamp())
     
     ##~~ AssetPlugin mixin
 
@@ -243,7 +249,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             load_calibration_btn_state = self.tab_layout.load_calibration_btn.state.name,
             save_calibration_btn_state = self.tab_layout.save_calibration_btn.state.name,
             clear_session_btn_disabled = self.tab_layout.clear_session_btn.disabled,
-            vtol_slider_visible = self.tab_layout.vtol_slider_visible
+            vtol_slider_visible = self.tab_layout.vtol_slider_visible,
+            is_active_client = self.tab_layout.is_active_client
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
@@ -728,7 +735,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             clear_session_btn_click=[],
             prompt_cancel_click=[],
             prompt_proceed_click=[],
-            verify_credentials_click=[]
+            on_before_wizard_finish_verify_credentials=[],
+            on_settings_close_verify_credentials=[]
         )
 
     
@@ -744,23 +752,30 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'verify_credentials_click': self.on_verify_credentials_click()
+        elif command == 'on_before_wizard_finish_verify_credentials':  return self.on_before_wizard_finish_verify_credentials(data)
+        elif command == 'on_settings_close_verify_credentials':  return self.on_settings_close_verify_credentials()
 
-    def on_verify_credentials_click(self):
-        # Perform the logic to verify the credentials here
+    def on_before_wizard_finish_verify_credentials(self, data):
+        data = json.loads(data) if not isinstance(data, dict) else data
+        self._logger.info(f'{data["ORG"]} {data["ACCESSID"]}')
+        check_status = verify_credentials(data['ORG'], data['ACCESSID'], data['MACHINEID'], self)
+        return flask.jsonify(license_status=check_status)
+        
+    def on_settings_close_verify_credentials(self):
+        org_id, access_id, machine_id = self.get_credentials()
+        check_status = verify_credentials(org_id, access_id, machine_id, self)
+        self.tab_layout.is_active_client = check_status
+        self.update_tab_layout()
+        return flask.jsonify(license_status=check_status)
+    
+    def get_credentials(self):
+        
         org_id = self._settings.get(["ORG"])
         access_id = self._settings.get(["ACCESSID"])
         machine_id = self._settings.get(["MACHINEID"])
         
-        # Perform the verification logic using the username and password
-        check_status = verify_credentials(org_id, access_id, machine_id, self)
-        # If the credentials are valid, display a success message
-        if check_status:
-            self.send_client_popup(type='success', title='Credentials Verified', message='Credentials are valid.')
-        else:
-            # If the credentials are invalid, display an error message
-            self.send_client_popup(type='error', title='Invalid Credentials', message='Credentials are invalid.')
-        
+        return org_id, access_id, machine_id
+    
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
         if VERBOSE > 2: self._logger.info(f'Got line from printer: {line}')
@@ -1208,7 +1223,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     ORG=None, 
                     ACCESSID=None, 
                     MACHINEID=None, 
-                    MACHINENAME=None, 
+                    MACHINENAME=None,
                     url="https://github.com/S2AUlendo/UlendoCaaS",
                     MODELID="TAZPro",
                     CONDITIONS="DEFAULT",

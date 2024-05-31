@@ -1,27 +1,30 @@
 <div class="card">
     <div class="card-body">
+        <div id="license_status_wizard" class="alert alert-block" style="display: none;">
+            <span id="license_status_message_wizard"></span>
+        </div>
         <form class="form-horizontal">
             <p>Enter the credentials in the space provided below to get started. </p>
             <div class="control-group">
                 <label class="control-label">{{ _('ORG') }}</label>
                 <div class="controls">
-                    <input type="text" class="form-control input-block-level"
-                        data-bind="value: settings.settings.plugins.ulendocaas.ORG">
+                    <input id='org_input' type="text" class="form-control input-block-level"
+                        data-bind="value: settings.settings.plugins.ulendocaas.ORG, event: { blur: verifyCreds }">
                 </div>
             </div>
             <div class="control-group">
                 <label class="control-label">{{ _('ACCESSID') }}</label>
                 <div class="controls">
-                    <input type="text" class="input-block-level"
-                        data-bind="value: settings.settings.plugins.ulendocaas.ACCESSID">
+                    <input id='accessId_input' type="text" class="input-block-level"
+                        data-bind="value: settings.settings.plugins.ulendocaas.ACCESSID, event: { blur: verifyCreds }">
                 </div>
             </div>
             <p>It is important to use the provided <b>MACHINEID</b> in order to authenticate your device with our service.</p>
             <div class="control-group">
                 <label class="control-label">{{ _('MACHINEID') }}</label>
                 <div class="controls">
-                    <input type="text" class="input-block-level"
-                        data-bind="value: settings.settings.plugins.ulendocaas.MACHINEID">
+                    <input id="machineId_input" type="text" class="input-block-level"
+                        data-bind="value: settings.settings.plugins.ulendocaas.MACHINEID, event: { blur: verifyCreds} ">
                 </div>
             </div>
             <p>Use a useful machine name to identify your machine. This information will be used to sort and identify your machine in the CaaS Central UI.</p>
@@ -33,8 +36,5 @@
                 </div>
             </div>
         </form>
-        <button class="btn btn-primary" style="float: right;">
-            <span data-bind="click: onClickVerifyCredentials">{{ _('Verify') }}</span>
-        </button>
     </div>
 </div>

@@ -16,3 +16,4 @@ class TabLayout(): # Tab layout to use as singleton
         self.save_calibration_btn = SaveCalibrationButton()
         self.clear_session_btn = ClearSessionButton()
         self.vtol_slider_visible = False
+        self.is_active_client = False

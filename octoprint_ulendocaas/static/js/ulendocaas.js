@@ -13,9 +13,9 @@ $(function () {
             var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
             var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
             var calibration_instructions = document.getElementById('calibration_instructions');
-            calibration_state_labels.style.visibility ="hidden";
-            calibrate_x_status_label.style.visibility ="hidden";
-            calibrate_y_status_label.style.visibility ="hidden";
+            calibration_state_labels.style.visibility = "hidden";
+            calibrate_x_status_label.style.visibility = "hidden";
+            calibrate_y_status_label.style.visibility = "hidden";
             calibration_instructions.style.display = "none";
 
             // Reset the state of Calibrate button
@@ -53,7 +53,7 @@ $(function () {
                         size: 11.6667
                     }
                 };
-                var config = {responsive: true}
+                var config = { responsive: true }
                 Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout, config);
                 return;
             }
@@ -73,7 +73,7 @@ $(function () {
                         size: 11.6667
                     }
                 };
-                var config = {responsive: true}
+                var config = { responsive: true }
                 Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout, config);
             }
 
@@ -115,16 +115,31 @@ $(function () {
                 var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
                 var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
                 var calibration_instructions = document.getElementById('calibration_instructions');
+                var license_status = document.getElementById('license_status');
+                var license_status_message = document.getElementById('license_status_message');
 
                 acclrmtr_connect_btn.classList.add("".concat(data.acclrmtr_connect_btn_state, "_style"));
                 calibrate_x_axis_btn.classList.add("".concat(data.calibrate_x_axis_btn_state, "_style"));
                 calibrate_y_axis_btn.classList.add("".concat(data.calibrate_y_axis_btn_state, "_style"));
 
-                if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') { 
-                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connect'; 
+                console.log('is_active_client', data.is_active_client)
+                if (data.is_active_client) {
+                    self.removeClass(license_status, "alert-");
+                    license_status.classList.add("alert-success");
+                    license_status.classList.add("alert-block");
+                    license_status_message.innerText = "Activated";
+                } else {
+                    self.removeClass(license_status, "alert-");
+                    license_status.classList.add("alert-warning");
+                    license_status.classList.add("alert-block");
+                    license_status_message.innerText = "Not Activated";
                 }
-                else if (data.acclrmtr_connect_btn_state == 'CONNECTING') { 
-                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connecting'; 
+
+                if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') {
+                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connect';
+                }
+                else if (data.acclrmtr_connect_btn_state == 'CONNECTING') {
+                    acclrmtr_connect_btn.innerHTML = '<i class="icon-off"></i> Connecting';
                 }
 
                 if (data.acclrmtr_connect_btn_state == 'CONNECTED') {
@@ -149,7 +164,7 @@ $(function () {
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-warning");
                     calibrate_x_status_label.innerText = message;
-                    calibrate_y_status_label.innerText = message; 
+                    calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit";
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
@@ -158,11 +173,11 @@ $(function () {
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.classList.add("label-info");
-                    calibrate_x_status_label.innerText = message; 
+                    calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit";
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    calibration_instructions.style.display = "block";  
+                    calibration_instructions.style.display = "block";
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     let message = "Calibrated";
@@ -170,10 +185,10 @@ $(function () {
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-success");
                     calibrate_x_status_label.innerText = message;
-                    calibrate_y_status_label.innerText = message; 
+                    calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit"; //inherits parent style
                     calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    calibration_instructions.style.display = "block";  
+                    calibration_instructions.style.display = "block";
                     // after loading without re-running the calibration routing.
                 }
 
@@ -196,7 +211,7 @@ $(function () {
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
                     calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible// this to maintain spacing for flex, it would still be invisible
-                    calibration_instructions.style.display = "block"; 
+                    calibration_instructions.style.display = "block";
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
                     let message = "Calibrated";
@@ -207,7 +222,7 @@ $(function () {
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
                     calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
-                    calibration_instructions.style.display = "block";  
+                    calibration_instructions.style.display = "block";
                     // after loading without re-running the calibration routing.
                 }
 
@@ -281,7 +296,7 @@ $(function () {
 
                 clear_session_btn.disabled = data.clear_session_btn_disabled;
 
-                if (data.vtol_slider_visible) { 
+                if (data.vtol_slider_visible) {
                     const curVibrationTolerance = document.getElementById("vtolslider").value;
                     document.getElementById("vtol_group").style.display = 'flex';
                     document.getElementById("vibration_tol_val").innerText = curVibrationTolerance; // set default Vibration Tolerance value
@@ -395,17 +410,12 @@ $(function () {
             }
 
         };
-        
-        self.removeClass = function(element, prefix) {
-            var classes = element.className.split(" ").filter(function(c) {
+
+        self.removeClass = function (element, prefix) {
+            var classes = element.className.split(" ").filter(function (c) {
                 return c.lastIndexOf(prefix, 0) !== 0;
             });
             element.className = classes.join(" ").trim();
-        }
-        
-        self.onClickVerifyCredentials = function() {
-            console.log('yo?')
-            OctoPrint.simpleApiCommand("ulendocaas", "verify_credentials_click");
         }
 
         self.onClickAcclrmtrConnectBtn = function () {
@@ -458,9 +468,9 @@ $(function () {
             OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "ei3h" });
         }
 
-        document.getElementById("vtolslider").oninput = function () { 
+        document.getElementById("vtolslider").oninput = function () {
             document.getElementById("vibration_tol_val").innerText = vtolslider.value;
-            OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtolslider.value }); 
+            OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtolslider.value });
         };
 
         self.onClickSaveCalibrationBtn = function () {
@@ -517,8 +527,58 @@ $(function () {
             });
             return;
         }
+        // ko.observable is used to create reactive data models. 
+        // When you change the value of an observable, any part of your application that depends on 
+        // that value will automatically update to reflect the new value. 
+        self.license_status = ko.observable(false);
+        self.license_verifying = ko.observable(false);
 
+        self.verifyCreds = function () {
+            self.license_verifying(true)
+            let license_status_wizard = document.getElementById('license_status_wizard');
+            let license_status_message_wizard = document.getElementById('license_status_message_wizard');
+            let body = {
+                ORG: document.getElementById('org_input').value,
+                ACCESSID: document.getElementById('accessId_input').value,
+                MACHINEID: document.getElementById('machineId_input').value,
+            }
+            console.log(body)
+            self.removeClass(license_status, "alert-");
+            license_status_wizard.classList.add("alert-info");
+            license_status_wizard.classList.add("alert-block");
+            license_status_wizard.style.display = 'block';
+            license_status_message_wizard.innerText = 'INFO: Verifying Credentials...';
 
+            OctoPrint.simpleApiCommand("ulendocaas", "on_before_wizard_finish_verify_credentials", body)
+                .done(function (response) {
+                    // assgin the observable value
+                    console.log(response);
+                    self.license_status(response['license_status']);
+                    if (!self.license_status()) {
+                        self.removeClass(license_status_wizard, "alert-");
+                        license_status_wizard.classList.add("alert-danger");
+                        license_status_wizard.classList.add("alert-block");
+                        license_status_message_wizard.innerText = 'ERROR: Invalid Credentials (Check your ORG, ACCESSID and MACHINEID)';
+                    } else {
+                        self.removeClass(license_status_wizard, "alert-");
+                        license_status_wizard.classList.add("alert-success");
+                        license_status_wizard.classList.add("alert-block");
+                        license_status_message_wizard.innerText = 'SUCCESS: Credentials Verified!';
+                    }
+                    self.license_verifying(false)
+                })
+                .fail(function (error) {
+                    console.error('Error:', error);
+                });
+        }
+
+        self.onBeforeWizardFinish = function () {
+            return self.license_status() && !self.license_verifying();
+        }
+
+        self.onSettingsHidden = function () {
+            OctoPrint.simpleApiCommand("ulendocaas", "on_settings_close_verify_credentials")
+        }
         // This will get called before the HelloWorldViewModel gets bound to the DOM, but after its
         // dependencies have already been initialized. It is especially guaranteed that this method
         // gets called _after_ the settings have been retrieved from the OctoPrint backend and thus
@@ -536,6 +596,10 @@ $(function () {
             // self.newUrl(self.settings.settings.plugins.ulendocaas.url());
             // self.newACCESS(self.settings.settings.plugins.ulendocaas.ACCESSID());
             // self.newORG(self.settings.settings.plugins.ulendocaas.ORG());
+        }
+
+        self.onAfterBinding = function() {
+            self.verifyCreds();
         }
     };
 

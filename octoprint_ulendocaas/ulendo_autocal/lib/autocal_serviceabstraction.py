@@ -20,7 +20,6 @@ import socket
 def verify_credentials(org_id, access_id, machine_id, self):
     now = datetime.now()
     postdata =  {   'ACTION': 'VERIFY',
-                    'TASK': 'CHECK_CREDENTIALS',
                     'ACCESS':{
                         'CLIENT_ID': org_id,
                         'ACCESS_ID': access_id,
@@ -34,10 +33,12 @@ def verify_credentials(org_id, access_id, machine_id, self):
                 }
     
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata))
-    response_body = json.loads(postreq.text)
-    self._logger.info('Output from verifying', response_body)
+    response_body = postreq.json()
+    self._logger.info(f'Output from verify creds: {response_body}')
 
-    if response_body['status'] == 'failed': raise_exception_from_response(response_body['message'])
+    if 'exception' in response_body: 
+        raise_exception_from_response(response_body['message'])
+        return False
     else: return True
     
 def get_source_ip():
