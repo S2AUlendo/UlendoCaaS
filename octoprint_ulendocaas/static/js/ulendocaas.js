@@ -127,7 +127,7 @@ $(function () {
                     self.removeClass(license_status, "alert-");
                     license_status.classList.add("alert-success");
                     license_status.classList.add("alert-block");
-                    license_status_message.innerText = "Activated";
+                    license_status_message.innerText = "Good";
                 } else {
                     self.removeClass(license_status, "alert-");
                     license_status.classList.add("alert-warning");
