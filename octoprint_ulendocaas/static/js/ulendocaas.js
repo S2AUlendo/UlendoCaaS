@@ -122,7 +122,6 @@ $(function () {
                 calibrate_x_axis_btn.classList.add("".concat(data.calibrate_x_axis_btn_state, "_style"));
                 calibrate_y_axis_btn.classList.add("".concat(data.calibrate_y_axis_btn_state, "_style"));
 
-                console.log('is_active_client', data.is_active_client)
                 if (data.is_active_client) {
                     self.removeClass(license_status, "alert-");
                     license_status.classList.add("alert-success");
@@ -542,7 +541,6 @@ $(function () {
                 ACCESSID: document.getElementById('accessId_input').value,
                 MACHINEID: document.getElementById('machineId_input').value,
             }
-            console.log(body)
             self.removeClass(license_status, "alert-");
             license_status_wizard.classList.add("alert-info");
             license_status_wizard.classList.add("alert-block");
@@ -552,7 +550,6 @@ $(function () {
             OctoPrint.simpleApiCommand("ulendocaas", "on_before_wizard_finish_verify_credentials", body)
                 .done(function (response) {
                     // assgin the observable value
-                    console.log(response);
                     self.license_status(response['license_status']);
                     if (!self.license_status()) {
                         self.removeClass(license_status_wizard, "alert-");
@@ -598,7 +595,7 @@ $(function () {
             // self.newORG(self.settings.settings.plugins.ulendocaas.ORG());
         }
 
-        self.onAfterBinding = function() {
+        self.onAfterBinding = function () {
             self.verifyCreds();
         }
     };
