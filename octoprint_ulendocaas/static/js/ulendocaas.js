@@ -126,12 +126,12 @@ $(function () {
                     self.removeClass(license_status, "alert-");
                     license_status.classList.add("alert-success");
                     license_status.classList.add("alert-block");
-                    license_status_message.innerText = "Good";
+                    license_status_message.innerText = "Credentials Verified";
                 } else {
                     self.removeClass(license_status, "alert-");
                     license_status.classList.add("alert-warning");
                     license_status.classList.add("alert-block");
-                    license_status_message.innerText = "Not Activated";
+                    license_status_message.innerText = "Invalid Credentials (Check your ORG, ACCESSID and MACHINEID) ";
                 }
 
                 if (data.acclrmtr_connect_btn_state == 'NOTCONNECTED') {
