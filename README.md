@@ -8,7 +8,7 @@ These instructions are intended to configure OctoPrint with Ulendo's Calibration
 
 The install script has been tested on Raspberry Pi 3 and 4, running Raspberry Pi OS Lite (compatible with Pi 3/4/400/5)
 
-Download [CaaS-Install.sh](UlendoCaaS-Install.sh) and follow the instructions below:
+Follow the instructions below to download [CaaS-Install.sh](UlendoCaaS-Install.sh) 
 
 ## Setup (RPi)
 
