@@ -570,7 +570,22 @@ $(function () {
         }
 
         self.onBeforeWizardFinish = function () {
+            let privacyCheckbox = document.getElementById('privacy_checkbox').checked;
+            console.log('privacy', privacyCheckbox)
+            if (!privacyCheckbox) {
+                new PNotify({
+                    title: 'Privacy Policy',
+                    text: 'You must agree to the privacy policy to proceed.',
+                    type: 'error',
+                    hide: true
+                });
+                return false;
+            }
             return self.license_status() && !self.license_verifying();
+        }
+
+        self.onWizardFinish = function () {
+            OctoPrint.simpleApiCommand("ulendocaas", "get_layout_status");
         }
 
         self.onSettingsHidden = function () {

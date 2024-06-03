@@ -163,7 +163,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         org_id_unset = self._settings.get(["ORG"]) is None
         machine_id_unset = self._settings.get(["MACHINEID"]) is None
         machine_name_unset = self._settings.get(["MACHINENAME"]) is None
-        
+
         return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
     
     # (DEBUG) to test wizard since it only shows up once per version

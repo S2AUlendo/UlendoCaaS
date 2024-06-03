@@ -19,7 +19,8 @@
                         data-bind="value: settings.settings.plugins.ulendocaas.ACCESSID, event: { blur: verifyCreds }">
                 </div>
             </div>
-            <p>It is important to use the provided <b>MACHINEID</b> in order to authenticate your device with our service.</p>
+            <p>It is important to use the provided <b>MACHINEID</b> in order to authenticate your device with our
+                service.</p>
             <div class="control-group">
                 <label class="control-label">{{ _('MACHINEID') }}</label>
                 <div class="controls">
@@ -27,13 +28,22 @@
                         data-bind="value: settings.settings.plugins.ulendocaas.MACHINEID, event: { blur: verifyCreds} ">
                 </div>
             </div>
-            <p>Use a useful machine name to identify your machine. This information will be used to sort and identify your machine in the CaaS Central UI.</p>
+            <p>Use a useful machine name to identify your machine. This information will be used to sort and identify
+                your machine in the CaaS Central UI.</p>
             <div class="control-group">
                 <label class="control-label">{{ _('MACHINENAME') }}</label>
                 <div class="controls">
                     <input type="text" class="input-block-level"
                         data-bind="value: settings.settings.plugins.ulendocaas.MACHINENAME">
                 </div>
+            </div>
+            <div class="controls">
+                <input id="privacy_checkbox" type="checkbox">
+                By completing this wizard, you are providing your consent that the data related to your machine and your
+                credentials will be collected. This information is essential for the functionality of our services. It
+                will be securely transmitted and stored in our cloud services. Please refer to our
+                Privacy Policy for <a href="https://www.ulendo.io/privacy-policy">more details</a>.
+                </label>
             </div>
         </form>
     </div>
