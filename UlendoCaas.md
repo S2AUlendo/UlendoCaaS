@@ -108,13 +108,13 @@ In testing on the Ender V2, speeds of over 150 mm/s and accelerations of 5,000 m
 The CaaS difference - high speed vibration compensation: 
 ![The CaaS Difference Ender 3 V2][neov2]
 
-[neov2]: https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_Ender3NeoV2.png "The CaaS difference"
+[neov2]: https://github.com/S2AUlendo/octoprint_ulendocaas/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_Ender3NeoV2.png "The CaaS difference"
 
 
 The CaaS difference - high speed vibration compensation:: 
 ![The CaaS Difference Lulzbot TazPro][tazpro]
 
-[tazpro]:https://github.com/S2AUlendo/UlendoCaaS/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_TazPro.png "The CaaS difference"
+[tazpro]:https://github.com/S2AUlendo/octoprint_ulendocaas/blob/main/octoprint_autocal/assets/img/ulendo_autocal/CaaS_TazPro.png "The CaaS difference"
 
 
 Ulendo's CaaS is a great option for contract manufacturers looking to improve the performance of their existing assets. When paired with a compatible printer this plugin can reduce print times by more than 50% percent, improving facility throughput. 
