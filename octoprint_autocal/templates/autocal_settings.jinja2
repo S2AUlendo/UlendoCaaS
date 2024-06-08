@@ -62,7 +62,7 @@
             <label class="control-label">{{ _('Acceleration Amplitude') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.acceleration_amplitude">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.acceleration_amplitude" onchange="validateNonNegative(this)">
                 <span class="add-on">mm/sec/sec</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. This sets the acceleration amplitude at which the calibration is performed. It is suggested to roughly match this with your intended printing acceleration, but it should be lowered if you notice your printer skipping steps during the calibration routine.') }}</div>
@@ -73,7 +73,7 @@
             <label class="control-label">{{ _('Starting Frequency') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.starting_frequency">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.starting_frequency" onchange="validateNonNegative(this)">
                 <span class="add-on">Hz</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too low may damage your machine. If changing, decrement gradually from the default value.') }}</div>
@@ -84,7 +84,7 @@
             <label class="control-label">{{ _('Frequency Sweep Rate') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.frequency_sweep_rate">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.frequency_sweep_rate" onchange="validateNonNegative(this)">
                 <span class="add-on">Hz/sec</span>
               </div>
               <div class="help-block">{{ _('Rate at which the machine will increase excitation frequency from the starting frequency. Increase this to collect more data and potentially refine your results.') }}</div>
@@ -104,7 +104,7 @@
             <label class="control-label">{{ _('End Frequency Override') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.end_frequency_override">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.end_frequency_override" onchange="validateNonNegative(this)">
                 <span class="add-on">Hz</span>
               </div>
               <div class="help-block">{{ _('End frequency used if the override is enabled.') }}</div>
@@ -115,7 +115,7 @@
             <label class="control-label">{{ _('Step Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.step_time">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.step_time" onchange="validateNonNegative(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _(' Setting this too high may damage your machine. If changing, increase gradually from the default value. Controls duration of the profile\'s opening and closing movements.') }}</div>
@@ -126,7 +126,7 @@
             <label class="control-label">{{ _('Step Acceleration') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.step_acceleration">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.step_acceleration" onchange="validateNonNegative(this)">
                 <span class="add-on">mm/sec/sec</span>
               </div>
               <div class="help-block"> <label class="label label-important">{{ _("Caution") }}</label> {{ _('Setting this too high may damage your machine. If changing, increase gradually from the default value. Controls acceleration of the profile\'s opening and closing movements.') }}</div>
@@ -137,7 +137,7 @@
             <label class="control-label">{{ _('Delay 1 Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.delay1_time">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.delay1_time" onchange="validateNonNegative(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block">{{ _('Controls the time delay between moving to axis center and starting the calibration profile.') }}</div>
@@ -148,7 +148,7 @@
             <label class="control-label">{{ _('Delay 2 Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.delay2_time">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.delay2_time" onchange="validateNonNegative(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block">{{ _('Controls the time delay the opening movement and the frequency sweep.') }}</div>
@@ -159,7 +159,7 @@
             <label class="control-label">{{ _('Delay 3 Time') }}</label>
             <div class="controls">
               <div class="input-append">
-                <input type="text" class="input-block-level" data-bind="value: settings.plugins.autocal.delay3_time">
+                <input type="number" min="0" class="input-block-level" data-bind="value: settings.plugins.autocal.delay3_time" onchange="validateNonNegative(this)">
                 <span class="add-on">msec</span>
               </div>
               <div class="help-block">{{ _('Controls the time delay between the sweep and the closing movement.') }}</div>
@@ -169,3 +169,11 @@
         </div>
     </div>
 </form>
+
+<script>
+  function validateNonNegative(input) {
+    if (input.value < 0) {
+      input.value = 0; // Reset to 0 if the value is negative
+    }
+  }
+</script>

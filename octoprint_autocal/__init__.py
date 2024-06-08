@@ -155,8 +155,11 @@ class AutocalPlugin(octoprint.plugin.SettingsPlugin,
         # Define your plugin's asset files to automatically include in the
         # core UI here.
         return {
-            "js": ["js/autocal.js", "js/plotly.js"],
-            "css": ["css/autocal.css"]
+            "js": ["js/autocal.js", 
+                   "js/plotly.js"
+                   ],
+            "css": ["css/autocal.css"
+                    ]
             # "less": ["less/autocal.less"]
         }
 
