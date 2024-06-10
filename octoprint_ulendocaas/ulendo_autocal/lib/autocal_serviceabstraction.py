@@ -104,6 +104,7 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_I
     
     
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
+    self._logger.info('Output from postreq', postreq)
     response_body = json.loads(postreq.text)
     
     response_filename = 'json_response.txt'
