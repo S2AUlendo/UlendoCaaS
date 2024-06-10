@@ -841,18 +841,18 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         # Plugin here. See https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
         # for details.
         return {
-            "autocal": {
+            "ulendocaas": {
                 "displayName": "Ulendo Calibration Plugin",
                 "displayVersion": self._plugin_version,
 
                 # version check: github repository
                 "type": "github_release",
-                "user": "you",
-                "repo": "OctoPrint-UlendoCaas",
+                "user": "S2AUlendo",
+                "repo": "UlendoCaas",
                 "current": self._plugin_version,
 
                 # update method: pip
-                "pip": "https://github.com/you/OctoPrint-Autocal/archive/{target_version}.zip",
+                "pip": "https://github.com/S2AUlendo/UlendoCaaS/archive/{target_version}.zip",
             }
         }
     
