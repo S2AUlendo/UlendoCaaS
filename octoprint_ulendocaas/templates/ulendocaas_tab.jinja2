@@ -1,102 +1,136 @@
-{# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
+{#
+<script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
 
 <div class="card">
-  <div class="card-body">
-    <h5 class="card-title">Ulendo CaaS Calibration Plugin</h5>
-  </div>
+    <div class="card-body">
+        <h5 class="card-title">Ulendo CaaS Calibration Plugin</h5>
+    </div>
 </div>
 <div id="license_status" class="alert alert-block">
-  {{ _('Authentication Status: ') }}<span id="license_status_message"></span>
+    <b>
+        {{ _('Authentication Status: ') }}
+    </b>
+    <span id="license_status_message"></span>
 </div>
 
 <div class="about_collapsible">
-  <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
-  <div class="hide">
-    <p class="abouttext">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms 
-    in Marlin's FTM (Fixed-Time-Motion) module.</p>
-    <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve lower print 
-    times by improving printer reliability at higher speeds and accelerations.</p>
-    <div class="alert alert-block">
-      <strong>{{ _('Note: ') }}</strong>{{ _('Requires compatible firmware (Marlin 2.2+). 
-        Get the latest Marlin firmware for your printer <a href="https://github.com/MarlinFirmware/Marlin">here</a>. Find out more 
-        about Ulendo\'s advance solutions for additive manufacturing at <a href="https://www.ulendo.io/">ulendo.io</a>') }}
+    <div><a href="#" class="muted"
+            data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.about_collapsible', container: '.hide' }"><i
+                class="fas fa-caret-right"></i> {{ _('About') }}</a></div>
+    <div class="hide">
+        <p class="abouttext">Ulendo CaaS allows you to automatically tune the vibration compensation algorithms
+            in Marlin's FTM (Fixed-Time-Motion) module.</p>
+        <p class="abouttext">Vibration compensation can improve the performance of your printer and help you achieve
+            lower print
+            times by improving printer reliability at higher speeds and accelerations.</p>
+        <div class="alert alert-block">
+            <strong>{{ _('Note: ') }}</strong>{{ _('Requires compatible firmware (Marlin 2.2+).
+            Get the latest Marlin firmware for your printer <a href="https://github.com/MarlinFirmware/Marlin">here</a>.
+            Find out more
+            about Ulendo\'s advance solutions for additive manufacturing at <a
+                href="https://www.ulendo.io/">ulendo.io</a>') }}
+        </div>
     </div>
-  </div>
 </div>
 
 <div id='acclrmtr_live_data_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
-<div id = "setup_container">
-  <div id="accelerometer_child" >
-    <div>Accelerometer: </div>
-    <button id='acclrmtr_connect_btn' class="btn" data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect') }}</button>
-  </div>
-  <div class="calibrate_axis_btn_group">    
-    <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X') }}</button>
-    <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y') }}</button>
-    <div class="line-break"></div>
-    <div id="calibration_state_labels">
-      <div id="calibrate_x_status_label" class="label"><!-- X Calibration Status --></div>
-      <div id="calibrate_y_status_label" class="label"><!-- Y Calibration Status --></div>
+<div id="setup_container">
+    <div id="accelerometer_child">
+        <div>Accelerometer: </div>
+        <button id='acclrmtr_connect_btn' class="btn" data-bind="click: onClickAcclrmtrConnectBtn">{{ _('Connect')
+            }}</button>
     </div>
-  </div>
-
-  <div id="calibration_instructions">
-    <h5 class="card-title">Calibrate Input Shaping</h5>
-    <p class="instrtext">Select an input shaping option below. Using input shaping reduces vibrations in your printer by moving the motors in a way that counteracts natural frequencies.</p>
-      <div class="calibration_instr_collapsible">
-        <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.calibration_instr_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Calibration profile options (advanced)') }}</a></div>
-        <div class="hide alert alert-info">
-            <p class="instrtext">
-                  In 3D printers, input shapers trade off vibration reduction effectiveness for reaction time. Shapers will introduce rounding in your print jobs, with more rounding for more effective shapers. The available shaper options rank as follows: </p>
-                  <ul>
-                      <li>ZV (Zero Vibration): Least effective, least rounding.</li>
-                      <li>MZV (Modified Zero Vibration): Less effective, less rounding.</li>
-                      <li>ZVD (Zero Vibration Derivative): Balanced effectiveness, balanced rounding.</li>
-                      <li>EI (Extra Insensitive):  Balanced effectiveness, balanced rounding.</li>
-                      <li>2HEI (2 Hump Extra Insensitive): More effective, more rounding.</li>
-                      <li>3HEI (3 Hump Extra Insensitive): Most effective, most rounding.</li>                  
-                  </ul>
-                  
-        </div>
-        </div>
-  </div>  
-  <div class="calibrate_select_btn_group" id="calibrate_select_btn_group_id">
-    <div class="calibrate_select_btn_group_content btn-group">
-        <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="btn is_select_btn">{{ _('ZV-IS') }}</button>
-        <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="btn is_select_btn">{{ _('ZVD-IS (Recommended)') }}</button>
-        <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="btn is_select_btn">{{ _('MZV-IS') }}</button>
-        <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="btn is_select_btn">{{ _('EI-IS') }}</button>
-        <button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="btn is_select_btn">{{ _('2HEI-IS') }}</button>
-        <button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="btn is_select_btn">{{ _('3HEI-IS') }}</button>
-    </div>
-  </div>
-
-
-  {# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
-  <div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
-
-  <div id="vtol_group">
-    <div class="vibration_slider_collapsible">
-        <div><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.vibration_slider_collapsible', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Vibration Tolerance Info') }}</a></div>
-        <div class="hide alert alert-info">
-          <div class="instrtext"> Extra Insensitive input shapers (EI, 2HEI, 3HEI) allow for the vibration tolerance to be set. Increasing this value allows more vibration at the calibrated frequency, but better performance if this frequency changes. Decreasing this value allows for less vibration at the calibrated frequency, but worse performance if this frequency changes. The default value of 5% is a good starting point.</div>
+    <div class="calibrate_axis_btn_group">
+        <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X')
+            }}</button>
+        <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y')
+            }}</button>
+        <div class="line-break"></div>
+        <div id="calibration_state_labels">
+            <div id="calibrate_x_status_label" class="label"><!-- X Calibration Status --></div>
+            <div id="calibrate_y_status_label" class="label"><!-- Y Calibration Status --></div>
         </div>
     </div>
-    <div class="slidercontainer">
-      <label for="vibrateTolSlider">Vibration Tolerance: <span id="vibration_tol_val"></span>%</label>
-      <input type="range" name="vibrateTolSlider" min="0" max="100" value="5" class="slider" id="vtolslider">
+
+    <div id="calibration_instructions">
+        <h5 class="card-title">Calibrate Input Shaping</h5>
+        <p class="instrtext">Select an input shaping option below. Using input shaping reduces vibrations in your
+            printer by moving the motors in a way that counteracts natural frequencies.</p>
+        <div class="calibration_instr_collapsible">
+            <div><a href="#" class="muted"
+                    data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.calibration_instr_collapsible', container: '.hide' }"><i
+                        class="fas fa-caret-right"></i> {{ _('Calibration profile options (advanced)') }}</a></div>
+            <div class="hide alert alert-info">
+                <p class="instrtext">
+                    In 3D printers, input shapers trade off vibration reduction effectiveness for reaction time. Shapers
+                    will introduce rounding in your print jobs, with more rounding for more effective shapers. The
+                    available shaper options rank as follows: </p>
+                <ul>
+                    <li>ZV (Zero Vibration): Least effective, least rounding.</li>
+                    <li>MZV (Modified Zero Vibration): Less effective, less rounding.</li>
+                    <li>ZVD (Zero Vibration Derivative): Balanced effectiveness, balanced rounding.</li>
+                    <li>EI (Extra Insensitive): Balanced effectiveness, balanced rounding.</li>
+                    <li>2HEI (2 Hump Extra Insensitive): More effective, more rounding.</li>
+                    <li>3HEI (3 Hump Extra Insensitive): Most effective, most rounding.</li>
+                </ul>
+
+            </div>
+        </div>
     </div>
-  </div>
+    <div class="calibrate_select_btn_group" id="calibrate_select_btn_group_id">
+        <div class="calibrate_select_btn_group_content btn-group">
+            <button id='select_zv_cal_btn' data-bind="click: onClickSelectZvCalBtn" class="btn is_select_btn">{{
+                _('ZV-IS') }}</button>
+            <button id='select_zvd_cal_btn' data-bind="click: onClickSelectZvdCalBtn" class="btn is_select_btn">{{
+                _('ZVD-IS (Recommended)') }}</button>
+            <button id='select_mzv_cal_btn' data-bind="click: onClickSelectMzvCalBtn" class="btn is_select_btn">{{
+                _('MZV-IS') }}</button>
+            <button id='select_ei_cal_btn' data-bind="click: onClickSelectEiCalBtn" class="btn is_select_btn">{{
+                _('EI-IS') }}</button>
+            <button id='select_ei2h_cal_btn' data-bind="click: onClickSelectEi2hCalBtn" class="btn is_select_btn">{{
+                _('2HEI-IS') }}</button>
+            <button id='select_ei3h_cal_btn' data-bind="click: onClickSelectEi3hCalBtn" class="btn is_select_btn">{{
+                _('3HEI-IS') }}</button>
+        </div>
+    </div>
 
-  <div class="manage_calibration_btn_group">
-    <button id='load_calibration_btn' class="btn" data-bind="click: onClickLoadCalibrationBtn">{{ _('Load Calibration') }}</button>
-    <button id='save_calibration_btn' class="btn" data-bind="click: onClickSaveCalibrationBtn"><i class="icon-hdd"></i> Save to EEPROM</button>
-  </div>
 
-  {# <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
-  <div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+    {#
+    <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
+    <div id='calibration_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
 
-  <button id='clear_session_btn' class="btn" data-bind="click: onClickClearSessionBtn"><i class="icon-remove"></i> Clear Session</button>
+    <div id="vtol_group">
+        <div class="vibration_slider_collapsible">
+            <div><a href="#" class="muted"
+                    data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.vibration_slider_collapsible', container: '.hide' }"><i
+                        class="fas fa-caret-right"></i> {{ _('Vibration Tolerance Info') }}</a></div>
+            <div class="hide alert alert-info">
+                <div class="instrtext"> Extra Insensitive input shapers (EI, 2HEI, 3HEI) allow for the vibration
+                    tolerance to be set. Increasing this value allows more vibration at the calibrated frequency, but
+                    better performance if this frequency changes. Decreasing this value allows for less vibration at the
+                    calibrated frequency, but worse performance if this frequency changes. The default value of 5% is a
+                    good starting point.</div>
+            </div>
+        </div>
+        <div class="slidercontainer">
+            <label for="vibrateTolSlider">Vibration Tolerance: <span id="vibration_tol_val"></span>%</label>
+            <input type="range" name="vibrateTolSlider" min="0" max="100" value="5" class="slider" id="vtolslider">
+        </div>
+    </div>
+
+    <div class="manage_calibration_btn_group">
+        <button id='load_calibration_btn' class="btn" data-bind="click: onClickLoadCalibrationBtn">{{ _('Load
+            Calibration') }}</button>
+        <button id='save_calibration_btn' class="btn" data-bind="click: onClickSaveCalibrationBtn"><i
+                class="icon-hdd"></i> Save to EEPROM</button>
+    </div>
+
+    {#
+    <script charset="utf-8" src='plugin/autocal/static/plotly.js'></script> #}
+    <div id='verification_results_graph'><!-- Plotly chart will be drawn inside this DIV --></div>
+
+    <button id='clear_session_btn' class="btn" data-bind="click: onClickClearSessionBtn"><i class="icon-remove"></i>
+        Clear Session</button>
 
 </div>
 <h5>Output Log</h5>
