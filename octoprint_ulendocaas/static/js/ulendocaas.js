@@ -526,67 +526,6 @@ $(function () {
             });
             return;
         }
-        // ko.observable is used to create reactive data models. 
-        // When you change the value of an observable, any part of your application that depends on 
-        // that value will automatically update to reflect the new value. 
-        self.license_status = ko.observable(false);
-        self.license_verifying = ko.observable(false);
-
-        self.verifyCreds = function () {
-            self.license_verifying(true)
-            let license_status_wizard = document.getElementById('license_status_wizard');
-            let license_status_message_wizard = document.getElementById('license_status_message_wizard');
-            let body = {
-                ORG: document.getElementById('org_input').value,
-                ACCESSID: document.getElementById('accessId_input').value,
-                MACHINEID: document.getElementById('machineId_input').value,
-            }
-            self.removeClass(license_status, "alert-");
-            license_status_wizard.classList.add("alert-info");
-            license_status_wizard.classList.add("alert-block");
-            license_status_wizard.style.display = 'block';
-            license_status_message_wizard.innerText = 'INFO: Verifying Credentials...';
-
-            OctoPrint.simpleApiCommand("ulendocaas", "on_before_wizard_finish_verify_credentials", body)
-                .done(function (response) {
-                    // assgin the observable value
-                    self.license_status(response['license_status']);
-                    if (!self.license_status()) {
-                        self.removeClass(license_status_wizard, "alert-");
-                        license_status_wizard.classList.add("alert-danger");
-                        license_status_wizard.classList.add("alert-block");
-                        license_status_message_wizard.innerText = 'ERROR: Invalid Credentials (Check your ORG, ACCESSID and MACHINEID)';
-                    } else {
-                        self.removeClass(license_status_wizard, "alert-");
-                        license_status_wizard.classList.add("alert-success");
-                        license_status_wizard.classList.add("alert-block");
-                        license_status_message_wizard.innerText = 'SUCCESS: Credentials Verified!';
-                    }
-                    self.license_verifying(false)
-                })
-                .fail(function (error) {
-                    console.error('Error:', error);
-                });
-        }
-
-        self.onBeforeWizardFinish = function () {
-            let privacyCheckbox = document.getElementById('privacy_checkbox').checked;
-            console.log('privacy', privacyCheckbox)
-            if (!privacyCheckbox) {
-                new PNotify({
-                    title: 'Privacy Policy',
-                    text: 'You must agree to the privacy policy to proceed.',
-                    type: 'error',
-                    hide: true
-                });
-                return false;
-            }
-            return self.license_status() && !self.license_verifying();
-        }
-
-        self.onWizardFinish = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "get_layout_status");
-        }
 
         self.onSettingsHidden = function () {
             OctoPrint.simpleApiCommand("ulendocaas", "on_settings_close_verify_credentials")
@@ -608,11 +547,7 @@ $(function () {
             // self.newUrl(self.settings.settings.plugins.ulendocaas.url());
             // self.newACCESS(self.settings.settings.plugins.ulendocaas.ACCESSID());
             // self.newORG(self.settings.settings.plugins.ulendocaas.ORG());
-        }
-
-        self.onAfterBinding = function () {
-            self.verifyCreds();
-        }
+        };
     };
 
     // This is how our plugin registers itself with the application, by adding some configuration
