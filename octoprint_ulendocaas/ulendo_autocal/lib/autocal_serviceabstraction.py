@@ -96,23 +96,10 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_I
                         'MANUFACTURER_NAME': ""
                     },                    
                 }
-    
-    post_filename = 'solve_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt'
-    post_file = open(os.path.join(os.path.dirname(__file__) , '..', 'data', post_filename), 'w') 
-    json.dump(postdata, post_file, sort_keys=True, indent=4, ensure_ascii=False)
-    post_file.close()
-    
-    
+        
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
-    self._logger.info('Output from postreq', postreq)
     response_body = json.loads(postreq.text)
-    
-    response_filename = 'json_response.txt'
-    response_file = open(os.path.join(os.path.dirname(__file__), '..', 'data', response_filename), 'w')
-    json.dump(response_body, response_file, sort_keys=True, indent=4, ensure_ascii=False)
-    response_file.close()
-    self._logger.info('Output from solver', response_body)
-    
+        
     if 'exception' in response_body: raise_exception_from_response(response_body['exception'])
     elif 'solution' in response_body:
         solution = json.loads(response_body['solution'])
@@ -155,12 +142,6 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org
                     }, 
                 }
     
-    verify_filename = 'verify_post_' + now.strftime("%y%m%d_%H%M%S") + '.txt'
-    verify_file = open(os.path.join(os.path.dirname(__file__), '..', 'data', verify_filename), 'w')
-    json.dump(postdata, verify_file, sort_keys=True, indent=4, ensure_ascii=False)
-    verify_file.close()
-
-
     postreq = requests.post(SERVICE_URL, json=json.dumps(postdata), timeout=SERVICE_TIMEOUT_THD)
     response_body = json.loads(postreq.text)
 
