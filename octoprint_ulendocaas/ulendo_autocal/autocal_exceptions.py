@@ -16,4 +16,4 @@ class NoQualifiedSolution(SolverError): pass
 class NoVibrationDetected(SolverError): pass
 
 class AutocalInternalServerError(Exception): pass
-
+class DataFileNotFoundError(Exception): pass

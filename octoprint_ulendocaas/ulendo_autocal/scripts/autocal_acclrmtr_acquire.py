@@ -8,7 +8,7 @@ import argparse
 if __package__ is None:
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
     from lib.autocal_adxl345 import Adxl345, ACC_LSB_TO_MM_PER_SEC_SQR
-    from autocal_exceptions import DaemonNotRunning, CommunicationError
+    from autocal_exceptions import DaemonNotRunning, CommunicationError, DataFileNotFoundError
 else:
     print(f'Error: {__name__} not called as script!')
     exit()
@@ -45,18 +45,21 @@ def main(data_folder):
             else:
                 raise Exception(f'Unknown CommunicationError type: {e.type}!')
         else:
-            f_x_raw = open(path.join(data_folder, 'data', 'tmpxrw'), 'wb')
-            f_y_raw = open(path.join(data_folder, 'data', 'tmpyrw'), 'wb')
-            f_z_raw = open(path.join(data_folder, 'data', 'tmpzrw'), 'wb')
+            try:
+                f_x_raw = open(path.join(data_folder, 'data', 'tmpxrw'), 'wb')
+                f_y_raw = open(path.join(data_folder, 'data', 'tmpyrw'), 'wb')
+                f_z_raw = open(path.join(data_folder, 'data', 'tmpzrw'), 'wb')
 
-            for i, _ in enumerate(accelerometer.x_buff):
-                f_x_raw.write(struct.pack('f', ACC_LSB_TO_MM_PER_SEC_SQR * float(accelerometer.x_buff[i])))
-                f_y_raw.write(struct.pack('f', ACC_LSB_TO_MM_PER_SEC_SQR * float(accelerometer.y_buff[i])))
-                f_z_raw.write(struct.pack('f', ACC_LSB_TO_MM_PER_SEC_SQR * float(accelerometer.z_buff[i])))
+                for i, _ in enumerate(accelerometer.x_buff):
+                    f_x_raw.write(struct.pack('f', ACC_LSB_TO_MM_PER_SEC_SQR * float(accelerometer.x_buff[i])))
+                    f_y_raw.write(struct.pack('f', ACC_LSB_TO_MM_PER_SEC_SQR * float(accelerometer.y_buff[i])))
+                    f_z_raw.write(struct.pack('f', ACC_LSB_TO_MM_PER_SEC_SQR * float(accelerometer.z_buff[i])))
 
-            f_x_raw.close()
-            f_y_raw.close()
-            f_z_raw.close()
+                f_x_raw.close()
+                f_y_raw.close()
+                f_z_raw.close()
+            except DataFileNotFoundError as e:
+                return_code = 5
         finally:
             accelerometer.close()
 

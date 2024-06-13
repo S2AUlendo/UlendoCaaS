@@ -1137,6 +1137,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 else:  # Max retries hit
                     self.send_client_popup(type='error', title='Retry Limit', message='Retry limit reached, exiting this attempt.')
                     f_abort = True
+            elif self.fsm.accelerometer_process.returncode == 5:
+                self.send_client_popup(type='error', title='Error Reading Accelerometer Data File', message='Accelerometer data file may be lost/corrupted.')
+                f_abort = True
             else:
                 self.send_client_popup(type='error', title='Accelerometer Connection Lost', message='Accelerometer connection was lost during the routine.')
                 f_abort = True
