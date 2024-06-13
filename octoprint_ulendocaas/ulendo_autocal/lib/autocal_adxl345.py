@@ -31,9 +31,10 @@ class Adxl345:
     '''Provides necessary accelerometer functions for autocalibration
     using the ADXL345 accelerometer device.'''
 
-    def __init__(self):
+    def __init__(self, data_folder):
         '''Opens SPI connection on creation and initializes class storage (data buffers).'''
         # Check if daemon is running
+        self.data_folder = data_folder
         try:
             subprocess.check_output(['pidof', 'pigpiod']) # TODO: what is this ?
             self.rpi = pigpio.pi()
@@ -88,7 +89,7 @@ class Adxl345:
         '''Writes the device register that enables self-test. To disable,
         configure the device for data acquisition using other provided method.'''
         self.rpi.spi_write(self.spi0, [0x31, 0b10001011])
-
+    
     
     def collect_samples(self, n_max=None):
         '''Polls the device for data samples until the specified amount has been
@@ -111,9 +112,11 @@ class Adxl345:
         self.x_buff = []; self.y_buff = []; self.z_buff = []
 
         # TODO: handle if directory doesnt exist
-        f_x_anim = open(os.path.join(os.path.dirname(__file__) , '..', 'data', 'tmpxfild'), 'ab')
-        f_y_anim = open(os.path.join(os.path.dirname(__file__) , '..', 'data', 'tmpyfild'), 'ab')
-        f_z_anim = open(os.path.join(os.path.dirname(__file__) , '..', 'data', 'tmpzfild'), 'ab')
+        os.makedirs(os.path.join(self.data_folder, 'data'), exist_ok=True)
+        
+        f_x_anim = open(os.path.join(self.data_folder, 'data', 'tmpxfild'), 'ab')
+        f_y_anim = open(os.path.join(self.data_folder, 'data', 'tmpyfild'), 'ab')
+        f_z_anim = open(os.path.join(self.data_folder, 'data', 'tmpzfild'), 'ab')
 
         n = 0
         n_fifo_zero_cnt = 0

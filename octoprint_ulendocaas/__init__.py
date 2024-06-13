@@ -9,7 +9,6 @@ import struct
 import sys
 import os
 import re
-import json
 
 from math import pi, sqrt, floor
 from datetime import datetime
@@ -112,38 +111,45 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
     def _init(self):
         # Use this to init stuff dependent on the injected properties (including _logger, used by AxisRespnsFSM)
+        try:
+            if self.initialized: return
+
+            self.tab_layout = TabLayout()
+            
+            self.fsm = AxisRespnsFSMData()
+            self.fsm.state = AxisRespnsFSMStates.IDLE
+            
+            self.sts_self_test_active = False
+            self.sts_axis_calibration_active = False
+            self.sts_axis_verification_active = False
+            self.sts_acclrmtr_connected = False
+            self.sts_axis_calibration_axis = None
+            self.sts_calibration_saved = False
+            self.active_solution = None
+            self.active_solution_axis = None
+            self.active_verification_result = None
+            self.x_calibration_sent_to_printer = False
+            self.y_calibration_sent_to_printer = False
+            self.data_folder = self.get_plugin_data_folder()
+
+            self.calibration_vtol = 0.05
+
+            self.metadata = {}
         
-        if self.initialized: return
-
-        self.tab_layout = TabLayout()
+            if not SIMULATION:
+                self.tab_layout.is_active_client = self.on_startup_verify_credentials()
+                with open('/proc/cpuinfo', 'rb') as f:
+                    model = f.read().strip()
+                split_line = re.split(b'\n', model)
+                for line in split_line:
+                    if re.match(b'Serial', line): self.metadata['BOARDCPUSERIAL'] = re.split(b'Serial\t\t: ', line)[1].decode('utf-8')
+                    if re.match(b'Model', line): self.metadata['BOARDMODEL'] = re.split(b'Model\t\t: ', line)[1].decode('utf-8')
         
-        self.fsm = AxisRespnsFSMData()
-        while(self.fsm.state is not AxisRespnsFSMStates.IDLE): self.fsm_update()
-        
-        self.sts_self_test_active = False
-        self.sts_axis_calibration_active = False
-        self.sts_axis_verification_active = False
-        self.sts_acclrmtr_connected = False
-        self.sts_axis_calibration_axis = None
-        self.sts_calibration_saved = False
-        self.active_solution = None
-        self.active_solution_axis = None
-        self.active_verification_result = None
-        self.x_calibration_sent_to_printer = False
-        self.y_calibration_sent_to_printer = False
-
-        self.calibration_vtol = 0.05
-
-        self.metadata = {}
-        if not SIMULATION:
-            self.tab_layout.is_active_client = self.on_startup_verify_credentials()
-            model = subprocess.check_output('cat /proc/cpuinfo', shell=True).strip()
-            split_line = re.split(b'\n', model)
-            for line in split_line:
-                if re.match(b'Serial', line): self.metadata['BOARDCPUSERIAL'] = re.split(b'Serial\t\t: ', line)[1].decode('utf-8')
-                if re.match(b'Model', line): self.metadata['BOARDMODEL'] = re.split(b'Model\t\t: ', line)[1].decode('utf-8')
-
-        self.initialized = True
+            self.initialized = True
+            
+        except Exception as e:
+            self.handle_calibration_service_exceptions(e)
+            return
 
     def on_startup_verify_credentials(self):
         org_id, access_id, machine_id = self.get_credentials()
@@ -154,8 +160,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         if SIMULATION:
             if VERBOSE > 1: self._logger.info('SIMULATION sending command to printer: ' + cmd)
             return
-        from octoprint.server import printer
-        printer.commands(cmd)
+        self._printer.commands(cmd)
 
     # WizardPlugin mixin
     def is_wizard_required(self):
@@ -192,8 +197,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.send_client_acclrmtr_data_TMR.cancel()
 
         if self.acclrmtr_data_file is None:
-            if os.path.isfile(os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'data', 'tmp' + self.fsm.axis + 'fild')):
-                self.acclrmtr_data_file = open(os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'data', 'tmp' + self.fsm.axis + 'fild'), 'rb')
+
+            if os.path.isfile(os.path.join(self.data_folder, 'data', 'tmp' + self.fsm.axis + 'fild')):
+                self.acclrmtr_data_file = open(os.path.join(self.data_folder, 'data', 'tmp' + self.fsm.axis + 'fild'), 'rb')
         else:
             bytes = self.acclrmtr_data_file.read()
             num_floats_to_unpack = len(bytes)//BYTES_PER_FLOAT
@@ -250,7 +256,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             save_calibration_btn_state = self.tab_layout.save_calibration_btn.state.name,
             clear_session_btn_disabled = self.tab_layout.clear_session_btn.disabled,
             vtol_slider_visible = self.tab_layout.vtol_slider_visible,
-            is_active_client = self.tab_layout.is_active_client
+            is_active_client = self.tab_layout.is_active_client,
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
@@ -491,35 +497,44 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
 
     def on_acclrmtr_connect_btn_click(self):
+        
         if self.tab_layout.acclrmtr_connect_btn.disabled: return
         
         self.sts_self_test_active = True
         self.sts_acclrmtr_connected = False
         self.update_tab_layout()
-
-        for file in ['tmpxfild', 'tmpyfild', 'tmpzfild', 'tmpxrw', 'tmpyrw', 'tmpzrw']:
-            if (os.path.isfile(os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'data', file))):
-                os.remove(os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'data', file))
-        if not SIMULATION: self.acclrmtr_self_test_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_acclrmtr_selftest.py')],
-                            stdin=subprocess.PIPE)
-        else: self.acclrmtr_self_test_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_sim_selftest.py')],
-                    stdin=subprocess.PIPE)
         
-        # The self test will display the Z axis data
-        while not os.path.isfile(os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'data', 'tmpzfild')): pass # wait for process to create the file
-        self.acclrmtr_data_file = open(os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'data', 'tmpzfild'), 'rb')
-        
-        self.acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
-        self.acclrmtr_data_count = 0
-        self.sts_acclrmtr_active = True
-        self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
-        self.send_client_acclrmtr_data_TMR.start()
-        self.acclrmtr_self_test_monitor_for_end()
+        try:
+            for file in ['tmpxfild', 'tmpyfild', 'tmpzfild', 'tmpxrw', 'tmpyrw', 'tmpzrw']:
+                if (os.path.isfile(os.path.join(self.data_folder, 'data', file))):
+                    os.remove(os.path.join(self.data_folder, 'data', file))
+            if not SIMULATION: 
+                self.acclrmtr_self_test_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_acclrmtr_selftest.py'), self.data_folder],
+                                stdout=subprocess.PIPE,
+                                stdin=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                )
+            else: 
+                self.acclrmtr_self_test_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_sim_selftest.py'), self.data_folder],
+                        stdin=subprocess.PIPE)
+                            
+            # The self test will display the Z axis data
+            while not os.path.isfile(os.path.join(self.data_folder, 'data', 'tmpzfild')): pass # wait for process to create the file
+            self.acclrmtr_data_file = open(os.path.join(self.data_folder, 'data', 'tmpzfild'), 'rb')
+            
+            self.acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
+            self.acclrmtr_data_count = 0
+            self.sts_acclrmtr_active = True
+            self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
+            self.send_client_acclrmtr_data_TMR.start()
+            self.acclrmtr_self_test_monitor_for_end()
+            
+        except Exception as e:
+            self.handle_calibration_service_exceptions(e)
 
 
     def report_connection_status(self):
-        from octoprint.server import printer
-        connection_string, port, _, _ = printer.get_current_connection()
+        connection_string, port, _, _ = self._printer.get_current_connection()
 
         status = 'notconnected'
         if (connection_string == "Operational"):
@@ -539,8 +554,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
            (axis == 'y' and self.tab_layout.calibrate_y_axis_btn.disabled): return
         
         if not SIMULATION:
-            from octoprint.server import printer
-            connection_string, _, _, _ = printer.get_current_connection()
+            connection_string, _, _, _ = self._printer.get_current_connection()
 
             if(connection_string != "Operational"):
                 self.send_client_popup(type='error', title='Printer not connected.', message='Printer must be connected in order to start calibration.')
@@ -735,8 +749,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             clear_session_btn_click=[],
             prompt_cancel_click=[],
             prompt_proceed_click=[],
-            on_before_wizard_finish_verify_credentials=[],
-            on_settings_close_verify_credentials=[]
+            on_settings_close_verify_credentials=[],
         )
 
     
@@ -752,14 +765,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'on_before_wizard_finish_verify_credentials':  return self.on_before_wizard_finish_verify_credentials(data)
         elif command == 'on_settings_close_verify_credentials':  return self.on_settings_close_verify_credentials()
-
-    def on_before_wizard_finish_verify_credentials(self, data):
-        data = json.loads(data) if not isinstance(data, dict) else data
-        self._logger.info(f'{data["ORG"]} {data["ACCESSID"]}')
-        check_status = verify_credentials(data['ORG'], data['ACCESSID'], data['MACHINEID'], self)
-        return flask.jsonify(license_status=check_status)
         
     def on_settings_close_verify_credentials(self):
         org_id, access_id, machine_id = self.get_credentials()
@@ -940,8 +946,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             self.send_printer_command('M493 S1 ' + self.fsm.axis.upper() + '0')
 
         for file in ['tmpxfild', 'tmpyfild', 'tmpzfild', 'tmpxrw', 'tmpyrw', 'tmpzrw']:
-            if (os.path.isfile(os.path.join(os.path.dirname(__file__), '..', 'data', file))):
-                os.remove(os.path.join(os.path.dirname(__file__), '..', 'data', file))
+            if (os.path.isfile(os.path.join(self.data_folder, 'data', file))):
+                os.remove(os.path.join(self.data_folder, 'data', file))
 
         if self.fsm.printer_requires_additional_homing:
             if (not self._settings.get(["home_axis_before_calibration"])):
@@ -1026,11 +1032,25 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.acclrmtr_data_count = 0
         self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
         self.send_client_acclrmtr_data_TMR.start()
-        if not SIMULATION: self.fsm.accelerometer_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_acclrmtr_acquire.py')],
-                     stdin=subprocess.PIPE)
-        else: self.fsm.accelerometer_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_sim_acquire.py')],
-                     stdin=subprocess.PIPE)
-        return
+        
+        try:
+            if not SIMULATION: 
+                self.fsm.accelerometer_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_acclrmtr_acquire.py'), self.data_folder],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                        )
+                # self._logger.info(self.fsm.accelerometer_process.stdout.readline())
+            else: 
+                self.fsm.accelerometer_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_sim_acquire.py'), self.data_folder],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                        )
+            return
+        except Exception as e:
+            self.handle_calibration_service_exceptions(e)
+            return
     
 
     def fsm_on_SWEEP_during(self):
@@ -1092,7 +1112,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         if not self.fsm.accelerometer_stopped and ((SIMULATION and self.fsm.in_state_time > 3.) or
                                                (not SIMULATION and self.fsm.sweep_done_recvd)):
-            self.fsm.accelerometer_process.communicate('stop'.encode())
+            self.fsm.accelerometer_process.communicate("stop".encode())
             if VERBOSE > 1: self._logger.info('Triggering accelerometer data collection stop.')
             self.fsm.accelerometer_stopped = True
 
