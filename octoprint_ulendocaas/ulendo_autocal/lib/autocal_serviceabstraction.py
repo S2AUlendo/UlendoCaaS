@@ -53,9 +53,9 @@ def get_source_ip():
     return ip_address
     
 
-def read_acclrmtr_data(axis):
+def read_acclrmtr_data(axis, folder_path):
 
-    rawdata_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'tmp' + axis + 'rw')
+    rawdata_filename = os.path.join(folder_path, 'data', 'tmp' + axis + 'rw')
     rawdata_file = open(rawdata_filename, 'rb')
     rawdata_bytes = rawdata_file.read(); rawdata_file.close()
     rawdata_str = base64.b64encode(rawdata_bytes).decode('utf-8')
@@ -69,9 +69,9 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_I
     now = datetime.now()
 
     postdata =  {   'ACTION': 'CALIBRATE',
-                    'XAXISRESPONSE': read_acclrmtr_data('x'),
-                    'YAXISRESPONSE': read_acclrmtr_data('y'),
-                    'ZAXISRESPONSE': read_acclrmtr_data('z'),
+                    'XAXISRESPONSE': read_acclrmtr_data('x', self.data_folder),
+                    'YAXISRESPONSE': read_acclrmtr_data('y', self.data_folder),
+                    'ZAXISRESPONSE': read_acclrmtr_data('z', self.data_folder),
                     'AXIS': axis,
                     'OPERATION': 'SOLVE',
                     'METADATA': metadata if metadata is not {} else 'N/A',
@@ -114,9 +114,9 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org
     
     now = datetime.now()
     postdata =  {   'ACTION': 'CALIBRATE',
-                    'XAXISRESPONSE': read_acclrmtr_data('x'),
-                    'YAXISRESPONSE': read_acclrmtr_data('y'),
-                    'ZAXISRESPONSE': read_acclrmtr_data('z'),
+                    'XAXISRESPONSE': read_acclrmtr_data('x', self.data_folder),
+                    'YAXISRESPONSE': read_acclrmtr_data('y', self.data_folder),
+                    'ZAXISRESPONSE': read_acclrmtr_data('z', self.data_folder),
                     'AXIS': axis,
                     'OPERATION': 'VERIFY',
                     'METADATA': metadata if metadata is not {} else 'N/A',
