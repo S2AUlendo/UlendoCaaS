@@ -36,10 +36,7 @@ then
   if [ -d "/home/$USER/OctoPrint/OctoPrint-UlendoCaas" ]
   then
     cd $PLUGIN
-    git pull origin main
-    git fetch --tags
-    latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-    git checkout $latestTag    
+    git pull origin main    
   fi
 fi
 
@@ -61,10 +58,6 @@ then
 
   # get the plugin
   git clone https://github.com/S2AUlendo/UlendoCaaS.git OctoPrint-UlendoCaas
-  cd OctoPrint-UlendoCaas
-  git fetch --tags
-  latestTag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-  git checkout $latestTag 
 
   # install the plugin
   cd OctoPrint-UlendoCaas
