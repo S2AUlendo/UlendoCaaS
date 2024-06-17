@@ -30,7 +30,7 @@ plugin_author_email = "info@ulendo.io"
 plugin_url = "https://github.com/S2AUlendo/UlendoCaaS.git"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
-plugin_license = ""
+plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = ["pigpio", "numpy"]
