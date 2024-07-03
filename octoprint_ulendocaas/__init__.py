@@ -2,12 +2,9 @@
 
 from __future__ import absolute_import
 
-import subprocess
-import flask
 import requests
 import struct
-import sys
-import os
+import flask
 import re
 
 from math import pi, sqrt, floor
@@ -17,10 +14,12 @@ from octoprint.util import ResettableTimer
 from octoprint.util.comm import regex_float_pattern, parse_position_line, regex_firmware_splitter
 import octoprint.plugin
 
-from .ulendo_autocal.autocal_cfg import *
-from .ulendo_autocal.lib.autocal_ismags import get_ismag
-from .ulendo_autocal.autocal_exceptions import SignalSyncError, NoSignalError, NoQualifiedSolution, NoVibrationDetected, AutocalInternalServerError
-from .ulendo_autocal.lib.autocal_serviceabstraction import autocal_service_solve, autocal_service_guidata, verify_credentials
+from .cfg import *
+from .ismags import get_ismag
+from .service_exceptions import SignalSyncError, NoSignalError, NoQualifiedSolution, NoVibrationDetected, AutocalInternalServerError
+from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials
+from .adxl345 import Adxl345, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus, ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR
+from .adxl345 import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
 
 from .tab_layout import *
 from .tab_buttons import *
@@ -57,10 +56,7 @@ class AxisRespnsFSMData():
         self.state_prev = AxisRespnsFSMStates.NONE
         self.in_state_time = 0
 
-        self.pigpiod_process = None
-
         # States that should get reset
-        self.accelerometer_process = None
         self.axis = None
         self.axis_reported_len = None
         self.axis_reported_len_recvd = False
@@ -111,56 +107,59 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
     def _init(self):
         # Use this to init stuff dependent on the injected properties (including _logger, used by AxisRespnsFSM)
-        try:
-            if self.initialized: return
+        if self.initialized: return
 
-            self.tab_layout = TabLayout()
-            
-            self.fsm = AxisRespnsFSMData()
-            self.fsm.state = AxisRespnsFSMStates.IDLE
-            
-            self.sts_self_test_active = False
-            self.sts_axis_calibration_active = False
-            self.sts_axis_verification_active = False
-            self.sts_acclrmtr_connected = False
-            self.sts_axis_calibration_axis = None
-            self.sts_calibration_saved = False
-            self.active_solution = None
-            self.active_solution_axis = None
-            self.active_verification_result = None
-            self.x_calibration_sent_to_printer = False
-            self.y_calibration_sent_to_printer = False
-            self.data_folder = self.get_plugin_data_folder()
-
-            self.calibration_vtol = 0.05
-
-            self.metadata = {}
+        self.tab_layout = TabLayout()
         
-            if not SIMULATION:
-                self.tab_layout.is_active_client = self.on_startup_verify_credentials()
+        self.fsm = AxisRespnsFSMData()
+        self.fsm.state = AxisRespnsFSMStates.IDLE
+        
+        self.accelerometer = None
+
+        self.sts_self_test_active = False
+        self.sts_axis_calibration_active = False
+        self.sts_axis_verification_active = False
+        self.sts_acclrmtr_connected = False
+        self.sts_acclrmtr_active = False
+        self.sts_axis_calibration_axis = None
+        self.sts_calibration_saved = False
+        self.active_solution = None
+        self.active_solution_axis = None
+        self.active_verification_result = None
+        self.x_calibration_sent_to_printer = False
+        self.y_calibration_sent_to_printer = False
+
+        self.calibration_vtol = 0.05
+
+        self.metadata = {}
+    
+        if not SIMULATION:
+            self.tab_layout.is_active_client = self.on_startup_verify_credentials()
+            try:
                 with open('/proc/cpuinfo', 'rb') as f:
                     model = f.read().strip()
                 split_line = re.split(b'\n', model)
                 for line in split_line:
                     if re.match(b'Serial', line): self.metadata['BOARDCPUSERIAL'] = re.split(b'Serial\t\t: ', line)[1].decode('utf-8')
                     if re.match(b'Model', line): self.metadata['BOARDMODEL'] = re.split(b'Model\t\t: ', line)[1].decode('utf-8')
-        
+            except:
+                self.metadata['BOARDCPUSERIAL'] = 'NA'
+                self.metadata['BOARDMODEL'] = 'NA'
             self.initialized = True
-            
-        except Exception as e:
-            self.handle_calibration_service_exceptions(e)
-            return
+
 
     def on_startup_verify_credentials(self):
         org_id, access_id, machine_id = self.get_credentials()
         check_status = verify_credentials(org_id, access_id, machine_id, self)
         return check_status
-    
+
+
     def send_printer_command(self, cmd):
         if SIMULATION:
             if VERBOSE > 1: self._logger.info('SIMULATION sending command to printer: ' + cmd)
             return
         self._printer.commands(cmd)
+
 
     # WizardPlugin mixin
     def is_wizard_required(self):
@@ -189,44 +188,42 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                    ],
             "css": ["css/ulendocaas.css"
                     ]
-            # "less": ["less/ulendocaas.less"]
         }
 
 
     def send_client_acclrmtr_data(self):
         self.send_client_acclrmtr_data_TMR.cancel()
 
-        if self.acclrmtr_data_file is None:
+        if self.accelerometer is None: return
 
-            if os.path.isfile(os.path.join(self.data_folder, 'data', 'tmp' + self.fsm.axis + 'fild')):
-                self.acclrmtr_data_file = open(os.path.join(self.data_folder, 'data', 'tmp' + self.fsm.axis + 'fild'), 'rb')
+        acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
+
+        if self.sts_self_test_active:
+            buffer_to_plot = self.accelerometer.z_buff_anim.copy()
         else:
-            bytes = self.acclrmtr_data_file.read()
-            num_floats_to_unpack = len(bytes)//BYTES_PER_FLOAT
-            self.acclrmtr_data_count += num_floats_to_unpack
-            unpacked = struct.unpack('f'*num_floats_to_unpack, bytes[:num_floats_to_unpack*BYTES_PER_FLOAT])
+            if self.fsm.axis == 'x': buffer_to_plot = self.accelerometer.x_buff_anim.copy()
+            else: buffer_to_plot = self.accelerometer.y_buff_anim.copy() # Assume self.fsm.axis == 'y'.
 
-            self.acclrmtr_live_data_y.extend(list(unpacked))
-            self.acclrmtr_live_data_y = self.acclrmtr_live_data_y[-ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:]
-
-        if self.sts_acclrmtr_active:
-            self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
-            self.send_client_acclrmtr_data_TMR.start()
+        n = len(buffer_to_plot)
+        if n < ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:
+            acclrmtr_live_data_y[-n:] = buffer_to_plot
         else:
-            if self.acclrmtr_data_file is not None:
-                self.acclrmtr_data_file.close()
-                self.acclrmtr_data_file = None
-        
+            acclrmtr_live_data_y[:] = buffer_to_plot[-ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:]
+
         acclrmtr_live_data_x = list(range(ACCLRMTR_LIVE_VIEW_NUM_SAMPLES))
-        acclrmtr_live_data_x = [(T_DFLT*ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR)*(self.acclrmtr_data_count + xi) for xi in acclrmtr_live_data_x]
+        acclrmtr_live_data_x = [(T_DFLT*ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR)*(n + xi) for xi in acclrmtr_live_data_x]
         
         data = dict(
             type='acclrmtr_live_data',
             values_x=acclrmtr_live_data_x,
-            values_y=self.acclrmtr_live_data_y
+            values_y=acclrmtr_live_data_y
         )
-        
+
         self._plugin_manager.send_plugin_message(self._identifier, data)
+
+        if self.sts_acclrmtr_active or self.sts_self_test_active:
+            self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
+            self.send_client_acclrmtr_data_TMR.start()
 
 
     def send_client_layout_status(self):
@@ -447,29 +444,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             self.fsm_update_TMR.start()
 
 
-
-    def acclrmtr_self_test_monitor_for_end(self):
-        # Monitor for process end... any blocking, like using subprocess.wait() will not allow animations to update
-        if hasattr(self, 'fsm_update_TMR'): self.fsm_update_TMR.cancel() # TODO: this is hacky, manage this object better
-        if self.acclrmtr_self_test_process.poll() is None:
-            self.fsm_update_TMR = ResettableTimer(FSM_UPDATE_RATE_SEC, self.acclrmtr_self_test_monitor_for_end)
-            self.fsm_update_TMR.start()
-        else:
-            self.sts_acclrmtr_active = False
-            if VERBOSE > 1: self._logger.info(f'external process (self-test) done with code: {self.acclrmtr_self_test_process.returncode}')
-            self._plugin_manager.send_plugin_message(self._identifier, dict(type="status", msg="self-test-done", code=self.acclrmtr_self_test_process.returncode))
-            self.sts_self_test_active = False
-            if (self.acclrmtr_self_test_process.returncode == 0):
-                self.sts_acclrmtr_connected = True
-            elif (self.acclrmtr_self_test_process.returncode == 5):
-                self.sts_acclrmtr_connected = False
-                self.send_client_popup(type='error', title='Accelerometer Error', message='Accelerometer self-test failed. Try another device.')
-            elif (self.acclrmtr_self_test_process.returncode != 0):
-                self.sts_acclrmtr_connected = False
-                self.send_client_popup(type='error', title='Accelerometer Error', message='Connecting to the accelerometer failed. Check hardware and wiring.')
-            self.update_tab_layout()
-
-
     def get_selected_calibration_type(self):
         type = None
         for calibration_key in calibration_keys:
@@ -496,6 +470,36 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
 
+    def startup_accelerometer(self):
+        try:
+            if self.accelerometer is not None:
+                try: self.accelerometer.close()
+                except: pass # We'll ignore a fail here, since it could be due to the
+                             # pigpio daemon no longer running.
+            self.accelerometer = Adxl345(range = AcclrmtrRangeCfg['+/-2g'])
+            return True
+        except DaemonNotRunning:
+            self.send_client_popup(type='error', title='Pigpio Not Running',
+                                    message=f'The accelerometer cannot be connected'\
+                                    ' because the pigpio daemon is not running.', hide=False)
+        except PigpioNotInstalled:
+            self.send_client_popup(type='error', title='Pigpio Not Installed',
+                                    message=f'The accelerometer cannot be connected'\
+                                    ' because the pigpio library is not installed.', hide=False)
+        except PigpioConnectionFailed:
+            self.send_client_popup(type='error', title='Pigpio Connection Failed',
+                                    message=f'The accelerometer cannot be connected'\
+                                    ' because the pigpio connection failed.', hide=False)
+        except SpiOpenFailed:
+            self.send_client_popup(type='error', title='Pigpio SPI Open Failed',
+                                    message=f'The accelerometer cannot be connected'\
+                                    ' because the SPI connection could not be opened.', hide=False)
+        except Exception as e:
+            self.send_client_popup(type='error', title='Accelerometer Startup Failed',
+                                    message=str(e), hide=False)
+        return False
+
+
     def on_acclrmtr_connect_btn_click(self):
         
         if self.tab_layout.acclrmtr_connect_btn.disabled: return
@@ -504,33 +508,30 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_acclrmtr_connected = False
         self.update_tab_layout()
         
-        try:
-            for file in ['tmpxfild', 'tmpyfild', 'tmpzfild', 'tmpxrw', 'tmpyrw', 'tmpzrw']:
-                if (os.path.isfile(os.path.join(self.data_folder, 'data', file))):
-                    os.remove(os.path.join(self.data_folder, 'data', file))
-            if not SIMULATION: 
-                self.acclrmtr_self_test_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_acclrmtr_selftest.py'), self.data_folder],
-                                stdout=subprocess.PIPE,
-                                stdin=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                )
-            else: 
-                self.acclrmtr_self_test_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_sim_selftest.py'), self.data_folder],
-                        stdin=subprocess.PIPE)
-                            
-            # The self test will display the Z axis data
-            while not os.path.isfile(os.path.join(self.data_folder, 'data', 'tmpzfild')): pass # wait for process to create the file
-            self.acclrmtr_data_file = open(os.path.join(self.data_folder, 'data', 'tmpzfild'), 'rb')
-            
-            self.acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
-            self.acclrmtr_data_count = 0
-            self.sts_acclrmtr_active = True
-            self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
-            self.send_client_acclrmtr_data_TMR.start()
-            self.acclrmtr_self_test_monitor_for_end()
-            
-        except Exception as e:
-            self.handle_calibration_service_exceptions(e)
+        if not self.startup_accelerometer():
+            self.sts_self_test_active = False
+            self.update_tab_layout()
+            return
+
+        self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
+        self.send_client_acclrmtr_data_TMR.start()
+
+        st_result = self.accelerometer.self_test()
+
+        self.send_client_acclrmtr_data_TMR.cancel()
+
+        if st_result == AcclrmtrSelfTestSts.PASS:
+            self.sts_acclrmtr_connected = True
+        else:
+            if self.accelerometer.status == AcclrmtrStatus.STOPPED:
+                self.send_client_popup(type='error', title='Accelerometer Error', message='Accelerometer self-test failed. Try another device.')
+            else:
+                self.send_client_popup(type='error', title='Accelerometer Error', message='Connecting to the accelerometer failed. Check hardware and wiring.')
+            self.sts_acclrmtr_connected = False
+            self.accelerometer.close()
+
+        self.sts_self_test_active = False
+        self.update_tab_layout()
 
 
     def report_connection_status(self):
@@ -907,7 +908,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 #
 
     def fsm_reset(self, reset_for_retry=False):
-        self.fsm.accelerometer_process = None
         
         self.fsm.axis_reported_len = None
         self.fsm.axis_reported_len_recvd = False
@@ -944,10 +944,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         if not self.sts_axis_verification_active:
             self.send_printer_command('M493 S1 ' + self.fsm.axis.upper() + '0')
-
-        for file in ['tmpxfild', 'tmpyfild', 'tmpzfild', 'tmpxrw', 'tmpyrw', 'tmpzrw']:
-            if (os.path.isfile(os.path.join(self.data_folder, 'data', file))):
-                os.remove(os.path.join(self.data_folder, 'data', file))
 
         if self.fsm.printer_requires_additional_homing:
             if (not self._settings.get(["home_axis_before_calibration"])):
@@ -1023,35 +1019,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                                    message='Unknown error moving the axis to center.')
             self.fsm_kill()
     
+
     def fsm_on_SWEEP_entry(self):
         self.send_printer_command('M115')
-    
-        self.acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
+
+        self.accelerometer.start()
         self.sts_acclrmtr_active = True
-        self.acclrmtr_data_file = None
-        self.acclrmtr_data_count = 0
         self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
         self.send_client_acclrmtr_data_TMR.start()
         
-        try:
-            if not SIMULATION: 
-                self.fsm.accelerometer_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_acclrmtr_acquire.py'), self.data_folder],
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
-                        )
-                # self._logger.info(self.fsm.accelerometer_process.stdout.readline())
-            else: 
-                self.fsm.accelerometer_process = subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'ulendo_autocal', 'scripts', 'autocal_sim_acquire.py'), self.data_folder],
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
-                        )
-            return
-        except Exception as e:
-            self.handle_calibration_service_exceptions(e)
-            return
-    
 
     def fsm_on_SWEEP_during(self):
         
@@ -1060,7 +1036,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
                 f1_max = floor(sqrt(int(self._settings.get(["acceleration_amplitude"]))*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
                 if self._settings.get(["override_end_frequency"]):
-                    f1 = min( f1_max, int(self._settings.get(["end_frequency_override"]))) # TODO confirm float or int ?
+                    f1 = min( f1_max, int(self._settings.get(["end_frequency_override"])))
                 else:
                     f1 = f1_max
                 
@@ -1110,19 +1086,18 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
             self.fsm.sweep_initiated = True
 
-        if not self.fsm.accelerometer_stopped and ((SIMULATION and self.fsm.in_state_time > 3.) or
+        if not self.fsm.accelerometer_stopped and ((SIMULATION and self.fsm.in_state_time > 60.) or
                                                (not SIMULATION and self.fsm.sweep_done_recvd)):
-            self.fsm.accelerometer_process.communicate("stop".encode())
+            self.accelerometer.stop()
             if VERBOSE > 1: self._logger.info('Triggering accelerometer data collection stop.')
             self.fsm.accelerometer_stopped = True
 
-        if self.fsm.accelerometer_process.poll() is not None:
+        if self.accelerometer.status != AcclrmtrStatus.COLLECTING:
             f_abort = False
-            if VERBOSE > 1: self._logger.info(f'External process (acquire) done with code: {self.fsm.accelerometer_process.returncode}')
-            if self.fsm.accelerometer_process.returncode == 0:
+            if self.accelerometer.status == AcclrmtrStatus.STOPPED:
                 self.sts_acclrmtr_active = False
                 self.fsm.state = AxisRespnsFSMStates.ANALYZE
-            elif self.fsm.accelerometer_process.returncode == 4:
+            elif self.accelerometer.status == AcclrmtrStatus.OVERRUN:
                 if self.fsm.missed_sample_retry_count < MAX_RETRIES_FOR_MISSED_SAMPLES: # Setup a retry
                     self.fsm.missed_sample_retry_count += 1
 
@@ -1137,11 +1112,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 else:  # Max retries hit
                     self.send_client_popup(type='error', title='Retry Limit', message='Retry limit reached, exiting this attempt.')
                     f_abort = True
-            elif self.fsm.accelerometer_process.returncode == 5:
-                self.send_client_popup(type='error', title='Error Reading Accelerometer Data File', message='Accelerometer data file may be lost/corrupted.')
-                f_abort = True
             else:
-                self.send_client_popup(type='error', title='Accelerometer Connection Lost', message='Accelerometer connection was lost during the routine.')
+                self.send_client_popup(type='error', title='Accelerometer Connection Lost', message=f'Accelerometer connection was lost during the routine (error code: {self.accelerometer.status.value}).')
                 f_abort = True
                 
             if f_abort:
@@ -1155,6 +1127,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         
         self.fsm.missed_sample_retry_count = 0
 
+        if SIMULATION:
+            self.sts_axis_calibration_active = False
+            self.update_tab_layout()
+            return
+
         if not self.sts_axis_verification_active:
             try:
                 self.send_client_popup(type='info', title='Processing Data', message='Processing data, please wait...')
@@ -1165,7 +1142,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 machine_name = self._settings.get(["MACHINENAME"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
                 self.send_client_popup(type='success', title='Calibration Received', message='')
                 
             except Exception as e:
@@ -1189,7 +1166,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
                 self.send_client_popup(type='info', title='Verifying Calibration', message='Please wait...')
-                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
+                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -1237,11 +1214,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
     def get_settings_defaults(self):
         return dict(
-                    # CLIENTID="80dd403cf6044a4a86a0c927949d1fb8",
-                    # ORG="ULENDO", 
-                    # ACCESSID="H9ZB-JFBR-XU2J-S2CA", 
-                    # MACHINEID="233640f341c44f29b8acf5ed0fca55c9", 
-                    # MACHINENAME="Ian's Ender 3", 
                     CLIENTID=None,
                     ORG=None, 
                     ACCESSID=None, 

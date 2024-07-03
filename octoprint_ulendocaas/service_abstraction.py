@@ -1,21 +1,16 @@
-if "ulendo_autocal.lib" in __package__:
-    from ..autocal_cfg import *
-    from ..autocal_exceptions import *
-elif __package__ == "lib":
-    from autocal_cfg import *
-    from autocal_exceptions import *
-else:
-    print(f'{__file__} __package__ is {__package__}')
+from .cfg import *
+from .service_exceptions import *
 
-import os
 import requests
-import json
 import base64
+import socket
+import struct
+import json
+
 import numpy as np
 
+from datetime import datetime
 
-from datetime import datetime        
-import socket
 
 def verify_credentials(org_id, access_id, machine_id, self):
     now = datetime.now()
@@ -40,7 +35,8 @@ def verify_credentials(org_id, access_id, machine_id, self):
         raise_exception_from_response(response_body['message'])
         return False
     else: return True
-    
+
+
 def get_source_ip():
 
     hostname = socket.gethostname()
@@ -53,25 +49,19 @@ def get_source_ip():
     return ip_address
     
 
-def read_acclrmtr_data(axis, folder_path):
-
-    rawdata_filename = os.path.join(folder_path, 'data', 'tmp' + axis + 'rw')
-    rawdata_file = open(rawdata_filename, 'rb')
-    rawdata_bytes = rawdata_file.read(); rawdata_file.close()
-    rawdata_str = base64.b64encode(rawdata_bytes).decode('utf-8')
-
-    return rawdata_str
+def encode_float_list_to_base64(list):
+    bin_data = struct.pack(f'{len(list)}f', *list)
+    return base64.b64encode(bin_data).decode('utf-8')
 
 
-
-def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
+def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
 
     now = datetime.now()
 
     postdata =  {   'ACTION': 'CALIBRATE',
-                    'XAXISRESPONSE': read_acclrmtr_data('x', self.data_folder),
-                    'YAXISRESPONSE': read_acclrmtr_data('y', self.data_folder),
-                    'ZAXISRESPONSE': read_acclrmtr_data('z', self.data_folder),
+                    'XAXISRESPONSE': encode_float_list_to_base64(accelerometer.x_buff),
+                    'YAXISRESPONSE': encode_float_list_to_base64(accelerometer.y_buff),
+                    'ZAXISRESPONSE': encode_float_list_to_base64(accelerometer.z_buff),
                     'AXIS': axis,
                     'OPERATION': 'SOLVE',
                     'METADATA': metadata if metadata is not {} else 'N/A',
@@ -110,13 +100,13 @@ def autocal_service_solve(axis, sweep_cfg, metadata, client_ID, access_ID, org_I
     else: return None
 
 
-def autocal_service_guidata(axis, sweep_cfg, metadata, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
+def autocal_service_guidata(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
     
     now = datetime.now()
     postdata =  {   'ACTION': 'CALIBRATE',
-                    'XAXISRESPONSE': read_acclrmtr_data('x', self.data_folder),
-                    'YAXISRESPONSE': read_acclrmtr_data('y', self.data_folder),
-                    'ZAXISRESPONSE': read_acclrmtr_data('z', self.data_folder),
+                    'XAXISRESPONSE': encode_float_list_to_base64(accelerometer.x_buff),
+                    'YAXISRESPONSE': encode_float_list_to_base64(accelerometer.y_buff),
+                    'ZAXISRESPONSE': encode_float_list_to_base64(accelerometer.z_buff),
                     'AXIS': axis,
                     'OPERATION': 'VERIFY',
                     'METADATA': metadata if metadata is not {} else 'N/A',
