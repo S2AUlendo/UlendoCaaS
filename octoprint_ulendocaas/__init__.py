@@ -92,8 +92,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     octoprint.plugin.AssetPlugin,
                     octoprint.plugin.TemplatePlugin,
                     octoprint.plugin.SimpleApiPlugin,
-                    octoprint.plugin.StartupPlugin,
-                    octoprint.plugin.WizardPlugin
+                    octoprint.plugin.StartupPlugin
 ):
 
     def __init__(self):
@@ -160,23 +159,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             return
         self._printer.commands(cmd)
 
-
-    # WizardPlugin mixin
-    def is_wizard_required(self):
-        access_id_unset = self._settings.get(["ACCESSID"]) is None
-        org_id_unset = self._settings.get(["ORG"]) is None
-        machine_id_unset = self._settings.get(["MACHINEID"]) is None
-        machine_name_unset = self._settings.get(["MACHINENAME"]) is None
-
-        return access_id_unset and org_id_unset and machine_id_unset and machine_name_unset
-    
-    # (DEBUG) to test wizard since it only shows up once per version
-    # OctoPrint will only display such wizard dialogs to the user which belong to plugins that
-    # report True in their is_wizard_required() method and
-    # have not yet been shown to the user in the version currently being reported by the get_wizard_version() method
-    # def get_wizard_version(self):
-    #     return int(datetime.now().timestamp())
-    
     ##~~ AssetPlugin mixin
 
     def get_assets(self):
@@ -785,62 +767,67 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
-        if VERBOSE > 2: self._logger.info(f'Got line from printer: {line}')
-        if not self.initialized: return line
-        if 'M494' in line:
-            if 'FTMCFG' in line:
-                split_line = regex_ftmcfg_splitter.split(line.strip())[
+        try:
+            if VERBOSE > 2: self._logger.info(f'Got line from printer: {line}')
+            if not self.initialized: return line
+            if 'M494' in line:
+                if 'FTMCFG' in line:
+                    split_line = regex_ftmcfg_splitter.split(line.strip())[
+                        1:
+                    ]  # first entry is empty start of trimmed string
+                    result = {}
+                    for _, key, value in chunks(split_line, 3):
+                            result[key] = value.strip()
+                            if self.fsm.state == AxisRespnsFSMStates.GET_AXIS_INFO:
+                                if key == self.fsm.axis.upper() + '_MAX_LENGTH':
+                                    self.fsm.axis_reported_len_recvd = True
+                                    self.fsm.axis_reported_len = float(result[key])
+                    self.metadata['FTMCFG'] = result
+                    if VERBOSE > 1: self._logger.info('Metadata updated:')
+                    if VERBOSE > 1: self._logger.info(self.metadata)
+                elif 'profile ran to completion' in line:
+                    if self.fsm.state == AxisRespnsFSMStates.SWEEP:
+                        self.fsm.sweep_done_recvd = True
+                        if VERBOSE > 1: self._logger.info(f'Got sweep done message')
+
+            elif self.fsm.state == AxisRespnsFSMStates.CENTER and (self.fsm.axis.upper() + ':') in line:
+                self.fsm.axis_last_reported_pos = parse_position_line(line)[self.fsm.axis]
+                if VERBOSE > 1: self._logger.info(f'Got reported position = {self.fsm.axis_last_reported_pos}')
+            elif 'NAME:' in line or line.startswith('NAME.'):
+                split_line = regex_firmware_splitter.split(line.strip())[
                     1:
                 ]  # first entry is empty start of trimmed string
                 result = {}
                 for _, key, value in chunks(split_line, 3):
                         result[key] = value.strip()
-                        if self.fsm.state == AxisRespnsFSMStates.GET_AXIS_INFO:
-                            if key == self.fsm.axis.upper() + '_MAX_LENGTH':
-                                self.fsm.axis_reported_len_recvd = True
-                                self.fsm.axis_reported_len = float(result[key])
-                self.metadata['FTMCFG'] = result
-                if VERBOSE > 1: self._logger.info('Metadata updated:')
-                if VERBOSE > 1: self._logger.info(self.metadata)
-            elif 'profile ran to completion' in line:
-                if self.fsm.state == AxisRespnsFSMStates.SWEEP:
-                    self.fsm.sweep_done_recvd = True
-                    if VERBOSE > 1: self._logger.info(f'Got sweep done message')
+                if result.get('FIRMWARE_NAME') is not None:
+                    self.metadata['FIRMWARE'] = result
+                    if VERBOSE > 1: self._logger.info('Metadata updated:')
+                    if VERBOSE > 1: self._logger.info(self.metadata)
+            elif 'M92' in line:
+                match = regex_steps_per_unit.search(line)
+                if match is not None:
+                    result = {
+                        "x": float(match.group("x")),
+                        "y": float(match.group("y")),
+                        "z": float(match.group("z")),
+                    }
+                    self.fsm.axis_reported_steps_per_mm = result[self.fsm.axis]
+                    self.fsm.axis_reported_steps_per_mm_recvd = True
+                    self.metadata['STEPSPERUNIT'] = str(result)
+                    if VERBOSE > 1: self._logger.info('Metadata updated:')
+                    if VERBOSE > 1: self._logger.info(self.metadata)
+            elif self.fsm.state == AxisRespnsFSMStates.CENTER and 'echo:Home' in line and 'First' in line:
+                split_line_0 = re.split(r"echo:Home ", line.strip())
+                split_line_1 = re.split(r" First", split_line_0[1].strip())
+                self.fsm.printer_requires_additional_homing = True
+                self.fsm.printer_additional_homing_axes = split_line_1[0]
 
-        elif self.fsm.state == AxisRespnsFSMStates.CENTER and (self.fsm.axis.upper() + ':') in line:
-            self.fsm.axis_last_reported_pos = parse_position_line(line)[self.fsm.axis]
-            if VERBOSE > 1: self._logger.info(f'Got reported position = {self.fsm.axis_last_reported_pos}')
-        elif 'NAME:' in line or line.startswith('NAME.'):
-            split_line = regex_firmware_splitter.split(line.strip())[
-                1:
-            ]  # first entry is empty start of trimmed string
-            result = {}
-            for _, key, value in chunks(split_line, 3):
-                    result[key] = value.strip()
-            if result.get('FIRMWARE_NAME') is not None:
-                self.metadata['FIRMWARE'] = result
-                if VERBOSE > 1: self._logger.info('Metadata updated:')
-                if VERBOSE > 1: self._logger.info(self.metadata)
-        elif 'M92' in line:
-            match = regex_steps_per_unit.search(line)
-            if match is not None:
-                result = {
-                    "x": float(match.group("x")),
-                    "y": float(match.group("y")),
-                    "z": float(match.group("z")),
-                }
-                self.fsm.axis_reported_steps_per_mm = result[self.fsm.axis]
-                self.fsm.axis_reported_steps_per_mm_recvd = True
-                self.metadata['STEPSPERUNIT'] = str(result)
-                if VERBOSE > 1: self._logger.info('Metadata updated:')
-                if VERBOSE > 1: self._logger.info(self.metadata)
-        elif self.fsm.state == AxisRespnsFSMStates.CENTER and 'echo:Home' in line and 'First' in line:
-            split_line_0 = re.split(r"echo:Home ", line.strip())
-            split_line_1 = re.split(r" First", split_line_0[1].strip())
-            self.fsm.printer_requires_additional_homing = True
-            self.fsm.printer_additional_homing_axes = split_line_1[0]
-
-        return line
+            return line
+        
+        except Exception as e:
+            self._logger.error(f"Network error in autocal_service_guidata: {e}")
+            raise
 
     # TODO: 
     def get_update_information(self):

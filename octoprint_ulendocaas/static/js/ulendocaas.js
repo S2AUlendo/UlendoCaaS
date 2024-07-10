@@ -562,6 +562,6 @@ $(function () {
         dependencies: ["settingsViewModel"],
 
         // Finally, this is the list of selectors for all elements we want this view model to be bound to.
-        elements: ["#tab_plugin_ulendocaas", "#wizard_plugin_ulendocaas"]
+        elements: ["#tab_plugin_ulendocaas"]
     });
 });
