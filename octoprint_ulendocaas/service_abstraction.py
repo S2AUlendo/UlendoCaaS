@@ -34,13 +34,9 @@ def verify_credentials(org_id, access_id, machine_id, self):
 
         if 'exception' in response_body: 
             raise_exception_from_response(response_body['message'])
-            return False
         else: return True
     except requests.RequestException as e:
         self._logger.error(f'Network error in verify_credentials: {str(e)}')
-        raise
-    except json.JSONDecodeError as e:
-        self._logger.error(f'JSON decode error in verify_credentials: {str(e)}')
         raise
     except Exception as e:
         self._logger.error(f'Unexpected error in verify_credentials: {str(e)}')
@@ -113,7 +109,7 @@ def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, a
             return solution[0], solution[1], np.array(gui_data['bp']), np.array(gui_data['g'])
         elif 'message' in response_body:
             if response_body['message'] == 'Internal server error': raise AutocalInternalServerError
-        else: return None
+        else: raise UnknownResponse
     except requests.RequestException as e:
         self._logger.error(f"Network error in autocal_service_solve: {e}")
         raise
@@ -166,7 +162,7 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, accelerometer, client_ID,
             return np.array(gui_data['bp']), np.array(gui_data['g'])
         elif 'message' in response_body:
             if response_body['message'] == 'Internal server error': raise AutocalInternalServerError
-        else: return None
+        else: raise UnknownResponse
     except requests.RequestException as e:
         self._logger.error(f"Network error in autocal_service_guidata: {e}")
         raise
@@ -183,4 +179,6 @@ def raise_exception_from_response(exception_str):
     elif exception_str == "SignalSyncError": raise SignalSyncError
     elif exception_str == "NoQualifiedSolution": raise NoQualifiedSolution
     elif exception_str == "NoVibrationDetected": raise NoVibrationDetected
+    elif exception_str == "NotAuthenticated": raise NotAuthenticated
+    elif exception_str == "MachineIDNotFound": raise MachineIDNotFound
 

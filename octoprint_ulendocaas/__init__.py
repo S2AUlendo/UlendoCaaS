@@ -16,7 +16,7 @@ import octoprint.plugin
 
 from .cfg import *
 from .ismags import get_ismag
-from .service_exceptions import SignalSyncError, NoSignalError, NoQualifiedSolution, NoVibrationDetected, AutocalInternalServerError
+from .service_exceptions import *
 from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials
 from .adxl345 import Adxl345, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus, ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR
 from .adxl345 import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
@@ -148,9 +148,13 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
 
     def on_startup_verify_credentials(self):
-        org_id, access_id, machine_id = self.get_credentials()
-        check_status = verify_credentials(org_id, access_id, machine_id, self)
-        return check_status
+        try:
+            org_id, access_id, machine_id = self.get_credentials()
+            check_status = verify_credentials(org_id, access_id, machine_id, self)
+            return check_status
+        except Exception as e:
+            self.handle_calibration_service_exceptions(e)
+            return False
 
 
     def send_printer_command(self, cmd):
@@ -751,11 +755,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'on_settings_close_verify_credentials':  return self.on_settings_close_verify_credentials()
         
     def on_settings_close_verify_credentials(self):
-        org_id, access_id, machine_id = self.get_credentials()
-        check_status = verify_credentials(org_id, access_id, machine_id, self)
-        self.tab_layout.is_active_client = check_status
-        self.update_tab_layout()
-        return flask.jsonify(license_status=check_status)
+        try:
+            org_id, access_id, machine_id = self.get_credentials()
+            check_status = verify_credentials(org_id, access_id, machine_id, self)
+            self.tab_layout.is_active_client = check_status
+            self.update_tab_layout()
+            return flask.jsonify(license_status=check_status)
+        except Exception as e:
+            self.handle_calibration_service_exceptions(e)
+            return False
     
     def get_credentials(self):
         
@@ -885,6 +893,18 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             self.send_client_popup(type='error', title='Internal Ulendo error.',
                                     message='An internal Ulendo error occured. This cannot'\
                                     ' be solved at this time.', hide=False)
+        except UnknownResponse:
+            self.send_client_popup(type='error', title='Unknown response received.',
+                                    message='This cannot be solved at this time. Please'\
+                                    ' contact Ulendo for this matter.', hide=False)
+        except NotAuthenticated:
+            self.send_client_popup(type='error', title='Not authenticated.',
+                                    message='Unable to verify plugin credentials. Please'\
+                                    ' verify your plugin configuration.', hide=False)
+        except MachineIDNotFound:
+            self.send_client_popup(type='error', title='Machine ID not found.',
+                                    message='The machine ID provided in settings is'\
+                                    ' not found in our server.', hide=False)
         except Exception:
             self.send_client_popup(type='error', title='Unknown error.',
                                     message=str(e), hide=False)

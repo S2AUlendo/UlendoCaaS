@@ -7,3 +7,6 @@ class NoQualifiedSolution(SolverError): pass
 class NoVibrationDetected(SolverError): pass
 
 class AutocalInternalServerError(Exception): pass
+class UnknownResponse(Exception): pass
+class NotAuthenticated(Exception): pass
+class MachineIDNotFound(Exception): pass
