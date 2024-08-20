@@ -53,19 +53,26 @@
 .calibrate_axis_btn_group {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: start;
     justify-content: center;
-    flex-wrap: wrap;
     row-gap: 1px;
     column-gap: 10px;
 }
 
-#calibration_state_labels {
-    visibility: hidden;
+.calibrate_x_group {
     display: flex;
-    text-align: center;
-    justify-content: space-around;
-    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    column-gap: 2px;
+}
+
+.calibrate_y_group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    column-gap: 2px;
 }
 
 #calibration_instructions {
@@ -73,11 +80,11 @@
     margin-top: auto;
 }
 
-.calibrate_x_status_label:empty{
+#calibrate_x_status_label{
     visibility: hidden;
 }
 
-.calibrate_y_status_label{
+#calibrate_y_status_label{
     visibility: hidden;
 }
 

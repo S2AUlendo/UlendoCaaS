@@ -41,13 +41,16 @@
             }}</button>
     </div>
     <div class="calibrate_axis_btn_group">
-        <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn">{{ _('Calibrate X')
-            }}</button>
-        <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn">{{ _('Calibrate Y')
-            }}</button>
-        <div class="line-break"></div>
-        <div id="calibration_state_labels">
+        <div class="calibrate_x_group">
+            <button id='calibrate_x_axis_btn' class="btn" data-bind="click: onClickCalibrateXAxisBtn" style="width: 10rem;">{{ _('Calibrate
+                X')
+                }}</button>
             <div id="calibrate_x_status_label" class="label"><!-- X Calibration Status --></div>
+        </div>
+        <div class="calibrate_y_group">
+            <button id='calibrate_y_axis_btn' class="btn" data-bind="click: onClickCalibrateYAxisBtn" style="width: 10rem;">{{ _('Calibrate
+                Y')
+                }}</button>
             <div id="calibrate_y_status_label" class="label"><!-- Y Calibration Status --></div>
         </div>
     </div>

@@ -9,11 +9,9 @@ $(function () {
         self.clearAllButtonStates = function () {
             // Reset the state of accelerometer button
             acclrmtr_connect_btn.className = "acclrmtr_connect_btn btn";
-            var calibration_state_labels = document.getElementById('calibration_state_labels');
             var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
             var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
             var calibration_instructions = document.getElementById('calibration_instructions');
-            calibration_state_labels.style.visibility = "hidden";
             calibrate_x_status_label.style.visibility = "hidden";
             calibrate_y_status_label.style.visibility = "hidden";
             calibration_instructions.style.display = "none";
@@ -111,7 +109,6 @@ $(function () {
             if (data.type == "layout_status_1") {
                 self.clearAllButtonStates();
                 acclrmtr_connect_btn.disabled = data.acclrmtr_connect_btn_disabled;
-                var calibration_state_labels = document.getElementById('calibration_state_labels');
                 var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
                 var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
                 var calibration_instructions = document.getElementById('calibration_instructions');
@@ -147,7 +144,6 @@ $(function () {
                     calibrate_x_axis_btn.style.display = "inline";   // TODO: control the visibility of buttons server-side
                     // in order to match the rest of the software flow.
                     calibrate_y_axis_btn.style.display = "inline";
-                    calibration_state_labels.style.visibility = "visible";
                 } else {
                     calibrate_x_axis_btn.style.display = "none";
                     calibrate_y_axis_btn.style.display = "none";
@@ -159,13 +155,10 @@ $(function () {
                 if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATING') {
                     let message = "Calibrating";
-                    calibrate_x_axis_btn.innerText = 'Calibrate X';
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-warning");
                     calibrate_x_status_label.innerText = message;
-                    calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit";
-                    calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONREADY') {
                     let message = "Ready";
@@ -173,9 +166,7 @@ $(function () {
                     calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_x_status_label.classList.add("label-info");
                     calibrate_x_status_label.innerText = message;
-                    calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit";
-                    calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                     calibration_instructions.style.display = "block";
                 }
                 else if (data.calibrate_x_axis_btn_state == 'CALIBRATIONAPPLIED') {
@@ -184,11 +175,8 @@ $(function () {
                     self.removeClass(calibrate_x_status_label, "label-");
                     calibrate_x_status_label.classList.add("label-success");
                     calibrate_x_status_label.innerText = message;
-                    calibrate_y_status_label.innerText = message;
                     calibrate_x_status_label.style.visibility = "inherit"; //inherits parent style
-                    calibrate_y_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                     calibration_instructions.style.display = "block";
-                    // after loading without re-running the calibration routing.
                 }
 
                 if (data.calibrate_y_axis_btn_state == 'NOTCALIBRATED') { calibrate_y_axis_btn.innerText = 'Calibrate Y'; }
@@ -196,20 +184,16 @@ $(function () {
                     let message = "Calibrating";
                     self.removeClass(calibrate_y_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-warning");
-                    calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
-                    calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONREADY') {
                     let message = "Ready";
                     self.removeClass(calibrate_y_status_label, "label-");
                     calibrate_select_btn_group_id.style.display = "inline-block";
                     calibrate_y_status_label.classList.add("label-info");
-                    calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
-                    calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible// this to maintain spacing for flex, it would still be invisible
                     calibration_instructions.style.display = "block";
                 }
                 else if (data.calibrate_y_axis_btn_state == 'CALIBRATIONAPPLIED') {
@@ -217,12 +201,9 @@ $(function () {
                     save_calibration_btn.style.display = "block";
                     self.removeClass(calibrate_y_status_label, "label-");
                     calibrate_y_status_label.classList.add("label-success");
-                    calibrate_x_status_label.innerText = message;
                     calibrate_y_status_label.innerText = message;
                     calibrate_y_status_label.style.visibility = "inherit";
-                    calibrate_x_status_label.style.visibility = "hidden"; // this to maintain spacing for flex, it would still be invisible
                     calibration_instructions.style.display = "block";
-                    // after loading without re-running the calibration routing.
                 }
 
                 if (data.select_zv_btn_state == 'SELECTED') {
