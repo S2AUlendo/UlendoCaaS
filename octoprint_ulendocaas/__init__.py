@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import requests
 import struct
-import flask
+from flask import Flask, request, jsonify
 import re
 
 from math import pi, sqrt, floor
@@ -17,7 +17,7 @@ import octoprint.plugin
 from .cfg import *
 from .ismags import get_ismag
 from .service_exceptions import *
-from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials
+from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials, upload_image_rating
 from .adxl345 import Adxl345, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus, ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR
 from .adxl345 import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
 
@@ -92,7 +92,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     octoprint.plugin.AssetPlugin,
                     octoprint.plugin.TemplatePlugin,
                     octoprint.plugin.SimpleApiPlugin,
-                    octoprint.plugin.StartupPlugin
+                    octoprint.plugin.StartupPlugin,
+                    octoprint.plugin.BlueprintPlugin
 ):
 
     def __init__(self):
@@ -720,6 +721,29 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
+    ##~~ BlueprintPlugin mixin
+    @octoprint.plugin.BlueprintPlugin.route("/upload_image", methods=["GET", "POST"])
+    def upload_image(self):
+        
+        file_path = request.form.get('file.path')  # 'imageFile' should match the FormData key used in JavaScript
+        rating = request.form.get('rating')
+        
+        upload_file = open(file_path, 'rb')
+        
+        if upload_file:
+            try:
+                org_ID = self._settings.get(["ORG"])
+                access_ID = self._settings.get(["ACCESSID"])
+                machine_ID = self._settings.get(["MACHINEID"])
+                machine_name = self._settings.get(["MACHINENAME"])
+                
+                upload_image_rating(upload_file, rating, org_ID, access_ID, machine_ID, machine_name, self._logger)
+                self.send_client_popup(type='info', title='Image Uploaded',
+                                        message='Image uploaded successfully.')
+                return jsonify({"message": "File uploaded successfully", "rating": rating}), 200
+
+            except Exception as e:
+                self.handle_calibration_service_exceptions(e)
 
     ##~~ SimpleApiPlugin mixin
     def get_api_commands(self):
@@ -760,7 +784,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             check_status = verify_credentials(org_id, access_id, machine_id, self)
             self.tab_layout.is_active_client = check_status
             self.update_tab_layout()
-            return flask.jsonify(license_status=check_status)
+            return jsonify(license_status=check_status)
         except Exception as e:
             self.handle_calibration_service_exceptions(e)
             return False
@@ -905,6 +929,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             self.send_client_popup(type='error', title='Machine ID not found.',
                                     message='The machine ID provided in settings is'\
                                     ' not found in our server.', hide=False)
+        except PictureUploadError:
+            self.send_client_popup(type='error', title='Feedback Upload Error.',
+                                    message='There is a problem uploading your feedback'\
+                                        ' to the server.', hide=False)
         except Exception:
             self.send_client_popup(type='error', title='Unknown error.',
                                     message=str(e), hide=False)

@@ -1,17 +1,49 @@
 $(function () {
     function UlendoCaasViewModel(parameters) {
         var self = this;
-
         self.settings = parameters[0];
-
         self.last_axis_click = 'unknown';
+
+        const photoInput = document.getElementById('photoupload');
+        const fileChosen = document.getElementById('file-chosen');
+        const uploadButton = document.getElementById('upload_image_btn');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const imageRatingLabel = document.getElementById('rating-label');
+        const imageRating =  document.getElementById("image-rating");
+        const progressOutput = document.getElementById("progress-output");
+
+        photoInput.addEventListener('change', function () {
+            uploadButton.disabled = true;
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                if (file.type.startsWith('image/')) {
+                    fileChosen.textContent = file.name;
+                    imageRatingLabel.style.display = 'block';
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fileChosen.textContent = 'Please select an image file.';
+                    imageRatingLabel.style.display = 'none';
+                }
+            }
+        })
+
+        imageRatingLabel.addEventListener('change', function () {
+            uploadButton.disabled = false;
+        })
 
         self.clearAllButtonStates = function () {
             // Reset the state of accelerometer button
             acclrmtr_connect_btn.className = "acclrmtr_connect_btn btn";
-            var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
-            var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
-            var calibration_instructions = document.getElementById('calibration_instructions');
+            const calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
+            const calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
+            const calibration_instructions = document.getElementById('calibration_instructions');
             calibrate_x_status_label.style.visibility = "hidden";
             calibrate_y_status_label.style.visibility = "hidden";
             calibration_instructions.style.display = "none";
@@ -109,11 +141,11 @@ $(function () {
             if (data.type == "layout_status_1") {
                 self.clearAllButtonStates();
                 acclrmtr_connect_btn.disabled = data.acclrmtr_connect_btn_disabled;
-                var calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
-                var calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
-                var calibration_instructions = document.getElementById('calibration_instructions');
-                var license_status = document.getElementById('license_status');
-                var license_status_message = document.getElementById('license_status_message');
+                const calibrate_x_status_label = document.getElementById('calibrate_x_status_label');
+                const calibrate_y_status_label = document.getElementById('calibrate_y_status_label');
+                const calibration_instructions = document.getElementById('calibration_instructions');
+                const license_status = document.getElementById('license_status');
+                const license_status_message = document.getElementById('license_status_message');
 
                 acclrmtr_connect_btn.classList.add("".concat(data.acclrmtr_connect_btn_state, "_style"));
                 calibrate_x_axis_btn.classList.add("".concat(data.calibrate_x_axis_btn_state, "_style"));
@@ -455,6 +487,35 @@ $(function () {
 
         self.onClickSaveCalibrationBtn = function () {
             OctoPrint.simpleApiCommand("ulendocaas", "save_calibration_btn_click");
+        }
+
+        self.onClickUploadImageBtn = function () {
+            var files = photoInput.files;
+            if (!files.length) {
+                return alert("Please choose a file to upload first.");
+            }
+            var file = files[0];
+            var fileName = file.name;
+            var ratingValue = imageRating.value;
+            var url = OctoPrint.getBlueprintUrl("ulendocaas") + "upload_image";
+
+            OctoPrint.upload(url,
+                file,
+                fileName,
+                { "rating": ratingValue })
+                .progress(function (data) {
+                    if (data.total) {
+                        var percentage = Math.round(data.loaded * 100 / data.total);
+                        if (percentage || percentage == 0) {
+                            progressOutput.innerHTML = percentage + "%";
+                            return;
+                        }
+                    }
+                    progressOutput.innerHTML = "";
+                })
+                .done(function (response, textStatus, request) {
+                    progressOutput.innerHTML = "Uploaded!";
+                });
         }
 
         self.onClickClearSessionBtn = function () {

@@ -42,6 +42,41 @@ def verify_credentials(org_id, access_id, machine_id, self):
         self._logger.error(f'Unexpected error in verify_credentials: {str(e)}')
         raise
     
+def upload_image_rating(image, rating, org_id, access_id, machine_id, machine_name, logger):
+    now = datetime.now()
+    postdata =  {   
+                    'ACTION': 'UPDATE',
+                    'TASK': 'UPLOAD_IMAGE', 
+                    'RATING': rating,     
+                    'IMAGE_B64': base64.b64encode(image.read()).decode('utf-8'),        
+                    'ACCESS':{
+                        'CLIENT_ID': org_id,
+                        'ACCESS_ID': access_id,
+                        'MACHINE_ID': machine_id,
+                        'MACHINE_NAME': machine_name
+                    },
+                    'REQUEST': {
+                        'REQUEST_TIME': now.strftime("%d/%m/%Y_%H:%M:%S"),        # Get the client time, even if its errorneous
+                        'CLIENT_VERSION':'V0.3',               # TODO: Get the plugin version number from octoprint
+                        'RequestSource': get_source_ip()
+                    }
+                }
+    
+    try: 
+        postreq = requests.post(SERVICE_URL, json=postdata)
+        response_body = postreq.json()
+        logger.info(f'Output from upload image: {response_body}')
+
+        if 'exception' in response_body: 
+            raise_exception_from_response(response_body['message'])
+        else: return True
+    except requests.RequestException as e:
+        logger.error(f'Network error in upload image: {str(e)}')
+        raise
+    except Exception as e:
+        logger.error(f'Unexpected error in upload image: {str(e)}')
+        raise
+    
 
 def get_source_ip():
 
@@ -181,4 +216,5 @@ def raise_exception_from_response(exception_str):
     elif exception_str == "NoVibrationDetected": raise NoVibrationDetected
     elif exception_str == "NotAuthenticated": raise NotAuthenticated
     elif exception_str == "MachineIDNotFound": raise MachineIDNotFound
+    elif exception_str == "PictureUploadError": raise PictureUploadError
 

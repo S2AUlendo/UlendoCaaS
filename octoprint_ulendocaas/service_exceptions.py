@@ -10,3 +10,4 @@ class AutocalInternalServerError(Exception): pass
 class UnknownResponse(Exception): pass
 class NotAuthenticated(Exception): pass
 class MachineIDNotFound(Exception): pass
+class PictureUploadError(Exception): pass
