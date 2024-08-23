@@ -10,7 +10,7 @@ $(function () {
         const previewContainer = document.getElementById('preview-container');
         const previewImage = document.getElementById('preview-image');
         const imageRatingLabel = document.getElementById('rating-label');
-        const imageRating =  document.getElementById("image-rating");
+        const imageRating = document.getElementById("image-rating");
         const progressOutput = document.getElementById("progress-output");
 
         photoInput.addEventListener('change', function () {
@@ -495,28 +495,61 @@ $(function () {
                 return alert("Please choose a file to upload first.");
             }
             var file = files[0];
-            var fileName = file.name;
             var ratingValue = imageRating.value;
-            var url = OctoPrint.getBlueprintUrl("ulendocaas") + "upload_image";
+            
+            // Read and process the image file
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file); // Start reading the file
 
-            OctoPrint.upload(url,
-                file,
-                fileName,
-                { "rating": ratingValue })
-                .progress(function (data) {
-                    if (data.total) {
-                        var percentage = Math.round(data.loaded * 100 / data.total);
-                        if (percentage || percentage == 0) {
-                            progressOutput.innerHTML = percentage + "%";
-                            return;
-                        }
-                    }
-                    progressOutput.innerHTML = "";
-                })
-                .done(function (response, textStatus, request) {
-                    progressOutput.innerHTML = "Uploaded!";
-                });
+            reader.onload = function (event) {
+                var blob = new Blob([event.target.result]); // Create blob
+                window.URL = window.URL || window.webkitURL;
+                var blobURL = window.URL.createObjectURL(blob); // and get it's URL
+                
+                var image = new Image();
+                image.src = blobURL;
+
+                image.onload = function () {
+                    // Resize the image once it's loaded
+                    var resizedFile = resizeMe(image); // Resize image using canvas
+                    console.log(resizedFile);
+                    OctoPrint.simpleApiCommand("ulendocaas", "on_upload_image_click", { image_bytes: resizedFile, rating: ratingValue });
+                };
+            };
+        };
+
+        const resizeMe = function (img, max_width = 500, max_height = 500) {
+
+            var canvas = document.createElement('canvas');
+
+            var width = img.width;
+            var height = img.height;
+
+            // calculate the width and height, constraining the proportions
+            if (width > height) {
+                if (width > max_width) {
+                    //height *= max_width / width;
+                    height = Math.round(height *= max_width / width);
+                    width = max_width;
+                }
+            } else {
+                if (height > max_height) {
+                    //width *= max_height / height;
+                    width = Math.round(width *= max_height / height);
+                    height = max_height;
+                }
+            }
+
+            // resize the canvas and draw the image data into it
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            return canvas.toDataURL("image/png", 0.7); // get the data from canvas as 70% JPG (can be also PNG, etc.)
+
         }
+
 
         self.onClickClearSessionBtn = function () {
             if (typeof clear_session_prompt !== 'undefined') {

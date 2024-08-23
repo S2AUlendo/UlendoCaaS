@@ -6,6 +6,8 @@ import base64
 import socket
 import struct
 import json
+from PIL import Image
+from io import BytesIO
 
 import numpy as np
 
@@ -42,13 +44,14 @@ def verify_credentials(org_id, access_id, machine_id, self):
         self._logger.error(f'Unexpected error in verify_credentials: {str(e)}')
         raise
     
-def upload_image_rating(image, rating, org_id, access_id, machine_id, machine_name, logger):
+def upload_image_rating(image_bytes, rating, org_id, access_id, machine_id, machine_name, logger):
     now = datetime.now()
+    
     postdata =  {   
                     'ACTION': 'UPDATE',
                     'TASK': 'UPLOAD_IMAGE', 
                     'RATING': rating,     
-                    'IMAGE_B64': base64.b64encode(image.read()).decode('utf-8'),        
+                    'IMAGE_B64': image_bytes,        
                     'ACCESS':{
                         'CLIENT_ID': org_id,
                         'ACCESS_ID': access_id,

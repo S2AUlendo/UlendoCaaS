@@ -33,7 +33,7 @@ plugin_url = "https://github.com/S2AUlendo/UlendoCaaS.git"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["pigpio", "numpy"]
+plugin_requires = ["pigpio", "numpy", "pillow"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
