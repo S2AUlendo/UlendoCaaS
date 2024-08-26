@@ -721,32 +721,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
-    ##~~ BlueprintPlugin mixin
-    @octoprint.plugin.BlueprintPlugin.route("/upload_image", methods=["GET", "POST"])
-    def upload_image(self):
-        
-        self._logger.info(request.files)
-        self._logger.info(request.form)
-        file_path = request.form.get('file.path')  # 'imageFile' should match the FormData key used in JavaScript
-        rating = request.form.get('rating')
-        
-        upload_file = open(file_path, 'rb')
-        
-        if upload_file:
-            try:
-                org_ID = self._settings.get(["ORG"])
-                access_ID = self._settings.get(["ACCESSID"])
-                machine_ID = self._settings.get(["MACHINEID"])
-                machine_name = self._settings.get(["MACHINENAME"])
-                
-                upload_image_rating(upload_file, rating, org_ID, access_ID, machine_ID, machine_name, self._logger)
-                self.send_client_popup(type='info', title='Image Uploaded',
-                                        message='Image uploaded successfully.')
-                return jsonify({"message": "File uploaded successfully", "rating": rating}), 200
-
-            except Exception as e:
-                self.handle_calibration_service_exceptions(e)
-
     ##~~ SimpleApiPlugin mixin
     def get_api_commands(self):
         return dict(
@@ -762,7 +736,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             clear_session_btn_click=[],
             prompt_cancel_click=[],
             prompt_proceed_click=[],
-            on_upload_image_click=['image_bytes', 'rating'],
             on_settings_close_verify_credentials=[],
         )
 
@@ -779,21 +752,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'on_upload_image_click':  self.on_upload_image_click(data['image_bytes'], data['rating'])
         elif command == 'on_settings_close_verify_credentials':  return self.on_settings_close_verify_credentials()
-    
-    def on_upload_image_click(self, image_bytes, rating):
-        org_ID = self._settings.get(["ORG"])
-        access_ID = self._settings.get(["ACCESSID"])
-        machine_ID = self._settings.get(["MACHINEID"])
-        machine_name = self._settings.get(["MACHINENAME"])
-        
-        try:
-            upload_image_rating(image_bytes, rating, org_ID, access_ID, machine_ID, machine_name, self._logger)
-            self.send_client_popup(type='info', title='Image Uploaded', 
-                                   message='Image uploaded successfully.')
-        except Exception as e:
-            self.handle_calibration_service_exceptions(e)
             
     def on_settings_close_verify_credentials(self):
         try:

@@ -509,11 +509,58 @@ $(function () {
                 var image = new Image();
                 image.src = blobURL;
 
-                image.onload = function () {
+                image.onload = async function () {
                     // Resize the image once it's loaded
                     var resizedFile = resizeMe(image); // Resize image using canvas
-                    console.log(resizedFile);
-                    OctoPrint.simpleApiCommand("ulendocaas", "on_upload_image_click", { image_bytes: resizedFile, rating: ratingValue });
+                    var settings = self.settings.settings.plugins.ulendocaas;
+                    var org_id = settings.ORG();
+                    var access_id = settings.ACCESSID();
+                    var machine_id = settings.MACHINEID();
+                    var machine_name = settings.MACHINENAME();
+
+                    try{
+                        const response = await fetch('https://loc6hkp2pk.execute-api.us-east-2.amazonaws.com/beta/solve', {
+                            method: "POST",
+                            body: JSON.stringify({ 
+                                'ACTION': 'UPDATE',
+                                'TASK': 'UPLOAD_IMAGE', 
+                                'RATING': ratingValue,     
+                                'IMAGE_B64': resizedFile,        
+                                'ACCESS':{
+                                    'CLIENT_ID': org_id,
+                                    'ACCESS_ID': access_id,
+                                    'MACHINE_ID': machine_id,
+                                    'MACHINE_NAME': machine_name
+                                },
+                                'RATING': ratingValue 
+                            }),
+                          });
+                        
+                        new PNotify({
+                            title: 'Feedback has been sent.',
+                            text: 'Thank you for your feedback.',
+                            type: 'success',
+                            hide: true
+                        });
+                        if (!response.ok) {
+                            new PNotify({
+                                title: 'There was an error sending feedback.',
+                                text: 'Please try again later.',
+                                type: 'error',
+                                hide: true
+                            });
+                            throw new Error('Network response was not ok');
+                        
+                        }
+                    } catch (error) {
+                        new PNotify({
+                            title: 'There was an error sending feedback.',
+                            text: 'Please try again later.',
+                            type: 'error',
+                            hide: true
+                        });
+                        console.error('Error:', error);
+                    }
                 };
             };
         };
