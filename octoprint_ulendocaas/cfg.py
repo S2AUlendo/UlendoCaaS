@@ -21,5 +21,5 @@ MAX_RETRIES_FOR_MISSED_SAMPLES = 2
 GET_AXIS_INFO_TIMEOUT = 10.
 CENTER_AXIS_TIMEOUT = 12.
 
-SERVICE_URL = 'https://loc6hkp2pk.execute-api.us-east-2.amazonaws.com/beta/solve'
+SERVICE_URL = 'https://ogsxeca3e2.execute-api.us-east-2.amazonaws.com/beta/solve'
 SERVICE_TIMEOUT_THD = 30
