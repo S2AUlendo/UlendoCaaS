@@ -760,7 +760,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             clear_session_btn_click=[],
             prompt_cancel_click=[],
             prompt_proceed_click=[],
-            on_settings_close_verify_credentials=[],
+            on_settings_close=[],
         )
 
     
@@ -776,19 +776,19 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'on_settings_close_verify_credentials':  return self.on_settings_close_verify_credentials()
-            
+        elif command == 'on_settings_close':  self.on_settings_close_verify_credentials()
+
+
     def on_settings_close_verify_credentials(self):
         try:
             org_id, access_id, machine_id = self.get_credentials()
             check_status = verify_credentials(org_id, access_id, machine_id, self)
             self.tab_layout.is_active_client = check_status
             self.update_tab_layout()
-            return jsonify(license_status=check_status)
         except Exception as e:
             self.handle_calibration_service_exceptions(e)
-            return False
-    
+
+
     def get_credentials(self):
         
         org_id = self._settings.get(["ORG"])
