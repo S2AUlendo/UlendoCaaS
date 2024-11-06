@@ -481,7 +481,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                                     message=f'The accelerometer cannot be connected'\
                                     ' because the SPI connection could not be opened.', hide=False)
         except Exception as e:
-            raise e
             if platform.system() == "Windows":
                 self.send_client_popup(type='error', title='Windows is not currently supported.',
                                     message=f"The accelerometer hasn't been connected"\
