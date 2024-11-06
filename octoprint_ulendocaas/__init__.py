@@ -458,7 +458,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 try: self.accelerometer.close()
                 except: pass # We'll ignore a fail here, since it could be due to the
                              # pigpio daemon no longer running.
-
             self.acclerometer_cfg = AcclrmtrCfg(range=AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])],
                                                 rate=AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
             
@@ -1260,6 +1259,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     MODELID="TAZPro",
                     CONDITIONS="DEFAULT",
                     MANUFACTURER_NAME="ULENDO",
+                    accelerometer_device='ADXL345',
+                    accelerometer_range='+/-2g',
+                    accelerometer_rate='1600Hz',
                     home_axis_before_calibration=True,
                     acceleration_amplitude=4000,
                     starting_frequency=5,

@@ -1,4 +1,4 @@
-SIMULATION = True
+SIMULATION = False
 
 T_DFLT = 1./1600.    # Default sample time to use (accelerometer sample time).
 
