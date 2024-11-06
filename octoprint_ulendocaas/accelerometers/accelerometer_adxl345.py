@@ -5,7 +5,6 @@ import time
 
 READ_CONTINUE_THD = 5
 FIFO_ACQ_TIMOUT_TI = 0.5
-ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR = 24
 FIFO_ACQ_TIMEOUT_THD = 25
 
 
@@ -14,11 +13,12 @@ class Adxl345(AcclerometerOverSPI):
         
         super().__init__(config)
 
-        # if range == AcclrmtrRangeCfg['+/-2g']: self.lsb_to_mm_per_sec_sqr = 2.*2./1024.*9806.65
-        # elif range == AcclrmtrRangeCfg['+/-4g']: self.lsb_to_mm_per_sec_sqr = 2.*4./1024.*9806.65
-        # elif range == AcclrmtrRangeCfg['+/-8g']: self.lsb_to_mm_per_sec_sqr = 2.*8./1024.*9806.65
-        # else: self.lsb_to_mm_per_sec_sqr = 2.*16./1024.*9806.65 # +/- 16 g range.
-        # self.status = AcclrmtrStatus.INIT
+        if config.range == AcclrmtrRangeCfg['+/-2g']: self.lsb_to_mm_per_sec_sqr = 2.*2./1024.*9806.65
+        elif config.range == AcclrmtrRangeCfg['+/-4g']: self.lsb_to_mm_per_sec_sqr = 2.*4./1024.*9806.65
+        elif config.range == AcclrmtrRangeCfg['+/-8g']: self.lsb_to_mm_per_sec_sqr = 2.*8./1024.*9806.65
+        elif config.range == AcclrmtrRangeCfg['+/-16g']: self.lsb_to_mm_per_sec_sqr = 2.*16./1024.*9806.65
+        else: raise Exception('Got unexpected range config.')
+        self.status = AcclrmtrStatus.INIT
 
         if config.rate == AcclrmtrRateCfg['3200Hz']: self.T = 1/3200.; self.config.poll_time = 0.0005
         elif config.rate == AcclrmtrRateCfg['1600Hz']: self.T = 1/1600.; self.config.poll_time = 0.001
@@ -32,12 +32,20 @@ class Adxl345(AcclerometerOverSPI):
     
     def __cnfgr_for_data_acq(self):
         '''Writes the device registers to set it up for data acquisition.'''
-        self._rpi.spi_write(self.spi0, [0x2C, 0b00001110]) # Data rate register; 1600 Hz
-        # Data format register.
-        if self.range == AcclrmtrRangeCfg['+/-2g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000000])
-        elif self.range == AcclrmtrRangeCfg['+/-4g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000001])
-        elif self.range == AcclrmtrRangeCfg['+/-8g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000010])
-        else: self._rpi.spi_write(self.spi0, [0x31, 0b00000011]) # +/- 16 g range.
+        
+        if self.config.rate == AcclrmtrRateCfg['3200Hz']: self._rpi.spi_write(self.spi0, [0x2C, 0b00001111])
+        elif self.config.rate == AcclrmtrRateCfg['1600Hz']: self._rpi.spi_write(self.spi0, [0x2C, 0b00001110])
+        elif self.config.rate == AcclrmtrRateCfg['800Hz']: self._rpi.spi_write(self.spi0, [0x2C, 0b00001101])
+        elif self.config.rate == AcclrmtrRateCfg['400Hz']: self._rpi.spi_write(self.spi0, [0x2C, 0b00001100])
+        elif self.config.rate == AcclrmtrRateCfg['200Hz']: self._rpi.spi_write(self.spi0, [0x2C, 0b00001011])
+        else: raise Exception('Unknown rate configuration.')
+
+        if self.config.range == AcclrmtrRangeCfg['+/-2g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000000])
+        elif self.config.range == AcclrmtrRangeCfg['+/-4g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000001])
+        elif self.config.range == AcclrmtrRangeCfg['+/-8g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000010])
+        elif self.config.range == AcclrmtrRangeCfg['+/-16g']: self._rpi.spi_write(self.spi0, [0x31, 0b00000011])
+        else: raise Exception('Unknown range configuration.')
+        
         self._rpi.spi_write(self.spi0, [0x38, 0b10000000]) # FIFO control register; FIFO mode to stream
         self._rpi.spi_write(self.spi0, [0x2D, 0b00001000]) # Power control register; Enter measurement mode
 
@@ -70,10 +78,10 @@ class Adxl345(AcclerometerOverSPI):
             self.x_anim += x; self.y_anim += y; self.z_anim += z
             self.samples_for_anim_idx += 1
 
-            if self.samples_for_anim_idx == ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR:
-                self.x_buff_anim.append(self.x_anim/ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR)
-                self.y_buff_anim.append(self.y_anim/ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR)
-                self.z_buff_anim.append(self.z_anim/ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR)
+            if self.samples_for_anim_idx == self.downsample_factor:
+                self.x_buff_anim.append(self.x_anim/self.downsample_factor)
+                self.y_buff_anim.append(self.y_anim/self.downsample_factor)
+                self.z_buff_anim.append(self.z_anim/self.downsample_factor)
                 self.x_anim = 0.; self.y_anim = 0.; self.z_anim = 0.
                 self.samples_for_anim_idx = 0
         return True
@@ -96,7 +104,7 @@ class Adxl345(AcclerometerOverSPI):
         if self.status != AcclrmtrStatus.STOPPED: return AcclrmtrSelfTestSts.FAIL
         x_st_on = self.x_buff.copy(); y_st_on = self.y_buff.copy(); z_st_on = self.z_buff.copy()
         self.__cnfgr_for_self_test() # Disable the self-test.
-        self.rpi.spi_write(self.spi0, [0x2D, 0b00000000]) # Power control register; Stop measurement mode
+        self._rpi.spi_write(self.spi0, [0x2D, 0b00000000]) # Power control register; Stop measurement mode
 
         if not (len(x_st_on) > 32 and len(y_st_on) > 32 and len(z_st_on) > 32 and
                 len(x_st_off) > 32 and len(y_st_off) > 32 and len(z_st_off) > 32): return AcclrmtrSelfTestSts.FAIL
@@ -123,6 +131,8 @@ class Adxl345(AcclerometerOverSPI):
 
     def start(self, self_test_mode=False):
         
+        self.n_fifo_zero_cnt = 0
+
         if not self_test_mode:
             self.__cnfgr_for_data_acq()
             time.sleep(0.1) # 100 msec delay for samples to steady.

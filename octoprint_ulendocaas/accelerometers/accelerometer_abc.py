@@ -85,11 +85,11 @@ class AcclerometerOverSPI(Accelerometer):
                 else: raise DaemonNotRunning
             if cpe.returncode == 4: raise PigpioNotInstalled
 
-        self.rpi = pigpio.pi()
-        if not self.rpi.connected: raise PigpioConnectionFailed
+        self._rpi = pigpio.pi()
+        if not self._rpi.connected: raise PigpioConnectionFailed
             
         try:
-            self.spi0 = self.rpi.spi_open(spi_channel=0, baud=4000000, spi_flags=3) # TODO: As SPI config.
+            self.spi0 = self._rpi.spi_open(spi_channel=0, baud=4000000, spi_flags=3) # TODO: As SPI config.
         except: raise SpiOpenFailed
 
         super().__init__(config)
@@ -98,7 +98,7 @@ class AcclerometerOverSPI(Accelerometer):
     def _spi0_read_bytes(self, addr, count):
         addr_ = addr | 0x80         # Set read bit
         if count > 1: addr_ |= 0x40 # Set multi bit
-        (count, rx_data) = self.rpi.spi_xfer(self.spi0, [addr_] + [0xFF]*count)
+        (count, rx_data) = self._rpi.spi_xfer(self.spi0, [addr_] + [0xFF]*count)
         if count < 0: raise Exception
         else: return rx_data[1:]
 
