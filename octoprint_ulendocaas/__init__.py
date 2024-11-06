@@ -136,9 +136,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.calibration_vtol = 0.05
 
         self.metadata = {}
+
+        self.verify_credentials_and_update_tab_layout()
     
         if not SIMULATION:
-            self.tab_layout.is_active_client = self.on_startup_verify_credentials()
             try:
                 with open('/proc/cpuinfo', 'rb') as f:
                     model = f.read().strip()
@@ -150,16 +151,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 self.metadata['BOARDCPUSERIAL'] = 'NA'
                 self.metadata['BOARDMODEL'] = 'NA'
             self.initialized = True
-
-
-    def on_startup_verify_credentials(self):
-        try:
-            org_id, access_id, machine_id = self.get_credentials()
-            check_status = verify_credentials(org_id, access_id, machine_id, self._logger)
-            return check_status
-        except Exception as e:
-            self.handle_calibration_service_exceptions(e)
-            return False
 
 
     def send_printer_command(self, cmd):
@@ -776,26 +767,21 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'on_settings_close':  self.on_settings_close_verify_credentials()
+        elif command == 'on_settings_close':  self.verify_credentials_and_update_tab_layout()
 
 
-    def on_settings_close_verify_credentials(self):
+    def verify_credentials_and_update_tab_layout(self):
         try:
-            org_id, access_id, machine_id = self.get_credentials()
-            check_status = verify_credentials(org_id, access_id, machine_id, self)
-            self.tab_layout.is_active_client = check_status
-            self.update_tab_layout()
+            check_status = verify_credentials(self._settings.get(["ORG"]),
+                                              self._settings.get(["ACCESSID"]),
+                                              self._settings.get(["MACHINEID"]),
+                                              self._logger)
         except Exception as e:
             self.handle_calibration_service_exceptions(e)
+            check_status = False
+        self.tab_layout.is_active_client = check_status
+        self.update_tab_layout()
 
-
-    def get_credentials(self):
-        
-        org_id = self._settings.get(["ORG"])
-        access_id = self._settings.get(["ACCESSID"])
-        machine_id = self._settings.get(["MACHINEID"])
-        
-        return org_id, access_id, machine_id
     
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
