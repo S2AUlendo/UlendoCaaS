@@ -11,7 +11,7 @@ AcclrmtrRangeCfg = Enum('AcclrmtrRangeCfg', ['+/-2g', '+/-4g', '+/-8g', '+/-16g'
 AcclrmtrRateCfg = Enum('AcclrmtrRateCfg', ['3200Hz', '1600Hz', '800Hz', '400Hz', '200Hz'])
 
 
-class AccelerometerConfig():
+class AcclrmtrCfg():
     def __init__(self, range: AcclrmtrRangeCfg, rate: AcclrmtrRateCfg):
         self.range = range
         self.rate = rate
@@ -25,7 +25,7 @@ AcclrmtrSelfTestSts = Enum('AcclrmtrSelfTestSts', ['PASS', 'FAIL'])
 
 class Accelerometer(ABC):
     '''Abstract base class for an accelerometer that's sampled via polling.'''
-    def __init__(self, config: AccelerometerConfig):
+    def __init__(self, config: AcclrmtrCfg):
         self.config = config
         self.status = AcclrmtrStatus.INIT
         self._stop = False
@@ -76,7 +76,7 @@ class SpiOpenFailed(AcclerometerOverSPIError): pass
 
 
 class AcclerometerOverSPI(Accelerometer):
-    def __init__(self, config: AccelerometerConfig):
+    def __init__(self, config: AcclrmtrCfg):
         try:
             subprocess.check_output(['service', 'pigpiod', 'status'])
         except subprocess.CalledProcessError as cpe:

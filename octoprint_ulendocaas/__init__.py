@@ -20,7 +20,7 @@ from .ismags import get_ismag
 from .service_exceptions import *
 from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials, upload_image_rating
 
-from .accelerometers.accelerometer_abc import AccelerometerConfig, AcclrmtrRateCfg, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus
+from .accelerometers.accelerometer_abc import AcclrmtrCfg, AcclrmtrRateCfg, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus
 from .accelerometers.accelerometer_abc import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
 from .accelerometers.accelerometer_sim import SimulatedAccelerometer
 from .accelerometers.accelerometer_adxl345 import Adxl345
@@ -458,18 +458,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 try: self.accelerometer.close()
                 except: pass # We'll ignore a fail here, since it could be due to the
                              # pigpio daemon no longer running.
-            print(f'On accelerometer startup the settings are:')
-            print(self._settings.get(["accelerometer_device"]))
-            print(self._settings.get(["accelerometer_range"]))
-            print(self._settings.get(["accelerometer_rate"]))
-            # print(self._settings.get(["accelerometer_range"]) == '+/-2g') # confirmed working
-            # print(self._settings.get(["accelerometer_rate"]) == '1600Hz') 
-            # also working
-            # print(AcclrmtrRangeCfg['+/-2g'] == AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])])
-            # print(AcclrmtrRateCfg['1600Hz'] == AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
-            
-            self.acclerometer_cfg = AccelerometerConfig(range=AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])],
-                                                   rate=AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
+
+            self.acclerometer_cfg = AcclrmtrCfg(range=AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])],
+                                                rate=AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
             
             if SIMULATION: self.accelerometer = SimulatedAccelerometer(self.acclerometer_cfg)
             else: self.accelerometer = Adxl345(self.acclerometer_cfg) # FUTURE: Use self._settings.get(["accelerometer_device"])
@@ -722,6 +713,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.awaiting_prompt_popup_reply = False
         self.prompt_popup_response = 'cancel'
 
+
     def on_prompt_proceed_click(self):
         self.awaiting_prompt_popup_reply = False
         self.prompt_popup_response = 'proceed'
@@ -735,6 +727,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             message = text_w_timestamp
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
+
 
     ##~~ SimpleApiPlugin mixin
     def get_api_commands(self):
@@ -767,7 +760,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'on_settings_close':  self.verify_credentials_and_update_tab_layout()
+        elif command == 'on_settings_close':
+            self.verify_credentials_and_update_tab_layout()
+            self.check_accelerometer_settings_changed()
 
 
     def verify_credentials_and_update_tab_layout(self):
@@ -781,6 +776,17 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             check_status = False
         self.tab_layout.is_active_client = check_status
         self.update_tab_layout()
+
+
+    def check_accelerometer_settings_changed(self):
+        if self.accelerometer is not None:
+            if (self.acclerometer_cfg.range != AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])]
+                or
+                self.acclerometer_cfg.rate != AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])]):
+                self.sts_acclrmtr_connected = False
+                self.accelerometer = None
+                self.update_tab_layout()
+            
 
     
     ##~~ Hooks

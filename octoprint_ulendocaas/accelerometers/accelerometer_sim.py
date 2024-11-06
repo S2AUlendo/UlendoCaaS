@@ -1,4 +1,4 @@
-from .accelerometer_abc import Accelerometer, AccelerometerConfig, AcclrmtrRateCfg, AcclrmtrSelfTestSts
+from .accelerometer_abc import Accelerometer, AcclrmtrCfg, AcclrmtrRateCfg, AcclrmtrSelfTestSts
 from math import pi, sin, sqrt
 
 import numpy as np
@@ -9,7 +9,7 @@ RATE_MULTIPLIER = 20. # Speed things up for simulation.
 
 
 class SimulatedAccelerometer(Accelerometer):
-    def __init__(self, config: AccelerometerConfig):
+    def __init__(self, config: AcclrmtrCfg):
 
         super().__init__(config)
 

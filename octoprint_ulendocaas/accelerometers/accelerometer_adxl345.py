@@ -1,4 +1,4 @@
-from .accelerometer_abc import AcclerometerOverSPI, AccelerometerConfig, AcclrmtrRangeCfg, AcclrmtrRateCfg, AcclrmtrSelfTestSts, AcclrmtrStatus
+from .accelerometer_abc import AcclerometerOverSPI, AcclrmtrCfg, AcclrmtrRangeCfg, AcclrmtrRateCfg, AcclrmtrSelfTestSts, AcclrmtrStatus
 
 import time
 
@@ -10,7 +10,7 @@ FIFO_ACQ_TIMEOUT_THD = 25
 
 
 class Adxl345(AcclerometerOverSPI):
-    def __init__(self, config: AccelerometerConfig):
+    def __init__(self, config: AcclrmtrCfg):
         
         super().__init__(config)
 
