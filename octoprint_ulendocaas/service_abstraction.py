@@ -14,7 +14,7 @@ import numpy as np
 from datetime import datetime
 
 
-def verify_credentials(org_id, access_id, machine_id, self):
+def verify_credentials(org_id, access_id, machine_id, plugin_logger):
     now = datetime.now()
     postdata =  {   'ACTION': 'VERIFY',
                     'ACCESS':{
@@ -32,16 +32,16 @@ def verify_credentials(org_id, access_id, machine_id, self):
     try: 
         postreq = requests.post(SERVICE_URL, json=json.dumps(postdata))
         response_body = postreq.json()
-        self._logger.info(f'Output from verify creds: {response_body}')
+        plugin_logger.info(f'Output from verify creds: {response_body}')
 
         if 'exception' in response_body: 
             raise_exception_from_response(response_body['message'])
         else: return True
     except requests.RequestException as e:
-        self._logger.error(f'Network error in verify_credentials: {str(e)}')
+        plugin_logger.error(f'Network error in verify_credentials: {str(e)}')
         raise
     except Exception as e:
-        self._logger.error(f'Unexpected error in verify_credentials: {str(e)}')
+        plugin_logger.error(f'Unexpected error in verify_credentials: {str(e)}')
         raise
     
 def upload_image_rating(image_bytes, rating, org_id, access_id, machine_id, machine_name, logger):
@@ -98,7 +98,7 @@ def encode_float_list_to_base64(list):
     return base64.b64encode(bin_data).decode('utf-8')
 
 
-def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
+def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, plugin_settings, plugin_logger):
 
     now = datetime.now()
 
@@ -122,10 +122,10 @@ def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, a
                         'RequestSource': get_source_ip()
                     },
                     "SWEEP_CFG": sweep_cfg.as_dict(),
-                    "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
+                    "CONDITIONS":str(plugin_settings.get(["CONDITIONS"])),
                     "PRINTER": {
-                        "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
-                        "PRINTER_MODEL":self._settings.get(["MODELID"]),
+                        "PRINTER_MAKE":plugin_settings.get(["MANUFACTURER_NAME"]), 
+                        "PRINTER_MODEL":plugin_settings.get(["MODELID"]),
                         'VERSION': "V0.01",
                         'MANUFACTURER_NAME': ""
                     },                    
@@ -144,17 +144,17 @@ def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, a
             if response_body['message'] == 'Internal server error': raise AutocalInternalServerError
         else: raise UnknownResponse
     except requests.RequestException as e:
-        self._logger.error(f"Network error in autocal_service_solve: {e}")
+        plugin_logger.error(f"Network error in autocal_service_solve: {e}")
         raise
     except json.JSONDecodeError as e:
-        self._logger.error(f"JSON decode error in autocal_service_solve: {e}")
+        plugin_logger.error(f"JSON decode error in autocal_service_solve: {e}")
         raise
     except Exception as e:
-        self._logger.error(f"Unexpected error in autocal_service_solve: {e}")
+        plugin_logger.error(f"Unexpected error in autocal_service_solve: {e}")
         raise
 
 
-def autocal_service_guidata(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
+def autocal_service_guidata(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, plugin_settings, plugin_logger):
 
     now = datetime.now()
     postdata =  {   'ACTION': 'CALIBRATE',
@@ -177,10 +177,10 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, accelerometer, client_ID,
                         'RequestSource': get_source_ip()
                     },
                     "SWEEP_CFG": sweep_cfg.as_dict(),
-                    "CONDITIONS":str(self._settings.get(["CONDITIONS"])),
+                    "CONDITIONS":str(plugin_settings.get(["CONDITIONS"])),
                     "PRINTER": {
-                        "PRINTER_MAKE":self._settings.get(["MANUFACTURER_NAME"]), 
-                        "PRINTER_MODEL":self._settings.get(["MODELID"]),
+                        "PRINTER_MAKE":plugin_settings.get(["MANUFACTURER_NAME"]), 
+                        "PRINTER_MODEL":plugin_settings.get(["MODELID"]),
                         'MODELID': "V0.01",
                         'MANUFACTURER_NAME':""
                     }, 
@@ -197,13 +197,13 @@ def autocal_service_guidata(axis, sweep_cfg, metadata, accelerometer, client_ID,
             if response_body['message'] == 'Internal server error': raise AutocalInternalServerError
         else: raise UnknownResponse
     except requests.RequestException as e:
-        self._logger.error(f"Network error in autocal_service_guidata: {e}")
+        plugin_logger.error(f"Network error in autocal_service_guidata: {e}")
         raise
     except json.JSONDecodeError as e:
-        self._logger.error(f"JSON decode error in autocal_service_guidata: {e}")
+        plugin_logger.error(f"JSON decode error in autocal_service_guidata: {e}")
         raise
     except Exception as e:
-        self._logger.error(f"Unexpected error in autocal_service_guidata: {e}")
+        plugin_logger.error(f"Unexpected error in autocal_service_guidata: {e}")
         raise
 
 

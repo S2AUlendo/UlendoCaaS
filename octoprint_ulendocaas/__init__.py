@@ -155,7 +155,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     def on_startup_verify_credentials(self):
         try:
             org_id, access_id, machine_id = self.get_credentials()
-            check_status = verify_credentials(org_id, access_id, machine_id, self)
+            check_status = verify_credentials(org_id, access_id, machine_id, self._logger)
             return check_status
         except Exception as e:
             self.handle_calibration_service_exceptions(e)
@@ -1187,7 +1187,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 machine_name = self._settings.get(["MACHINENAME"])
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self._settings, self._logger)
                 self.send_client_popup(type='success', title='Calibration Received', message='')
                 
             except Exception as e:
@@ -1211,7 +1211,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 model_ID = self._settings.get(["MODELID"])
                 manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
                 self.send_client_popup(type='info', title='Verifying Calibration', message='Please wait...')
-                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self)
+                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self._settings, self._logger)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
