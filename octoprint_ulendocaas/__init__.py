@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import requests
+import platform
 import struct
 from flask import Flask, request, jsonify
 import re
@@ -18,8 +19,11 @@ from .cfg import *
 from .ismags import get_ismag
 from .service_exceptions import *
 from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials, upload_image_rating
-from .adxl345 import Adxl345, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus, ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR
-from .adxl345 import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
+
+from .accelerometers.accelerometer_abc import AccelerometerConfig, AcclrmtrRateCfg, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus
+from .accelerometers.accelerometer_abc import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
+from .accelerometers.accelerometer_sim import SimulatedAccelerometer
+from .accelerometers.accelerometer_adxl345 import Adxl345
 
 from .tab_layout import *
 from .tab_buttons import *
@@ -117,10 +121,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.accelerometer = None
 
         self.sts_self_test_active = False
-        self.sts_axis_calibration_active = False
-        self.sts_axis_verification_active = False
         self.sts_acclrmtr_connected = False
         self.sts_acclrmtr_active = False
+        self.sts_axis_calibration_active = False
+        self.sts_axis_verification_active = False
         self.sts_axis_calibration_axis = None
         self.sts_calibration_saved = False
         self.active_solution = None
@@ -198,7 +202,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             acclrmtr_live_data_y[:] = buffer_to_plot[-ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:]
 
         acclrmtr_live_data_x = list(range(ACCLRMTR_LIVE_VIEW_NUM_SAMPLES))
-        acclrmtr_live_data_x = [(T_DFLT*ACCLRMTR_LIVE_VIEW_DOWNSAMPLE_FACTOR)*(n + xi) for xi in acclrmtr_live_data_x]
+        acclrmtr_live_data_x = [(self.accelerometer.T*self.accelerometer.downsample_factor)*(n + xi) for xi in acclrmtr_live_data_x]
         
         data = dict(
             type='acclrmtr_live_data',
@@ -463,7 +467,21 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 try: self.accelerometer.close()
                 except: pass # We'll ignore a fail here, since it could be due to the
                              # pigpio daemon no longer running.
-            self.accelerometer = Adxl345(range = AcclrmtrRangeCfg['+/-2g'])
+            print(f'On accelerometer startup the settings are:')
+            print(self._settings.get(["accelerometer_device"]))
+            print(self._settings.get(["accelerometer_range"]))
+            print(self._settings.get(["accelerometer_rate"]))
+            # print(self._settings.get(["accelerometer_range"]) == '+/-2g') # confirmed working
+            # print(self._settings.get(["accelerometer_rate"]) == '1600Hz') 
+            # also working
+            # print(AcclrmtrRangeCfg['+/-2g'] == AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])])
+            # print(AcclrmtrRateCfg['1600Hz'] == AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
+            
+            self.acclerometer_cfg = AccelerometerConfig(range=AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])],
+                                                   rate=AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
+            
+            if SIMULATION: self.accelerometer = SimulatedAccelerometer(self.acclerometer_cfg)
+            else: self.accelerometer = Adxl345(self.acclerometer_cfg) # FUTURE: Use self._settings.get(["accelerometer_device"])
             return True
         except DaemonNotRunning:
             self.send_client_popup(type='error', title='Pigpio Not Running',
@@ -482,7 +500,13 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                                     message=f'The accelerometer cannot be connected'\
                                     ' because the SPI connection could not be opened.', hide=False)
         except Exception as e:
-            self.send_client_popup(type='error', title='Accelerometer Startup Failed',
+            raise e
+            if platform.system() == "Windows":
+                self.send_client_popup(type='error', title='Windows is not currently supported.',
+                                    message=f"The accelerometer hasn't been connected"\
+                                    " because an accelerometer compatible with Windows"\
+                                    " is not currently supported.", hide=False)
+            else: self.send_client_popup(type='error', title='Accelerometer Startup Failed',
                                     message=str(e), hide=False)
         return False
 
@@ -1034,6 +1058,29 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     def fsm_on_SWEEP_entry(self):
         self.send_printer_command('M115')
 
+        if SIMULATION: self.fsm.axis_reported_steps_per_mm = 80
+        f1_max = floor(sqrt(int(self._settings.get(["acceleration_amplitude"]))*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
+        if self._settings.get(["override_end_frequency"]):
+            f1 = min( f1_max, int(self._settings.get(["end_frequency_override"])))
+        else:
+            f1 = f1_max
+        
+        self.sweep_cfg = SweepConfig(   f0=int(self._settings.get(["starting_frequency"])),
+                                        f1=int(f1),
+                                        dfdt=int(self._settings.get(["frequency_sweep_rate"])),
+                                        a=int(self._settings.get(["acceleration_amplitude"])),
+                                        step_ti=int(self._settings.get(["step_time"])),
+                                        step_a=int(self._settings.get(["step_acceleration"])),
+                                        dly1_ti=int(self._settings.get(["delay1_time"])),
+                                        dly2_ti=int(self._settings.get(["delay2_time"])),
+                                        dly3_ti=int(self._settings.get(["delay3_time"]))
+                                    )
+
+        if SIMULATION:
+            self.accelerometer.set_simulation_params(self.sweep_cfg.f0, self.sweep_cfg.f1, self.sweep_cfg.dfdt,
+                                                     self.sweep_cfg.a, self.sweep_cfg.step_ti/1000., self.sweep_cfg.step_a,
+                                                     self.sweep_cfg.dly1_ti/1000., self.sweep_cfg.dly2_ti/1000., self.sweep_cfg.dly3_ti/1000.)
+        
         self.accelerometer.start()
         self.sts_acclrmtr_active = True
         self.send_client_acclrmtr_data_TMR = ResettableTimer(ACCLRMTR_LIVE_VIEW_RATE_SEC, self.send_client_acclrmtr_data)
@@ -1044,23 +1091,6 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         
         if self.fsm.in_state_time > FSM_SWEEP_START_DLY and not self.fsm.sweep_initiated:
             if not SIMULATION:
-
-                f1_max = floor(sqrt(int(self._settings.get(["acceleration_amplitude"]))*self.fsm.axis_reported_steps_per_mm)/(2.*pi))
-                if self._settings.get(["override_end_frequency"]):
-                    f1 = min( f1_max, int(self._settings.get(["end_frequency_override"])))
-                else:
-                    f1 = f1_max
-                
-                self.sweep_cfg = SweepConfig(   f0=int(self._settings.get(["starting_frequency"])),
-                                                f1=int(f1),
-                                                dfdt=int(self._settings.get(["frequency_sweep_rate"])),
-                                                a=int(self._settings.get(["acceleration_amplitude"])),
-                                                step_ti=int(self._settings.get(["step_time"])),
-                                                step_a=int(self._settings.get(["step_acceleration"])),
-                                                dly1_ti=int(self._settings.get(["delay1_time"])),
-                                                dly2_ti=int(self._settings.get(["delay2_time"])),
-                                                dly3_ti=int(self._settings.get(["delay3_time"]))
-                                            )
                 # M494
                 #
                 #  *    A<mode> Start / abort a frequency sweep profile.
@@ -1097,8 +1127,12 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
             self.fsm.sweep_initiated = True
 
-        if not self.fsm.accelerometer_stopped and ((SIMULATION and self.fsm.in_state_time > 60.) or
-                                               (not SIMULATION and self.fsm.sweep_done_recvd)):
+        if SIMULATION:
+            stop_accelerometer = self.accelerometer.simulation_done()
+        else:
+            stop_accelerometer = self.fsm.sweep_done_recvd
+
+        if stop_accelerometer and not self.fsm.accelerometer_stopped:
             self.accelerometer.stop()
             if VERBOSE > 1: self._logger.info('Triggering accelerometer data collection stop.')
             self.fsm.accelerometer_stopped = True
@@ -1255,6 +1289,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     MODELID=self._settings.get(["MODELID"]),
                     MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"]),
                     CONDITIONS=self._settings.get(["CONDITIONS"]),
+                    accelerometer_device=self._settings.get(["accelerometer_device"]),
+                    accelerometer_range=self._settings.get(["accelerometer_range"]),
+                    accelerometer_rate=self._settings.get(["accelerometer_rate"]),
                     home_axis_before_calibration=self._settings.get(["home_axis_before_calibration"]),
                     acceleration_amplitude=self._settings.get(["acceleration_amplitude"]),
                     starting_frequency=self._settings.get(["starting_frequency"]),

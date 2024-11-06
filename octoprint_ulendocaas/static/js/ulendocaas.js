@@ -650,7 +650,7 @@ $(function () {
         }
 
         self.onSettingsHidden = function () {
-            OctoPrint.simpleApiCommand("ulendocaas", "on_settings_close_verify_credentials")
+            OctoPrint.simpleApiCommand("ulendocaas", "on_settings_close")
         }
         // This will get called before the HelloWorldViewModel gets bound to the DOM, but after its
         // dependencies have already been initialized. It is especially guaranteed that this method

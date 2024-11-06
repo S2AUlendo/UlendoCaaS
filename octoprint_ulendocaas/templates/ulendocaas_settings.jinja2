@@ -43,6 +43,51 @@
   </div>
 
 
+  <div class="accelerometer_options">
+    <div><a href="#" class="muted"
+        data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.accelerometer_options', container: '.hide' }"><i
+          class="fas fa-caret-right"></i> {{ _('Configure Accelerometer') }}</a></div>
+    <div class="hide">
+
+      <div class="control-group">
+          <label class="control-label" for="settings-acclerometer_device">{{ _('Device') }}</label>
+          <div class="controls">
+              <select id="settings-acclerometer_device" data-bind="value: settings.plugins.ulendocaas.accelerometer_device">
+                  <option value="ADXL345">ADXL345</option>
+              </select>
+              <span class="help-inline">{% trans %}Select the acclerometer device to use.{% endtrans %}</span>
+          </div>
+      </div>
+
+      <div class="control-group">
+          <label class="control-label" for="settings-acclerometer_range">{{ _('Device') }}</label>
+          <div class="controls">
+              <select id="settings-acclerometer_range" data-bind="value: settings.plugins.ulendocaas.accelerometer_range">
+                  <option value="+/-2g">+/-2g</option>
+                  <option value="+/-4g">+/-4g</option>
+                  <option value="+/-8g">+/-8g</option>
+                  <option value="+/-16g">+/-16g</option>
+              </select>
+              <span class="help-inline">{% trans %}Select the acclerometer range to use.{% endtrans %}</span>
+          </div>
+      </div>
+
+      <div class="control-group">
+          <label class="control-label" for="settings-acclerometer_rate">{{ _('Device') }}</label>
+          <div class="controls">
+              <select id="settings-acclerometer_rate" data-bind="value: settings.plugins.ulendocaas.accelerometer_rate">
+                  <option value="1600Hz">1600Hz</option>
+                  <option value="800Hz">800Hz</option>
+                  <option value="400Hz">400Hz</option>
+                  <option value="200Hz">200Hz</option>
+              </select>
+              <span class="help-inline">{% trans %}Select the acclerometer rate to use.{% endtrans %}</span>
+          </div>
+      </div>
+
+    </div>
+  </div>
+
 
   <div class="profile_options">
     <div><a href="#" class="muted"
