@@ -94,13 +94,8 @@ def get_source_ip():
     
 
 def encode_float_list_to_base64(list):
-    try:
-        bin_data = struct.pack(f'{len(list)}f', *list)
-        return base64.b64encode(bin_data).decode('utf-8')
-    except struct.error as e:
-        raise
-    except Exception as e:
-        raise
+    bin_data = struct.pack(f'{len(list)}f', *list)
+    return base64.b64encode(bin_data).decode('utf-8')
 
 
 def autocal_service_solve(axis, sweep_cfg, metadata, accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self):
