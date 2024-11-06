@@ -45,10 +45,10 @@ class Accelerometer(ABC):
         self._stop = False
 
         self.x_buff = []; self.y_buff = []; self.z_buff = []
-        self.x_anim = 0.; self.y_anim = 0.; self.z_anim = 0.
+        self._x_anim = 0.; self._y_anim = 0.; self._z_anim = 0.
         self.x_buff_anim = []; self.y_buff_anim = []; self.z_buff_anim = []; self.t_buff_anim = []
         self.samples_collected = 0
-        self.samples_for_anim_idx = 0
+        self._samples_for_anim_idx = 0
     
         self.status = AcclrmtrStatus.COLLECTING
         threading.Timer(self.config.poll_time, self._collect_samples).start()
@@ -89,7 +89,7 @@ class AcclerometerOverSPI(Accelerometer):
         if not self._rpi.connected: raise PigpioConnectionFailed
             
         try:
-            self.spi0 = self._rpi.spi_open(spi_channel=0, baud=4000000, spi_flags=3) # TODO: As SPI config.
+            self._spi0 = self._rpi.spi_open(spi_channel=0, baud=4000000, spi_flags=3) # TODO: As SPI config.
         except: raise SpiOpenFailed
 
         super().__init__(config)
@@ -98,7 +98,7 @@ class AcclerometerOverSPI(Accelerometer):
     def _spi0_read_bytes(self, addr, count):
         addr_ = addr | 0x80         # Set read bit
         if count > 1: addr_ |= 0x40 # Set multi bit
-        (count, rx_data) = self._rpi.spi_xfer(self.spi0, [addr_] + [0xFF]*count)
+        (count, rx_data) = self._rpi.spi_xfer(self._spi0, [addr_] + [0xFF]*count)
         if count < 0: raise Exception
         else: return rx_data[1:]
 

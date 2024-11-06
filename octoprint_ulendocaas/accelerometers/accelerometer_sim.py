@@ -51,17 +51,17 @@ class SimulatedAccelerometer(Accelerometer):
             self.y_buff.append(new_sample)
             self.z_buff.append(new_sample)
 
-            self.x_anim += new_sample
-            self.y_anim += new_sample
-            self.z_anim += new_sample
-            self.samples_for_anim_idx += 1
+            self._x_anim += new_sample
+            self._y_anim += new_sample
+            self._z_anim += new_sample
+            self._samples_for_anim_idx += 1
 
-            if self.samples_for_anim_idx == self.downsample_factor:
-                self.x_buff_anim.append(self.x_anim/self.downsample_factor)
-                self.y_buff_anim.append(self.y_anim/self.downsample_factor)
-                self.z_buff_anim.append(self.z_anim/self.downsample_factor)
-                self.x_anim = 0.; self.y_anim = 0.; self.z_anim = 0.
-                self.samples_for_anim_idx = 0
+            if self._samples_for_anim_idx == self.downsample_factor:
+                self.x_buff_anim.append(self._x_anim/self.downsample_factor)
+                self.y_buff_anim.append(self._y_anim/self.downsample_factor)
+                self.z_buff_anim.append(self._z_anim/self.downsample_factor)
+                self._x_anim = 0.; self._y_anim = 0.; self._z_anim = 0.
+                self._samples_for_anim_idx = 0
                 
             self.sim_sample_idx += 1
 
