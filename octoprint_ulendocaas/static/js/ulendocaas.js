@@ -67,11 +67,29 @@ $(function () {
             clear_session_btn.className = "clear_session_btn btn";
         }
 
+
+        self.onAccelerometerDataPlotClick = function (data) {
+            var xval = data.points[0].x;
+            var update = {
+                shapes: [{type: 'line',
+                    x0: xval, y0: 0, x1: xval, y1: 1, xref: 'x', yref: 'paper',
+                    line: {color: 'red',width: 2}
+                }]
+            };
+            
+            Plotly.relayout('accelerometer_data_graph', update);
+
+            document.getElementById('accelerometer_data_graph_container').classList.remove('pulse');
+            
+            OctoPrint.simpleApiCommand("ulendocaas", "on_accelerometer_data_plot_click", { xval: xval });
+        }
+        
+        
         self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "ulendocaas") { return; }
 
 
-            if (data.type == "acclrmtr_live_data") {
+            if (data.type == "accelerometer_data") {
                 let series1 = { x: data.values_x, y: data.values_y, mode: "lines", name: 'Axis Acceleration' };
                 var layout = {
                     width: $('#calibration_results_graph').parent().width(),
@@ -84,7 +102,13 @@ $(function () {
                     }
                 };
                 var config = { responsive: true }
-                Plotly.newPlot('acclrmtr_live_data_graph', [series1], layout, config);
+                Plotly.newPlot('accelerometer_data_graph', [series1], layout, config);
+                if (data.prompt_user) {
+                    document.getElementById('accelerometer_data_graph').on('plotly_click', self.onAccelerometerDataPlotClick);
+                    document.getElementById('accelerometer_data_graph_container').classList.add('pulse');
+                } else {
+                    document.getElementById('accelerometer_data_graph_container').classList.remove('pulse');
+                }
                 return;
             }
 
@@ -105,6 +129,14 @@ $(function () {
                 };
                 var config = { responsive: true }
                 Plotly.newPlot('calibration_results_graph', [series1, series2, series3], layout, config);
+            
+                if (data.reset_sliders) {
+                    document.getElementById("damping_slider").value = 100;
+                    document.getElementById("damping_slider_value").innerText = document.getElementById("damping_slider").value/10;
+                    document.getElementById("vtol_slider").value = 5;
+                    document.getElementById("vtol_slider_value").innerText = document.getElementById("vtol_slider").value;
+                }
+            
             }
 
             if (data.type == "verification_result") {
@@ -181,7 +213,6 @@ $(function () {
                     calibrate_y_axis_btn.style.display = "none";
                 }
 
-                calibrate_select_btn_group_id.style.display = "none";
                 calibrate_select_btn_group_id.style.display = "none";
                 save_calibration_btn.style.display = "none";
                 if (data._state == 'NOTCALIBRATED') { calibrate_x_axis_btn.innerText = 'Calibrate X'; }
@@ -308,12 +339,58 @@ $(function () {
 
                 clear_session_btn.disabled = data.clear_session_btn_disabled;
 
+                if (data.damping_slider_visible) {
+                    document.getElementById("damping_group").style.display = 'flex';
+                    document.getElementById("damping_slider_value").innerText = document.getElementById("damping_slider").value/10;
+                }
+                else document.getElementById("damping_group").style.display = 'none';
+
                 if (data.vtol_slider_visible) {
-                    const curVibrationTolerance = document.getElementById("vtolslider").value;
                     document.getElementById("vtol_group").style.display = 'flex';
-                    document.getElementById("vibration_tol_val").innerText = curVibrationTolerance; // set default Vibration Tolerance value
+                    document.getElementById("vtol_slider_value").innerText = document.getElementById("vtol_slider").value;
                 }
                 else document.getElementById("vtol_group").style.display = 'none';
+
+                if (!data.damping_slider_visible && !data.vtol_slider_visible) {
+                    document.getElementById('share_data_to_enable_sliders_element').style.display = 'none';
+                }
+
+                if (data.enable_controls_by_data_share) {
+                    document.getElementById('share_data_to_enable_sliders_element').style.display = 'none';
+
+                    document.getElementById('damping_slider').disabled = false;
+                    document.getElementById('damping_slider').style.opacity = '1.0';
+                    document.getElementById('damping_slider').style.pointerEvents = 'auto';
+                    
+                    document.getElementById('vtol_slider').disabled = false;
+                    document.getElementById('vtol_slider').style.opacity = '1.0';
+                    document.getElementById('vtol_slider').style.pointerEvents = 'auto';
+                    
+                }
+                else {
+                    if (data.damping_slider_visible || data.vtol_slider_visible) {
+                        document.getElementById('share_data_to_enable_sliders_element').style.display = 'block';
+                    }
+
+                    document.getElementById('damping_slider').disabled = true;
+                    document.getElementById('damping_slider').style.opacity = '0.5';
+                    document.getElementById('damping_slider').style.pointerEvents = 'none';
+
+                    document.getElementById('vtol_slider').disabled = true;
+                    document.getElementById('vtol_slider').style.opacity = '0.5';
+                    document.getElementById('vtol_slider').style.pointerEvents = 'none';
+                }
+
+                if (data.mode == 'manual') {
+                    document.getElementById('calibrate_input_shaping_tips').textContent = 'Use the acceleration data graph to set the frequency to the strongest'
+                                                                                          + ' acceleration measured, then select an input shaping option below. Use'
+                                                                                          + ' the sliders below to set damping and vibration tolerance if desired.'
+                }
+                else {
+                    document.getElementById('calibrate_input_shaping_tips').textContent = 'Select an input shaping option below. The input shaper\'s'
+                                                                                          + ' frequency and damping will be automatically optimized.'
+                                                                                          + ' For EI type shapers, adjust the vibration tolerance if desired.'
+                }
 
                 return;
             }
@@ -364,6 +441,11 @@ $(function () {
                         sticker: false
                     }
                 });
+                return;
+            }
+
+            if (data.type == "close_popups") {
+                PNotify.removeAll();
                 return;
             }
 
@@ -480,9 +562,14 @@ $(function () {
             OctoPrint.simpleApiCommand("ulendocaas", "select_calibration_btn_click", { type: "ei3h" });
         }
 
-        document.getElementById("vtolslider").oninput = function () {
-            document.getElementById("vibration_tol_val").innerText = vtolslider.value;
-            OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtolslider.value });
+        document.getElementById("damping_slider").oninput = function () {
+            document.getElementById("damping_slider_value").innerText = damping_slider.value/10;
+            OctoPrint.simpleApiCommand("ulendocaas", "damping_slider_update", { val: damping_slider.value });
+        };
+
+        document.getElementById("vtol_slider").oninput = function () {
+            document.getElementById("vtol_slider_value").innerText = vtol_slider.value;
+            OctoPrint.simpleApiCommand("ulendocaas", "vtol_slider_update", { val: vtol_slider.value });
         };
 
         self.onClickSaveCalibrationBtn = function () {
@@ -626,7 +713,7 @@ $(function () {
                                 OctoPrint.simpleApiCommand("ulendocaas", "clear_session_btn_click");
 
                                 // Delete all the graphs created.
-                                Plotly.purge('acclrmtr_live_data_graph');
+                                Plotly.purge('accelerometer_data_graph');
                                 Plotly.purge('calibration_results_graph');
                                 Plotly.purge('verification_results_graph');
                                 // Scroll to top of the document.

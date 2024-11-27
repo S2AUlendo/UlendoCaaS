@@ -6,6 +6,7 @@ import time
 
 
 RATE_MULTIPLIER = 20. # Speed things up for simulation.
+DEAD_TIME = 0.5 # Some startup dead time to match real accelerometer behavior.
 
 
 class SimulatedAccelerometer(Accelerometer):
@@ -27,6 +28,7 @@ class SimulatedAccelerometer(Accelerometer):
     def set_simulation_params(self, f0, f1, dfdt, a, step_ti, step_a, dly1_ti, dly2_ti, dly3_ti):
         prfl_cfg = ChirpConfig(f0, f1, dfdt, a, step_ti, step_a, dly1_ti, dly2_ti, dly3_ti)
         self.sim_data = np.gradient(np.gradient(make_profile(prfl_cfg, self.T, sim=True)/self.T)/self.T)
+        self.sim_data = np.concatenate((np.zeros((round(DEAD_TIME/self.T),)), self.sim_data))
 
 
     def simulation_done(self): return self.sim_sample_idx == len(self.sim_data)

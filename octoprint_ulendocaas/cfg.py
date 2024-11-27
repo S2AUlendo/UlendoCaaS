@@ -1,13 +1,4 @@
-SIMULATION = False
-
-T_DFLT = 1./1600.    # Default sample time to use (accelerometer sample time).
-
-FSM_UPDATE_RATE_SEC = 0.25
-
-VERBOSE = 1 # 0 -- Muted.
-            # 1 -- Send errors to octoprint logger.
-            # 2 -- Send all info messages to octoprint logger.
-            # 3 -- Send printer messages to octoprint logger.
+SIMULATION = False # Simulate the accelerometer for development.
 
 
 # Plugin tab behavior.
@@ -16,11 +7,26 @@ ACCLRMTR_LIVE_VIEW_NUM_SAMPLES = 200
 
 
 # Calibration routine behavior.
+FSM_UPDATE_RATE_SEC = 0.25
 GET_AXIS_INFO_TIMEOUT = 10.
 CENTER_AXIS_TIMEOUT = 12.
 MOVE_TO_CENTER_SPEED_MM_PER_MIN = 6000
 FSM_SWEEP_START_DLY = 0.5
 MAX_RETRIES_FOR_MISSED_SAMPLES = 2
+
+
+# Manual calibration behavior.
+LOC_DLY2_TI = 3.
+LOC_DLY3_TI = 3.
+WEAK_SIGNAL_CHECK_TI = 3.
+WEAK_SIGNAL_CHECK_THD = 0.45
+SIGNAL_WEIGHTING_POWER = 3.
+I2F_RANDOM_IDCS = 10
+I2F_CANDIDATE_ERROR_THD = 5e-2
+I2F_MAX_ITERATIONS = 100
+I2F_CONSENSUS_THD = 10
+I2F_BM1_RATIO_LOW_THD = 0.25
+I2F_BM1_RATIO_HIGH_THD = 1.25
 
 
 SERVICE_URL = 'https://ogsxeca3e2.execute-api.us-east-2.amazonaws.com/beta/solve'

@@ -2,13 +2,14 @@
 
 from __future__ import absolute_import
 
+import subprocess
 import requests
 import platform
 import struct
-from flask import Flask, request, jsonify
+import numpy as np
 import re
 
-from math import pi, sqrt, floor
+from math import pi, sqrt, floor, ceil, sin
 from datetime import datetime
 
 from octoprint.util import ResettableTimer
@@ -18,7 +19,7 @@ import octoprint.plugin
 from .cfg import *
 from .ismags import get_ismag
 from .service_exceptions import *
-from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials, upload_image_rating
+from .service_abstraction import autocal_service_solve, autocal_service_guidata, verify_credentials, save_post_as_file, autocal_service_share, save_post_as_file, get_run_post_data
 
 from .accelerometers.accelerometer_abc import AcclrmtrCfg, AcclrmtrRateCfg, AcclrmtrRangeCfg, AcclrmtrSelfTestSts, AcclrmtrStatus
 from .accelerometers.accelerometer_abc import DaemonNotRunning, PigpioNotInstalled, PigpioConnectionFailed, SpiOpenFailed
@@ -52,7 +53,9 @@ AxisRespnsFSMStates = Enum('AxisRespnsFSMStates',
                          'GET_AXIS_INFO',
                          'CENTER',
                          'SWEEP',
-                         'ANALYZE'])
+                         'ANALYZE_AUTO',
+                         'ANALYZE_MANUAL'])
+
 
 class AxisRespnsFSMData():
     def __init__(self):
@@ -103,14 +106,14 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     def __init__(self):
         self.initialized = False
         return
-        
     
-    def on_after_startup(self):
-        self._init()
 
+    def on_startup(self, *args, **kwargs):
+        self._init()
+    
 
     def _init(self):
-        # Use this to init stuff dependent on the injected properties (including _logger, used by AxisRespnsFSM)
+        # Use this to init stuff dependent on the injected properties (including _logger)
         if self.initialized: return
 
         self.tab_layout = TabLayout()
@@ -127,6 +130,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_axis_verification_active = False
         self.sts_axis_calibration_axis = None
         self.sts_calibration_saved = False
+        self.sts_manual_mode_ready_for_user_selections = False
+        self.sts_manual_calibration_data_ready_for_share = False
+        self.sts_manual_calibration_data_shared = False
         self.active_solution = None
         self.active_solution_axis = None
         self.active_verification_result = None
@@ -150,12 +156,25 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             except:
                 self.metadata['BOARDCPUSERIAL'] = 'NA'
                 self.metadata['BOARDMODEL'] = 'NA'
-            self.initialized = True
+
+            try:
+                ip_link_out_as_str = subprocess.check_output(["ip", "link"]).decode()
+                search_match = re.search(r'link/ether\s([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}', ip_link_out_as_str, re.M)
+                match_split = re.split(r'\s', search_match.group(0))
+                self.metadata['MACADDR'] = match_split[1]
+            except:
+                self.metadata['MACADDR'] = 'NA'
+        else:
+            self.metadata['BOARDCPUSERIAL'] = 'NA'
+            self.metadata['BOARDMODEL'] = 'NA'
+            self.metadata['MACADDR'] = 'XX:XX:XX:XX:XX:XX'
+
+        self.initialized = True
 
 
     def send_printer_command(self, cmd):
         if SIMULATION:
-            if VERBOSE > 1: self._logger.info('SIMULATION sending command to printer: ' + cmd)
+            self._logger.info('In simulation: sending command to printer: ' + cmd)
             return
         self._printer.commands(cmd)
 
@@ -178,7 +197,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         if self.accelerometer is None: return
 
-        acclrmtr_live_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
+        accelerometer_data_y = [0.]*ACCLRMTR_LIVE_VIEW_NUM_SAMPLES
 
         if self.sts_self_test_active:
             buffer_to_plot = self.accelerometer.z_buff_anim.copy()
@@ -188,17 +207,18 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         n = len(buffer_to_plot)
         if n < ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:
-            acclrmtr_live_data_y[-n:] = buffer_to_plot
+            accelerometer_data_y[-n:] = buffer_to_plot
         else:
-            acclrmtr_live_data_y[:] = buffer_to_plot[-ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:]
+            accelerometer_data_y[:] = buffer_to_plot[-ACCLRMTR_LIVE_VIEW_NUM_SAMPLES:]
 
-        acclrmtr_live_data_x = list(range(ACCLRMTR_LIVE_VIEW_NUM_SAMPLES))
-        acclrmtr_live_data_x = [(self.accelerometer.T*self.accelerometer.downsample_factor)*(n + xi) for xi in acclrmtr_live_data_x]
+        accelerometer_data_x = list(range(ACCLRMTR_LIVE_VIEW_NUM_SAMPLES))
+        accelerometer_data_x = [(self.accelerometer.T*self.accelerometer.downsample_factor)*(n + xi) for xi in accelerometer_data_x]
         
         data = dict(
-            type='acclrmtr_live_data',
-            values_x=acclrmtr_live_data_x,
-            values_y=acclrmtr_live_data_y
+            type='accelerometer_data',
+            values_x=accelerometer_data_x,
+            values_y=accelerometer_data_y,
+            prompt_user=False
         )
 
         self._plugin_manager.send_plugin_message(self._identifier, data)
@@ -234,8 +254,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             load_calibration_btn_state = self.tab_layout.load_calibration_btn.state.name,
             save_calibration_btn_state = self.tab_layout.save_calibration_btn.state.name,
             clear_session_btn_disabled = self.tab_layout.clear_session_btn.disabled,
+            damping_slider_visible = self.tab_layout.damping_slider_visible,
             vtol_slider_visible = self.tab_layout.vtol_slider_visible,
             is_active_client = self.tab_layout.is_active_client,
+            enable_controls_by_data_share = self.tab_layout.enable_controls_by_data_share,
+            mode = self.tab_layout.mode,
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
@@ -268,6 +291,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             for btn_name in btn_names:
                 btn = getattr(self.tab_layout, btn_name)
                 btn.disabled = True
+            self.tab_layout.damping_slider_visible = False
             self.tab_layout.vtol_slider_visible = False
         else:
             self.tab_layout.acclrmtr_connect_btn.disabled = False
@@ -277,7 +301,13 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 self.tab_layout.calibrate_x_axis_btn.disabled = False
                 self.tab_layout.calibrate_y_axis_btn.disabled = False
 
+            enable_calibration_buttons = False
             if self.active_solution is not None:
+                # Also verify wc is set (in manual mode, it is not set
+                # until user selects a frequency for the first time).
+                if self.active_solution.wc is not None: enable_calibration_buttons = True
+
+            if enable_calibration_buttons:
                 for calibration_key in calibration_keys:
                     calibration_btn = getattr(self.tab_layout, 'select_' + calibration_key + '_cal_btn')
                     calibration_btn.disabled = False
@@ -285,11 +315,19 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 for calibration_key in calibration_keys:
                     calibration_btn = getattr(self.tab_layout, 'select_' + calibration_key + '_cal_btn')
                     calibration_btn.state = CalibrationSelectionButtonStates.NOTSELECTED
+                    calibration_btn.disabled = True
 
+            self.tab_layout.damping_slider_visible = False
+            if self.sts_manual_mode_ready_for_user_selections:
+                if self.active_solution is not None:
+                    if self.active_solution.wc is not None:
+                        self.tab_layout.damping_slider_visible = True
+
+            self.tab_layout.vtol_slider_visible = False
             if self.get_selected_calibration_type() in ['ei', 'ei2h', 'ei3h']:
-                self.tab_layout.vtol_slider_visible = True
-            else:
-                self.tab_layout.vtol_slider_visible = False
+                if (self.active_solution_axis == 'x' and not self.x_calibration_sent_to_printer) or \
+                (self.active_solution_axis == 'y' and not self.y_calibration_sent_to_printer):
+                    self.tab_layout.vtol_slider_visible = True
 
             if self.get_selected_calibration_type() is not None and self.sts_acclrmtr_connected:
                 self.tab_layout.load_calibration_btn.disabled = False
@@ -342,6 +380,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         else:
             self.tab_layout.save_calibration_btn.state = SaveCalibrationButtonStates.NOTSAVED
 
+        self.tab_layout.enable_controls_by_data_share = self.sts_manual_calibration_data_shared
+
+        # Mode
+        self.tab_layout.mode = 'auto' if self._settings.get(["use_caas_service"]) else 'manual'
+        
         self.send_client_layout_status()
 
 
@@ -367,8 +410,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
 
+    def send_client_close_popups(self):
+        data = dict(
+            type='close_popups'
+        )
+        self._plugin_manager.send_plugin_message(self._identifier, data)
+
+
     def fsm_update(self):
-        if VERBOSE > 1: self._logger.info(f'FSM update: {self.fsm.state}')
+        if self._settings.get(["log_routine_debug_info"]): self._logger.info(f'FSM update: {self.fsm.state}.')
 
         if self.fsm.state != self.fsm.state_prev:
             self.fsm.in_state_time = 0.
@@ -405,11 +455,16 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 self.fsm_on_SWEEP_entry()
             else:
                 self.fsm_on_SWEEP_during(); return
-        elif self.fsm.state == AxisRespnsFSMStates.ANALYZE:
-            if self.fsm.state_prev != AxisRespnsFSMStates.ANALYZE:
-                self.fsm_on_ANALYZE_entry()
+        elif self.fsm.state == AxisRespnsFSMStates.ANALYZE_AUTO:
+            if self.fsm.state_prev != AxisRespnsFSMStates.ANALYZE_AUTO:
+                self.fsm_on_ANALYZE_AUTO_entry()
             else:
-                self.fsm_on_ANALYZE_during(); return
+                self.fsm_on_ANALYZE_AUTO_during(); return
+        elif self.fsm.state == AxisRespnsFSMStates.ANALYZE_MANUAL:
+            if self.fsm.state_prev != AxisRespnsFSMStates.ANALYZE_MANUAL:
+                self.fsm_on_ANALYZE_MANUAL_entry()
+            else:
+                self.fsm_on_ANALYZE_MANUAL_during(); return
         
         self.fsm.state_prev = self.fsm.state
 
@@ -435,10 +490,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     
 
     def send_client_verification_result(self):
-        # Get selected calibration type
+        # Get selected calibration type.
         type = self.get_selected_calibration_type()
         if type is None:
-            if VERBOSE: self._logger.error("Can't send result without a calibration selected!")
+            self._logger.error("Can't send result without a calibration selected!")
             return
         ismag = get_ismag(self.active_solution.w_bp, type, self.active_solution.wc, self.active_solution.zt, vtol=self.calibration_vtol)
         data = dict(
@@ -456,8 +511,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         try:
             if self.accelerometer is not None:
                 try: self.accelerometer.close()
-                except: pass # We'll ignore a fail here, since it could be due to the
-                             # pigpio daemon no longer running.
+                except: pass # We'll ignore a fail here, since it could be
+                             # due to the pigpio daemon no longer running.
             self.acclerometer_cfg = AcclrmtrCfg(range=AcclrmtrRangeCfg[self._settings.get(["accelerometer_range"])],
                                                 rate=AcclrmtrRateCfg[self._settings.get(["accelerometer_rate"])])
             
@@ -545,6 +600,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         if (axis == 'x' and self.tab_layout.calibrate_x_axis_btn.disabled) or \
            (axis == 'y' and self.tab_layout.calibrate_y_axis_btn.disabled): return
         
+        if self.accelerometer is None: self.update_tab_layout(); return
+        
         if not SIMULATION:
             connection_string, _, _, _ = self._printer.get_current_connection()
 
@@ -560,12 +617,16 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             elif (axis == 'y'): self.y_calibration_sent_to_printer = False
             self.active_solution = None
             self.active_solution_axis = None
+            
+            self.sts_manual_mode_ready_for_user_selections = False
+            self.sts_manual_calibration_data_ready_for_share = False
+            self.sts_manual_calibration_data_shared = False
 
             self.update_tab_layout()
             self.send_client_clear_calibration_result()
             self.send_client_clear_verification_result()
 
-            if VERBOSE > 1: self._logger.info(f'calibrate_axis started on axis: {axis}')
+            self._logger.info(f'Calibration started on axis: {axis}')
             self.fsm_update_TMR = ResettableTimer(FSM_UPDATE_RATE_SEC, self.fsm_update_and_manage_tmr)
             self.fsm_update_TMR.start()
             self.fsm_start(axis)
@@ -586,11 +647,11 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             elif self.active_solution_axis == 'y': self.y_calibration_sent_to_printer = False
             self.sts_calibration_saved = False
             self.send_client_clear_verification_result()
-            self.send_client_calibration_result(type)
+            self.send_client_calibration_result(type, reset_sliders=True)
         self.update_tab_layout()
 
 
-    def send_client_calibration_result(self, type):
+    def send_client_calibration_result(self, type, reset_sliders=False):
         ismag = get_ismag(self.active_solution.w_bp, type, self.active_solution.wc, self.active_solution.zt, vtol=self.calibration_vtol)
         data = dict(
             type = 'calibration_result',
@@ -599,7 +660,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             G = self.active_solution.G.tolist(),
             compensator_mag = ismag.tolist(),
             new_mag = (self.active_solution.G * ismag).tolist(),
-            axis = self.active_solution_axis
+            axis = self.active_solution_axis,
+            reset_sliders = reset_sliders
         )
         self._plugin_manager.send_plugin_message(self._identifier, data)
 
@@ -608,12 +670,18 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         if self.tab_layout.load_calibration_btn.disabled: return
 
         type = self.get_selected_calibration_type()
-        if type is None or self.fsm.state is not AxisRespnsFSMStates.IDLE: # TODO: Check printer is connected
-            if VERBOSE: self._logger.error(f'Calibration load command conditions not correct.')
+
+        if not SIMULATION:
+            connection_string, _, _, _ = self._printer.get_current_connection()
+
+            if(connection_string != "Operational"):
+                self.send_client_popup(type='error', title='Printer not connected.', message='Printer must be connected in order to download calibration.')
+                return
+        
+        if type is None or self.fsm.state is not AxisRespnsFSMStates.IDLE:
+            self._logger.error(f'Calibration load command conditions not correct.')
             return
         
-        if VERBOSE > 1: self._logger.info(f'Sending calibration ' + type)
-
         mode_code = ''
         if type == 'zv': mode_code = '1'
         elif type == 'zvd': mode_code = '2'
@@ -643,7 +711,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         if ei_type:
             printer_configuration_command += ' ' + vtol_code + f'{self.calibration_vtol:0.2f}'
 
-        if VERBOSE > 1: self._logger.info(f'Configuring printer with: {printer_configuration_command}')
+        self._logger.info(f'Configuring printer with: {printer_configuration_command}')
         self.send_client_logger_info('Sent printer: ' + printer_configuration_command \
                                         + ' (Set the ' + self.active_solution_axis.upper() + ' axis to use ' + type.upper() \
                                         + f' shaping @ {self.active_solution.wc/2./pi:0.2f}Hz & ζ = {self.active_solution.zt:0.4f}' \
@@ -653,7 +721,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_calibration_saved = False
 
         self.sts_axis_verification_active = True
-        if VERBOSE > 1: self._logger.info(f'verify started on axis: {self.active_solution_axis}')
+        self.sts_manual_mode_ready_for_user_selections = False
+        self.sts_manual_calibration_data_ready_for_share = False
+        self.sts_manual_calibration_data_shared = False
+        self._logger.info(f'Verification started on axis: {self.active_solution_axis}.')
         self.fsm_update_TMR = ResettableTimer(FSM_UPDATE_RATE_SEC, self.fsm_update_and_manage_tmr)
         self.fsm_update_TMR.start()
         self.fsm_start(self.active_solution_axis)
@@ -685,6 +756,16 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             self.update_tab_layout()
 
 
+    def on_damping_slider_update(self, val):
+        self.active_solution.zt = min(0.9999, max(0.0001, float(val)/1000))
+        if self.active_solution_axis == 'x': self.x_calibration_sent_to_printer = False
+        elif self.active_solution_axis == 'y': self.y_calibration_sent_to_printer = False
+        self.sts_calibration_saved = False
+        self.send_client_clear_verification_result()
+        self.send_client_calibration_result(self.get_selected_calibration_type())
+        self.update_tab_layout()
+
+
     def on_clear_session_btn_click(self):
         if self.tab_layout.clear_session_btn.disabled: return
 
@@ -699,6 +780,9 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         self.sts_acclrmtr_connected = False
         self.sts_axis_calibration_axis = None
         self.sts_calibration_saved = False
+        self.sts_manual_mode_ready_for_user_selections = False
+        self.sts_manual_calibration_data_ready_for_share = False
+        self.sts_manual_calibration_data_shared = False
         self.active_solution = None
         self.active_solution_axis = None
         self.active_verification_result = None
@@ -715,6 +799,32 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
     def on_prompt_proceed_click(self):
         self.awaiting_prompt_popup_reply = False
         self.prompt_popup_response = 'proceed'
+
+
+    def on_accelerometer_data_plot_click(self, xval):
+        if not self.sts_manual_mode_ready_for_user_selections: return
+
+        f = self.i2f_bm[0] + self.i2f_bm[1]*xval/self.accelerometer.T
+
+        self._logger.info(f'User selected frequency of {f:.1f} Hz on graph.')
+
+        is_first_freq_selection = self.active_solution.wc is None # Infer this is the first selection on this calibration run.
+
+        self.active_solution.wc = f*2.*pi
+        self.active_solution.zt = 0.1
+
+        if is_first_freq_selection:
+            self.tab_layout.select_zvd_cal_btn.disabled = False
+            self.on_select_calibration_btn_click('zvd') # Set ZVD as default shaper selection.
+            self.send_client_close_popups()
+        
+        if self.active_solution_axis == 'x': self.x_calibration_sent_to_printer = False
+        elif self.active_solution_axis == 'y': self.y_calibration_sent_to_printer = False
+        self.sts_calibration_saved = False
+        self.send_client_clear_verification_result()
+        self.send_client_calibration_result(self.get_selected_calibration_type())
+        
+        self.update_tab_layout()
 
 
     def send_client_logger_info(self, text):
@@ -736,6 +846,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             select_calibration_btn_click=['type'],
             load_calibration_btn_click=[],
             save_calibration_btn_click=[],
+            damping_slider_update=['val'],
             vtol_slider_update=['val'],
             get_connection_status=[],
             start_over_btn_click=[],
@@ -743,24 +854,28 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             prompt_cancel_click=[],
             prompt_proceed_click=[],
             on_settings_close=[],
+            on_accelerometer_data_plot_click=['xval']
         )
 
     
     def on_api_command(self, command, data):
+        if not self.initialized:
+            self._logger.info(f'Ignored command "{command}" because not yet initialized.')
+            return
         if command == 'get_layout_status': self.send_client_layout_status()
         elif command == 'acclrmtr_connect_btn_click': self.on_acclrmtr_connect_btn_click()
         elif command == 'calibrate_axis_btn_click': self.on_calibrate_axis_btn_click(data['axis'])
         elif command == 'select_calibration_btn_click': self.on_select_calibration_btn_click(data['type'])
         elif command == 'load_calibration_btn_click': self.on_load_calibration_btn_click()
         elif command == 'save_calibration_btn_click': self.on_save_calibration_btn_click()
+        elif command == 'damping_slider_update': self.on_damping_slider_update(data['val'])
         elif command == 'vtol_slider_update': self.on_vtol_slider_update(data['val'])
         elif command == 'get_connection_status': self.report_connection_status()
         elif command == 'clear_session_btn_click': self.on_clear_session_btn_click()
         elif command == 'prompt_cancel_click': self.on_prompt_cancel_click()
         elif command == 'prompt_proceed_click': self.on_prompt_proceed_click()
-        elif command == 'on_settings_close':
-            self.verify_credentials_and_update_tab_layout()
-            self.check_accelerometer_settings_changed()
+        elif command == 'on_settings_close': self.on_settings_close()
+        elif command == 'on_accelerometer_data_plot_click': self.on_accelerometer_data_plot_click(data['xval'])
 
 
     def verify_credentials_and_update_tab_layout(self):
@@ -786,12 +901,25 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 self.update_tab_layout()
             
 
+    def on_settings_close(self):
+        self.verify_credentials_and_update_tab_layout()
+        self.check_accelerometer_settings_changed()
+
+        if (not self.sts_manual_calibration_data_shared
+            and self._settings.get(["share_calibration_data"])
+            and self.sts_manual_calibration_data_ready_for_share):
+            self.send_client_popup(type='info', title='Sharing Data', message='Sharing data, please wait...')
+            self.share_calibration_data()
+            self.update_tab_layout()
+
+
     
     ##~~ Hooks
     def proc_rx(self, comm_instance, line, *args, **kwargs):
+        if not self.initialized:
+            self._logger.error(f'Ignored line from printer "{line}" because not yet initialized.')
+            return line
         try:
-            if VERBOSE > 2: self._logger.info(f'Got line from printer: {line}')
-            if not self.initialized: return line
             if 'M494' in line:
                 if 'FTMCFG' in line:
                     split_line = regex_ftmcfg_splitter.split(line.strip())[
@@ -805,16 +933,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                                     self.fsm.axis_reported_len_recvd = True
                                     self.fsm.axis_reported_len = float(result[key])
                     self.metadata['FTMCFG'] = result
-                    if VERBOSE > 1: self._logger.info('Metadata updated:')
-                    if VERBOSE > 1: self._logger.info(self.metadata)
+                    if self._settings.get(["log_routine_debug_info"]): self._logger.info('Metadata updated (received FTMCFG):'); self._logger.info(self.metadata)
                 elif 'profile ran to completion' in line:
                     if self.fsm.state == AxisRespnsFSMStates.SWEEP:
                         self.fsm.sweep_done_recvd = True
-                        if VERBOSE > 1: self._logger.info(f'Got sweep done message')
+                        if self._settings.get(["log_routine_debug_info"]): self._logger.info(f'Got sweep done message.')
 
             elif self.fsm.state == AxisRespnsFSMStates.CENTER and (self.fsm.axis.upper() + ':') in line:
                 self.fsm.axis_last_reported_pos = parse_position_line(line)[self.fsm.axis]
-                if VERBOSE > 1: self._logger.info(f'Got reported position = {self.fsm.axis_last_reported_pos}')
+                if self._settings.get(["log_routine_debug_info"]): self._logger.info(f'Got reported position = {self.fsm.axis_last_reported_pos}.')
             elif 'NAME:' in line or line.startswith('NAME.'):
                 split_line = regex_firmware_splitter.split(line.strip())[
                     1:
@@ -824,8 +951,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                         result[key] = value.strip()
                 if result.get('FIRMWARE_NAME') is not None:
                     self.metadata['FIRMWARE'] = result
-                    if VERBOSE > 1: self._logger.info('Metadata updated:')
-                    if VERBOSE > 1: self._logger.info(self.metadata)
+                    if self._settings.get(["log_routine_debug_info"]): self._logger.info('Metadata updated (received firmware name):'); self._logger.info(self.metadata)
             elif 'M92' in line:
                 match = regex_steps_per_unit.search(line)
                 if match is not None:
@@ -837,8 +963,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     self.fsm.axis_reported_steps_per_mm = result[self.fsm.axis]
                     self.fsm.axis_reported_steps_per_mm_recvd = True
                     self.metadata['STEPSPERUNIT'] = str(result)
-                    if VERBOSE > 1: self._logger.info('Metadata updated:')
-                    if VERBOSE > 1: self._logger.info(self.metadata)
+                    if self._settings.get(["log_routine_debug_info"]): self._logger.info('Metadata updated (received M92):'); self._logger.info(self.metadata)
             elif self.fsm.state == AxisRespnsFSMStates.CENTER and 'echo:Home' in line and 'First' in line:
                 split_line_0 = re.split(r"echo:Home ", line.strip())
                 split_line_1 = re.split(r" First", split_line_0[1].strip())
@@ -846,10 +971,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 self.fsm.printer_additional_homing_axes = split_line_1[0]
 
             return line
-        
         except Exception as e:
-            self._logger.error(f"Network error in autocal_service_guidata: {e}")
-            raise
+            self._logger.error(f"An error occurred processing the line received by the printer: {str(e)}")
+            return line
+
 
     # TODO: 
     def get_update_information(self):
@@ -878,7 +1003,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         except requests.exceptions.Timeout:
             self.send_client_popup(type='error', title='Timed out connecting to Ulendo server.',
                                     message=f'Timed out connecting to the Ulendo server af'\
-                                    'ter {SERVICE_TIMEOUT_THD} seconds.', hide=False)
+                                    f'ter {SERVICE_TIMEOUT_THD} seconds.', hide=False)
         except (requests.exceptions.HTTPError,
                     requests.exceptions.ConnectionError,
                     requests.exceptions.RequestException):
@@ -912,9 +1037,14 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                                     message='This cannot be solved at this time. Please'\
                                     ' contact Ulendo for this matter.', hide=False)
         except NotAuthenticated:
-            self.send_client_popup(type='error', title='Not authenticated.',
-                                    message='Unable to verify plugin credentials. Please'\
-                                    ' verify your plugin configuration.', hide=False)
+            if self._settings.get(["use_caas_service"]):
+                self.send_client_popup(type='error', title='Not authenticated.',
+                                        message='Unable to verify plugin credentials. Please'\
+                                        ' verify your plugin configuration.', hide=False)
+            else:
+                self.send_client_popup(type='info', title='Not authenticated.',
+                                        message='Unable to verify plugin credentials. Only manual'\
+                                        ' features will be available.')
         except MachineIDNotFound:
             self.send_client_popup(type='error', title='Machine ID not found.',
                                     message='The machine ID provided in settings is'\
@@ -926,6 +1056,24 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         except Exception:
             self.send_client_popup(type='error', title='Unknown error.',
                                     message=str(e), hide=False)
+
+
+    def share_calibration_data(self, show_errors=True):
+            try:
+                if self.sts_axis_verification_active:
+                    autocal_service_share(self._plugin_version, self.fsm.axis, self.sts_axis_verification_active, self.accelerometer, self.sweep_cfg, self.metadata, self._settings, self._logger, self.get_selected_calibration_type(), self.active_solution.wc, self.active_solution.zt, self.calibration_vtol)
+                else:
+                    autocal_service_share(self._plugin_version, self.fsm.axis, self.sts_axis_verification_active, self.accelerometer, self.sweep_cfg, self.metadata, self._settings, self._logger)
+            except requests.exceptions.ConnectionError:
+                if show_errors: self.send_client_popup( type='info', title='Sharing Data Failed',
+                                                        message=f'Sharing the calibration data failed because the service' \
+                                                                ' is unreachable. If you are connected to the internet,' \
+                                                                ' please try again later.', hide=False)
+            except Exception as e:
+                if show_errors: self.send_client_popup( type='info', title='Sharing Data Failed',
+                                                        message=f'Sharing the calibration data failed: {str(e)}.', hide=False)
+            else:
+                self.sts_manual_calibration_data_shared = True
 
 
 #
@@ -1033,9 +1181,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
             self.fsm.axis_reported_len_recvd = False
             self.fsm.state = AxisRespnsFSMStates.HOME
         self.send_printer_command('M114')
-        if VERBOSE > 1: self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}')
+        if self._settings.get(["log_routine_debug_info"]): self._logger.info(f'on_CENTER vars: {self.fsm.axis_last_reported_pos}, {self.fsm.axis_reported_len}, {self.fsm.axis_centering_wait_time}.')
         if abs(self.fsm.axis_last_reported_pos - self.fsm.axis_reported_len/2) < 1. or not self._settings.get(["home_axis_before_calibration"]) or SIMULATION:
-            
             if self.fsm.axis_centering_wait_time >= self.fsm.axis_reported_len/2/(MOVE_TO_CENTER_SPEED_MM_PER_MIN/60):
                 self.fsm.state = AxisRespnsFSMStates.SWEEP
             self.fsm.axis_centering_wait_time += FSM_UPDATE_RATE_SEC
@@ -1124,14 +1271,15 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
 
         if stop_accelerometer and not self.fsm.accelerometer_stopped:
             self.accelerometer.stop()
-            if VERBOSE > 1: self._logger.info('Triggering accelerometer data collection stop.')
+            if self._settings.get(["log_routine_debug_info"]): self._logger.info('Triggering accelerometer data collection stop.')
             self.fsm.accelerometer_stopped = True
 
         if self.accelerometer.status != AcclrmtrStatus.COLLECTING:
             f_abort = False
             if self.accelerometer.status == AcclrmtrStatus.STOPPED:
                 self.sts_acclrmtr_active = False
-                self.fsm.state = AxisRespnsFSMStates.ANALYZE
+                if (self._settings.get(["use_caas_service"])): self.fsm.state = AxisRespnsFSMStates.ANALYZE_AUTO
+                else: self.fsm.state = AxisRespnsFSMStates.ANALYZE_MANUAL
             elif self.accelerometer.status == AcclrmtrStatus.OVERRUN:
                 if self.fsm.missed_sample_retry_count < MAX_RETRIES_FOR_MISSED_SAMPLES: # Setup a retry
                     self.fsm.missed_sample_retry_count += 1
@@ -1144,7 +1292,7 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     self.sts_acclrmtr_active = False
                     self.fsm.state = AxisRespnsFSMStates.HOME
 
-                else:  # Max retries hit
+                else:  # Max retries hit.
                     self.send_client_popup(type='error', title='Retry Limit', message='Retry limit reached, exiting this attempt.')
                     f_abort = True
             else:
@@ -1158,26 +1306,14 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         return
 
 
-    def fsm_on_ANALYZE_entry(self):
+    def fsm_on_ANALYZE_AUTO_entry(self):
         
         self.fsm.missed_sample_retry_count = 0
-
-        if SIMULATION:
-            self.sts_axis_calibration_active = False
-            self.update_tab_layout()
-            return
 
         if not self.sts_axis_verification_active:
             try:
                 self.send_client_popup(type='info', title='Processing Data', message='Processing data, please wait...')
-                client_ID = self._settings.get(["CLIENTID"])
-                org_ID = self._settings.get(["ORG"])
-                access_ID = self._settings.get(["ACCESSID"])
-                machine_ID = self._settings.get(["MACHINEID"])
-                machine_name = self._settings.get(["MACHINENAME"])
-                model_ID = self._settings.get(["MODELID"])
-                manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
-                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self._settings, self._logger)
+                wc, zt, w_gui_bp, G_gui = autocal_service_solve(self._plugin_version, self.fsm.axis, self.accelerometer, self.sweep_cfg, self.metadata, self._settings)
                 self.send_client_popup(type='success', title='Calibration Received', message='')
                 
             except Exception as e:
@@ -1193,15 +1329,8 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                 self.update_tab_layout()
         else:
             try:
-                client_ID = self._settings.get(["CLIENTID"])
-                org_ID = self._settings.get(["ORG"])
-                access_ID = self._settings.get(["ACCESSID"])
-                machine_ID = self._settings.get(["MACHINEID"])
-                machine_name = self._settings.get(["MACHINENAME"])
-                model_ID = self._settings.get(["MODELID"])
-                manufacturer_name = self._settings.get(["MANUFACTURER_NAME"])
                 self.send_client_popup(type='info', title='Verifying Calibration', message='Please wait...')
-                _, g_gui = autocal_service_guidata(self.fsm.axis, self.sweep_cfg, self.metadata, self.accelerometer, client_ID, access_ID, org_ID, machine_ID, machine_name, model_ID, manufacturer_name, self._settings, self._logger)
+                _, g_gui = autocal_service_guidata(self._plugin_version, self.fsm.axis, self.accelerometer, self.sweep_cfg, self.metadata, self._settings)
 
             except Exception as e:
                 self.handle_calibration_service_exceptions(e)
@@ -1220,10 +1349,246 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
         return
 
     
-    def fsm_on_ANALYZE_during(self):
+    def fsm_on_ANALYZE_AUTO_during(self):
         self.fsm.state = AxisRespnsFSMStates.IDLE
         return
 
+
+    def fsm_on_ANALYZE_MANUAL_error(self):
+        self.fsm.state = AxisRespnsFSMStates.IDLE
+        self.active_solution = None
+        self.sts_axis_calibration_active = False
+        self.sts_axis_verification_active = False
+        self.update_tab_layout()
+
+
+    def fsm_on_ANALYZE_MANUAL_entry(self):
+   
+        self.sts_manual_calibration_data_ready_for_share = True
+
+        # Share the data if selected.
+        if self._settings.get(["share_calibration_data"]): self.share_calibration_data(show_errors=(not self.sts_axis_verification_active))
+        else:
+            self.send_client_popup( type='info', title='Data Was Not Shared',
+                                    message='The calibration data for this run was not shared. To share,'\
+                                            ' enable the associated option in the plugin\'s settings.',
+                                    hide=False)
+
+        # Following logic is known to fail for data rates below 400 Hz, so perform a check.
+        if self.accelerometer.T > (1/300.):
+            self.send_client_popup(type='error', title='Accelerometer sample rate too low.',
+                                    message='Accelerometer sample rate too low to perform analysis.'\
+                                            ' Try setting the rate higher in the plugin\'s settings.', hide=False)
+            self.fsm_on_ANALYZE_MANUAL_error(); return
+
+        self.fsm.missed_sample_retry_count = 0
+
+        # Select axis data and trim.
+        data = self.accelerometer.x_buff if self.fsm.axis == 'x' else self.accelerometer.y_buff
+        data = np.array(data)
+        
+        n_0_ = round(LOC_DLY2_TI/self.accelerometer.T)
+        m_0_ = round(self.sweep_cfg.dly2_ti/1000./self.accelerometer.T)
+        o_0_ = round(self.sweep_cfg.dly1_ti/1000./self.accelerometer.T)
+
+        n_1_ = round(LOC_DLY3_TI/self.accelerometer.T)
+        m_1_ = round(self.sweep_cfg.dly3_ti/1000./self.accelerometer.T)
+
+        if len(data) < (o_0_ + n_0_ + m_0_ + n_1_ + m_1_):
+            self.send_client_popup(type='error', title='Data length error 1.',
+                                    message='Insufficient data collected. Try adjusting the calibration'
+                                            ' profile in the plugin\'s settings.', hide=False)
+            self.fsm_on_ANALYZE_MANUAL_error(); return
+
+        data -= np.sum(data)/len(data)
+
+        minima_ = np.zeros((n_0_,))
+        for i in range(n_0_): minima_[i] = np.sum(np.abs(data[o_0_+i:o_0_+i+m_0_]))
+        dly1_idx = o_0_ + np.max(np.argmin(minima_))
+
+        minima_ = np.zeros((n_1_,))
+        for i in range(n_1_): minima_[i] = np.sum(np.abs(data[-n_1_-m_1_+i:-n_1_+i]))
+        dly2_idx = len(data) - n_1_ - m_1_ + np.min(np.argmin(minima_))
+        
+        data = data[dly1_idx+m_0_:dly2_idx]
+
+        if not self.sts_axis_verification_active:
+            # Gross check.
+            weak_signal_check_n = round(WEAK_SIGNAL_CHECK_TI/self.accelerometer.T)
+
+            if len(data) < weak_signal_check_n:
+                self.send_client_popup(type='error', title='Data length error 2.',
+                                        message='Insufficient data collected. Try adjusting the calibration'
+                                                ' profile in the plugin\'s settings.', hide=False)
+                self.fsm_on_ANALYZE_MANUAL_error(); return
+
+            k1 = pi*self.sweep_cfg.dfdt
+            k2 = 2.*pi*self.sweep_cfg.f0
+            weak_signal_accum_meas = 0.
+            weak_signal_accum_expctd = 0.
+            for i in range(weak_signal_check_n):
+                tau = i*self.accelerometer.T
+                weak_signal_accum_expctd += abs(-self.sweep_cfg.a*sin(k1*tau*tau + k2*tau))
+                weak_signal_accum_meas += abs(data[i])
+
+            self._logger.info(f'Weak signal check stats: {weak_signal_accum_meas:.1f}/{weak_signal_accum_expctd:.1f} = {weak_signal_accum_meas/weak_signal_accum_expctd:.2f}.')
+
+            if weak_signal_accum_meas/weak_signal_accum_expctd < WEAK_SIGNAL_CHECK_THD:
+                self.send_client_popup(type='error', title='Weak signal detected.',
+                                        message='Could not calibrate due to a weak signal. Is '\
+                                        'the accelerometer mounted on the correct axis and in '\
+                                        'the correct orientation?', hide=False)
+                self.fsm_on_ANALYZE_MANUAL_error(); return
+
+            # Compute magnitude for the plot.
+            Y = np.fft.fft(data)
+            NT = len(Y)*self.accelerometer.T
+            f = np.arange(len(Y))/NT
+            Y = Y/(len(data)/2)
+
+            f0_idx = ceil(self.sweep_cfg.f0*NT)
+            f1_idx = floor(self.sweep_cfg.f1*NT)
+
+            mag = np.abs(Y)*(self.sweep_cfg.f1-self.sweep_cfg.f0)/self.sweep_cfg.a/sqrt(self.sweep_cfg.dfdt)
+
+            f = f[f0_idx:f1_idx]; mag = mag[f0_idx:f1_idx]
+
+            # Filter the data for a nicer plot.
+            kbp1s = np.arange(start=0, stop=0.4, step=((max(f) - min(f)) / (len(f) - 1)))
+            n = len(kbp1s)
+            k_bp = np.concatenate((np.flip(kbp1s)[:-1], kbp1s))
+            del kbp1s
+            w = k_bp/(sum(k_bp))
+
+            mag_fild = []
+            for i in range(n-1, len(f) - n): mag_fild.append(np.dot(w, mag[i-n+1 : i+n]))
+            f = f[n-1:-n]
+
+            f_bp = f.copy()
+            self.active_solution = InpShprSolution(wc=None, zt=None, w_bp=f*2.*pi, G=np.array(mag_fild))
+            self.active_solution_axis = self.fsm.axis
+            del f, Y, NT, n
+
+            # Compute the frequency versus index parameters.
+            try:
+                wl = self.sweep_cfg.dfdt/4.; wo = 0.66
+                ws = wl*(1.-wo)
+                wN = round(wl/self.accelerometer.T)
+                sN = round(ws/self.accelerometer.T)
+
+                H = np.arange(start=0, stop=wN, step=1)
+                H = 0.5*(1. - np.cos(2.*pi*H/wN))
+
+                ns = []; fs = []
+
+                for i in range(floor((len(data) - wN)/sN) + 1):
+                    sidx = sN*i
+                    eidx = sidx + wN
+
+                    y_ = H*data[sidx:eidx]
+                    Y_ = np.fft.fft(np.array(y_))
+                    NT = len(Y_)*self.accelerometer.T
+                    f_ = np.arange(len(Y_))/NT
+
+                    minf_idx = ceil(self.sweep_cfg.f0*NT)
+                    maxf_idx = floor(self.sweep_cfg.f1*NT)
+
+                    f_ = f_[minf_idx:maxf_idx]; Y_ = Y_[minf_idx:maxf_idx]
+
+                    fs.append(f_[np.min(np.argmax(np.abs(Y_)))])
+                    ns.append(round(sidx+eidx)/2)
+
+                ns = np.array(ns, dtype=float)
+                fs = np.array(fs)
+
+                max_ns = max(ns)
+                ns /= max_ns
+                fs /= self.sweep_cfg.f1
+
+                w = np.clip(np.interp(fs*self.sweep_cfg.f1, f_bp, mag_fild), a_min=None, a_max=1.)
+
+                w = np.pow(w, SIGNAL_WEIGHTING_POWER)
+
+                rng = np.random.default_rng()
+                e = np.inf
+                self.i2f_bm = None
+                for _ in range(I2F_MAX_ITERATIONS):
+                    idcs1 = rng.permutation(len(ns))
+                    hi = idcs1[:I2F_RANDOM_IDCS]
+                    X = np.block([np.ones((I2F_RANDOM_IDCS, 1)), ns[hi].reshape(-1, 1)])
+                    W = np.diag(w[hi])
+                    bm_ = np.linalg.inv(X.T @ W @ X) @ X.T @ W @ fs[hi]
+                    ytil = np.block([np.ones((len(idcs1), 1)), ns[idcs1].reshape(-1, 1)]) @ bm_
+                    e_ = (fs[idcs1] - ytil)**2
+                    idcs2 = idcs1[I2F_RANDOM_IDCS:][np.where(e_[I2F_RANDOM_IDCS:] < I2F_CANDIDATE_ERROR_THD)]
+                    if len(idcs2) > I2F_CONSENSUS_THD:
+                        idcs = np.block([hi, idcs2])
+                        X_ = np.block([np.ones((len(idcs), 1)), ns[idcs].reshape(-1, 1)])
+                        W = np.diag(w[idcs])
+                        bm__ = np.linalg.inv(X_.T @ W @ X_) @ X_.T @ W @ fs[idcs]
+                        ytil_ = np.block([np.ones((len(idcs), 1)), ns[idcs].reshape(-1, 1)]) @ bm__
+                        e__ = np.sum((fs[idcs] - ytil_)**2)/len(idcs)
+                        if e__ < e: e = e__; self.i2f_bm = bm__
+
+                self.i2f_bm[0] *= self.sweep_cfg.f1
+                self.i2f_bm[1] *= self.sweep_cfg.f1/max_ns
+
+                bm1_expected = self.sweep_cfg.dfdt*self.accelerometer.T
+                bm1_ratio = self.i2f_bm[1]/bm1_expected
+                self._logger.info(f'Frequency map result: {self.i2f_bm[0]:.3f};{self.i2f_bm[1]:.9f};{bm1_expected:.9f}; ratio={bm1_ratio:.3f}.')
+
+                if bm1_ratio < I2F_BM1_RATIO_LOW_THD or bm1_ratio > I2F_BM1_RATIO_HIGH_THD:
+                    self.send_client_popup(type='error', title='Error in frequency analysis.',
+                                            message='The mapping cross check failed. Please try again.', hide=False)
+                    self.fsm_on_ANALYZE_MANUAL_error(); return
+                
+            except Exception as e:
+                self.send_client_popup(type='error', title='Error in frequency analysis.', message='Please try again using the default profile settings.', hide=False)
+                self.fsm_on_ANALYZE_MANUAL_error(); return
+            
+            self.sts_axis_calibration_active = False
+            self.sts_manual_mode_ready_for_user_selections = True
+            
+            self.send_client_popup( type='info', title='Select Peak Acceleration',
+                                    message='To proceed, select the peak acceleration point on the'\
+                                            ' data graph.',
+                                    hide=False)
+            
+            prompt_user = True
+
+        else: # Verification actions.
+            if self.active_solution_axis == 'x': self.x_calibration_sent_to_printer = True
+            elif self.active_solution_axis == 'y': self.y_calibration_sent_to_printer = True
+            self.send_client_popup(type='success', title='Calibration Applied', message=('The calibration for the '+self.active_solution_axis.upper()+' axis was applied successfully.'))
+            self.sts_axis_verification_active = False
+
+            prompt_user = False
+
+        # Common actions to calibration and verification.
+
+        # Put the accelerometer data on the graph.
+        accelerometer_data_x = list(range(len(data)))
+        accelerometer_data_x = [self.accelerometer.T*xi for xi in accelerometer_data_x]
+        
+        data = dict(
+            type='accelerometer_data',
+            values_x=accelerometer_data_x,
+            values_y=data.tolist(),
+            prompt_user=prompt_user
+        )
+
+        self._plugin_manager.send_plugin_message(self._identifier, data)
+
+        # Re-enable page controls.
+        self.update_tab_layout()
+
+        return
+
+    
+    def fsm_on_ANALYZE_MANUAL_during(self):
+        self.fsm.state = AxisRespnsFSMStates.IDLE
+        return
+		
 
     def fsm_start(self, axis):
         self.fsm_reset()
@@ -1255,12 +1620,13 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     MACHINEID=None, 
                     MACHINENAME=None,
                     url="https://github.com/S2AUlendo/UlendoCaaS",
-                    MODELID="TAZPro",
+                    MODELID="MODELID",
                     CONDITIONS="DEFAULT",
-                    MANUFACTURER_NAME="ULENDO",
+                    MANUFACTURER_NAME="MANUFACTURERNAME",
+                    use_caas_service=False,
                     accelerometer_device='ADXL345',
                     accelerometer_range='+/-2g',
-                    accelerometer_rate='1600Hz',
+                    accelerometer_rate='800Hz',
                     home_axis_before_calibration=True,
                     acceleration_amplitude=4000,
                     starting_frequency=5,
@@ -1271,17 +1637,21 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     step_acceleration=4000,
                     delay1_time=500,
                     delay2_time=1000,
-                    delay3_time=1000
+                    delay3_time=1000,
+                    share_calibration_data=True,
+                    log_routine_debug_info=False,
+                    save_post_data_locally=False
                     )
 
     def get_template_vars(self):
-        return dict(ORG=self._settings.get(["ORG"]), 
-                    ACCESSID=self._settings.get(["ACCESSID"]), 
-                    MACHINEID=self._settings.get(["MACHINEID"]), 
+        return dict(ORG=self._settings.get(["ORG"]),
+                    ACCESSID=self._settings.get(["ACCESSID"]),
+                    MACHINEID=self._settings.get(["MACHINEID"]),
                     url=self._settings.get(["url"]),
                     MODELID=self._settings.get(["MODELID"]),
                     MANUFACTURER_NAME=self._settings.get(["MANUFACTURER_NAME"]),
                     CONDITIONS=self._settings.get(["CONDITIONS"]),
+                    use_caas_service=self._settings.get(["use_caas_service"]),
                     accelerometer_device=self._settings.get(["accelerometer_device"]),
                     accelerometer_range=self._settings.get(["accelerometer_range"]),
                     accelerometer_rate=self._settings.get(["accelerometer_rate"]),
@@ -1295,7 +1665,10 @@ class UlendocaasPlugin(octoprint.plugin.SettingsPlugin,
                     step_acceleration=self._settings.get(["step_acceleration"]),
                     delay1_time=self._settings.get(["delay1_time"]),
                     delay2_time=self._settings.get(["delay2_time"]),
-                    delay3_time=self._settings.get(["delay3_time"])
+                    delay3_time=self._settings.get(["delay3_time"]),
+                    share_calibration_data=self._settings.get(["share_calibration_data"]),
+                    log_routine_debug_info=self._settings.get(["log_routine_debug_info"]),
+                    save_post_data_locally=self._settings.get(["save_post_data_locally"])
 )
 
     def get_template_configs(self):

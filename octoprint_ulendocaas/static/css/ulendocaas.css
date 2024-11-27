@@ -1,8 +1,8 @@
-#setup_container {
+#all_controls_container {
     display: block;
 }
 
-#accelerometer_container {
+#connect_and_calibrate_container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -10,7 +10,7 @@
     gap: 1.5rem;
 }
 
-#shaper_container {
+#input_shaping_configuration_container {
     margin-top: 1.8rem;
     display: flex;
     flex-direction: column;
@@ -117,21 +117,34 @@
 
 
 
-#accelerometer_child{
+#accelerometer_connection_group{
     display: flex;
     flex-direction: row;
     align-items: center; /* Center content vertically */
     gap: 10px
 }
 
-.manage_calibration_btn_group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
 
+#accelerometer_data_graph_container {
+    margin: 15px 0;
 }
+
+#accelerometer_data_graph_container.pulse {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 10px rgba(217, 237, 247, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(58, 135, 173, 1);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(217, 237, 247, 0.5);
+    }
+}
+
 
 .manage_calibration_btn_group {
     display: flex;
@@ -288,6 +301,35 @@
 #print_feedback_group {
 }
 
+#damping_group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.damping_slider_collapsible{
+    align-self: flex-start;
+}
+
+#damping_slider_container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#damping_slider_label {
+    white-space: nowrap;
+    cursor: default;
+}
+
+#damping_slider_value {   
+    display: inline-block;
+    width: 3.5ch;
+    text-align: right;
+}
+
 #vtol_group {
     width: 100%;
     display: flex;
@@ -295,16 +337,27 @@
     justify-content: center;
     align-items: center;
 }
-.slidercaption {
-    width: 170px;
-}
 
-.slidercontainer{
-    text-align: center;
-}
-
-.vibration_slider_collapsible{
+.vtol_slider_collapsible{
     align-self: flex-start;
+}
+
+#vtol_slider_container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+#vtol_slider_label {
+    white-space: nowrap;
+    cursor: default;
+}
+
+#vtol_slider_value {   
+    display: inline-block;
+    width: 3.5ch;
+    text-align: right;
 }
 
 .slider {

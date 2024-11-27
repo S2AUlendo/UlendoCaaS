@@ -2,7 +2,6 @@ from .tab_buttons import *
 
 class TabLayout(): # Tab layout to use as singleton
     def __init__(self):
-        # TODO: add notes about naming
         self.acclrmtr_connect_btn = AcclrmtrConnectButton()
         self.calibrate_x_axis_btn = CalibrateAxisButton()
         self.calibrate_y_axis_btn = CalibrateAxisButton()
@@ -17,3 +16,6 @@ class TabLayout(): # Tab layout to use as singleton
         self.clear_session_btn = ClearSessionButton()
         self.vtol_slider_visible = False
         self.is_active_client = False
+        self.damping_slider_visible = False
+        self.enable_controls_by_data_share = False
+        self.mode = 'auto'
